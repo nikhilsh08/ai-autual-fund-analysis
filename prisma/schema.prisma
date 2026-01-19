@@ -1,0 +1,132 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+}
+
+enum CourseType {
+  RECORDED
+  LIVE
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  name      String?
+  password  String   // Hashed
+  role      Role     @default(USER)
+  
+  cart      Cart?
+  orders    Order[]
+  purchases Purchase[]
+
+  createdAt DateTime @default(now())
+}
+
+model Course {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  description  String
+  thumbnail    String?
+  price        Float
+  isPublished  Boolean     @default(false)
+  type         CourseType  @default(RECORDED)
+  
+  // The "Different UI" Field
+  theme        String      @default("standard") // "standard", "coding", "artistic"
+
+  // TrainerCentral Links
+  tcCourseId   String      @unique 
+  tcCourseUrl  String?
+
+  // Live Metadata
+  startDate    DateTime?   
+  maxSeats     Int?
+  seatsSold    Int         @default(0)
+
+  categoryId   String      @db.ObjectId
+  category     Category    @relation(fields: [categoryId], references: [id])
+  
+  // Relations
+  cartItems    CartItem[]
+  orderItems   OrderItem[]
+  purchases    Purchase[]
+
+  createdAt    DateTime    @default(now())
+}
+
+model Category {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  name    String   @unique
+  courses Course[]
+}
+
+model Cart {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String     @unique @db.ObjectId
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  cartId    String   @db.ObjectId
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  courseId  String   @db.ObjectId
+  course    Course   @relation(fields: [courseId], references: [id])
+}
+
+model Order {
+  id             String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String      @db.ObjectId
+  user           User        @relation(fields: [userId], references: [id])
+  items          OrderItem[]
+  totalAmount    Float
+  status         OrderStatus @default(PENDING)
+  
+  zwitchOrderId  String?     @unique
+  zwitchPaymentId String?
+
+  createdAt      DateTime    @default(now())
+}
+
+model OrderItem {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  orderId  String @db.ObjectId
+  order    Order  @relation(fields: [orderId], references: [id])
+  courseId String @db.ObjectId
+  course   Course @relation(fields: [courseId], references: [id])
+  price    Float
+}
+
+model Purchase {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String   @db.ObjectId
+  course    Course   @relation(fields: [courseId], references: [id])
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, courseId])
+}
