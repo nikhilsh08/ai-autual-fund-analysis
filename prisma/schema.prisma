@@ -15,7 +15,7 @@ enum CourseType {
   LIVE
 }
 
-enum Role {
+ enum Role {
   USER
   ADMIN
 }

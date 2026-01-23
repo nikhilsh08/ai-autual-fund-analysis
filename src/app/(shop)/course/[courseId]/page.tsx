@@ -1,4 +1,4 @@
-import ModernTemplate from "@/components/templates/modernTemplate";
+import ModernTemplate from "@/components/templates/ModernTemplate";
 
 
 

@@ -34,7 +34,7 @@ export async function login(values: LoginInput) {
   }
 }
 
-export async function loginWithOAuth(provider: "google" | "github" | "facebook") {
+export async function loginWithOAuth(provider: "google" | "github" ) {
   try {
     await signIn(provider, {
       redirectTo: "/dashboard",
