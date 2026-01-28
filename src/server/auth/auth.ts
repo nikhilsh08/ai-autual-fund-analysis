@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import authConfig from "./auth.config";
-import { prisma } from "../../../prisma/dbPrisma";
+import { prisma } from "../../lib/dbPrisma";
 import { Role } from "@prisma/client";
 
 export const {
@@ -13,8 +13,8 @@ export const {
   adapter: PrismaAdapter(prisma) as any,
   session: { strategy: "jwt" },
   pages: {
-    signIn: "/auth/login",
-    error: "/auth/error",
+    signIn: "/sign-in",
+    error: "/error",
   },
   events: {
     async linkAccount({ user }) {

@@ -1,7 +1,7 @@
 'use server'
 
 import { auth } from "@/server/auth/auth";
-import {prisma} from "../../prisma/dbPrisma"
+import {prisma} from "../lib/dbPrisma"
 import { revalidatePath } from "next/cache";
 
 // 1. Get the User's Cart

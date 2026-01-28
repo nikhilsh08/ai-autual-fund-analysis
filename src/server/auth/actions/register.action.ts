@@ -29,6 +29,7 @@ export async function register(values: RegisterInput) {
       }
     };
   } catch (error) {
+    console.log(error);
     if (error instanceof Error) {
       if (error.message === "User already exists") {
         return { error: "Email already in use" };

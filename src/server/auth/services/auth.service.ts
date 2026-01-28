@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { prisma } from "../../../../prisma/dbPrisma";
+import { prisma } from "../../../lib/dbPrisma";
 import { RegisterInput } from "../schemas/auth.schema";
 // import { Role } from "@prisma/client";
 
