@@ -20,7 +20,7 @@ const BentoStats = () => (
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-px bg-zinc-200 border border-zinc-200 rounded-2xl overflow-hidden shadow-sm">
+        <div className="grid grid-cols-2 gap-px bg-zinc-200 border border-zinc-200 rounded-2xl overflow-hidden shadow-sm ">
           {[
             { label: 'Students Enrolled', value: '20K+' },
             { label: 'Lines of Code', value: '50M+' },
