@@ -2,11 +2,41 @@
 import React from 'react'
 import { ArrowRight, Cpu, Terminal, Shield, Layers } from 'lucide-react';
 import { Button } from './ui/button';
+import Coursecard from './Coursecard';
+
+
 const FeaturedBento = () => {
-  const courses = [
-    { title: "Full-Stack AI Engineering", category: "Engineering", meta: "12 Weeks • Advanced" },
-    { title: "Design Systems", category: "Design", meta: "6 Weeks • Intermediate" },
-    { title: "React Performance", category: "Frontend", meta: "4 Weeks • Expert" },
+const courses = [
+    { 
+      id: 1, 
+      title: "Full-Stack AI Engineering", 
+      category: "Engineering", 
+      price: 199,
+      originalPrice: 1999,
+      students: 5000,
+      isNew: true,
+      features: ["Build 5 AI apps", "RAG pipelines", "Vercel AI SDK"]
+    },
+    { 
+      id: 2, 
+      title: "Design Systems", 
+      category: "Design", 
+      price: 149, 
+      originalPrice: 1499,
+      students: 3200, 
+      isNew: false,
+      features: ["Figma variables", "Component API", "Documentation"]
+    },
+    { 
+      id: 3, 
+      title: "React Performance", 
+      category: "Frontend", 
+      price: 129, 
+      originalPrice: 1299,
+      students: 4500, 
+      isNew: false,
+      features: ["Re-render fixing", "Memory profiling", "Bundle optimization"]
+    },
   ];
 
   return (
@@ -20,27 +50,11 @@ const FeaturedBento = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {courses.map((course, i) => (
-            <div key={i} className="group relative bg-white border border-zinc-200 rounded-2xl p-8 hover:border-zinc-300 hover:shadow-lg transition-all duration-300">
-              <div className="absolute top-8 right-8 text-zinc-400 group-hover:text-zinc-900 transition-colors">
-                <ArrowRight size={20} className="-rotate-45" />
-              </div>
-              
-              <div className="h-40 mb-8 rounded-lg bg-zinc-100 overflow-hidden relative border border-zinc-100">
-                 <div className={`absolute inset-0 bg-gradient-to-br opacity-10 group-hover:opacity-20 transition-opacity ${
-                   i === 0 ? 'from-blue-500 to-cyan-500' : i === 1 ? 'from-purple-500 to-pink-500' : 'from-amber-500 to-orange-500'
-                 }`} />
-                 <div className="absolute inset-0 bg-noise opacity-30" />
-                 <div className="absolute bottom-4 left-4">
-                    <div className="px-2 py-1 bg-white/80 backdrop-blur-md rounded border border-zinc-200 text-[10px] text-zinc-900 font-mono">
-                      {course.category.toUpperCase()}
-                    </div>
-                 </div>
-              </div>
-
-              <h3 className="text-xl font-medium text-zinc-900 mb-2">{course.title}</h3>
-              <p className="text-zinc-500 text-sm">{course.meta}</p>
-            </div>
+         {courses.map((course) => (
+            <Coursecard 
+              key={course.id}
+              course={course}
+            />
           ))}
         </div>
         

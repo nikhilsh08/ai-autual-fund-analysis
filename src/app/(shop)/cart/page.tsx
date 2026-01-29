@@ -40,14 +40,15 @@ const CartPage = () => {
   const total = subtotal + tax;
 
   const handleCheckout = () => {
-    if (!isLoggedIn) {
-      toast.info("Please login to checkout");
-      router.push(`/auth/signin?callbackUrl=/cart`);
-      return;
-    }
-    toast.success("Redirecting to payment...");
-    // Trigger your Zwitch payment logic here
+    // if (!isLoggedIn) {
+    //   toast.info("Please login to checkout");
+    //   router.push(`/auth/signin?callbackUrl=/cart`);
+    //   return;
+    // }
+    // toast.success("Redirecting to payment...");
+    // // Trigger your Zwitch payment logic here
   };
+  console.log(items);
 
   const handleAddUpsell = () => {
     addItem(upsellItem, isLoggedIn);
