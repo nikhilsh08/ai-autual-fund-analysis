@@ -78,6 +78,7 @@ const CheckoutPage = () => {
       </div>
     );
   }
+  
 
   const { items, addItem, clearCart, getCartTotal } = cartStore;
   const cart = items;
