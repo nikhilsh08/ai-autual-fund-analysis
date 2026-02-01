@@ -163,7 +163,7 @@ const Page = () => {
         <div className="mt-8 text-center text-sm text-zinc-500">
           Don't have an account?{" "}
           <button
-            onClick={() => router.push("/auth/signup")}
+            onClick={() => router.push("/sign-up")}
             className="text-zinc-900 font-medium hover:underline"
           >
             Sign up

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
@@ -18,6 +18,7 @@ import { useCartStore } from '@/store/cart-store';
 import { useStore } from '@/hooks/use-store';
 import { getUpsellRecommendations } from '@/server/actions/get-recommendations';
 import { getCourseByIdAction } from '@/server/actions/get-courses';
+import { useZwitchPayment } from '@/hooks/useZwitchPayment';
 
 const checkoutSchema = z.object({
   name: z.string().min(2, { message: "Full name is required" }),
@@ -27,21 +28,20 @@ const checkoutSchema = z.object({
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 
-const CheckoutPage = () => {
+// 1. The main logic component
+const CheckoutContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
   const isLoggedIn = !!session;
   
-  // 1. URL State
   const buyNowId = searchParams.get('courseId');
   const cartStore = useStore(useCartStore, (state) => state);
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [buyNowItem, setBuyNowItem] = useState<any>(null);
-  
-  // Only show loader if we expect a buyNowId but haven't loaded it yet
   const [isLoadingBuyNow, setIsLoadingBuyNow] = useState(!!buyNowId);
+  const { initiateZwitch } = useZwitchPayment();
 
   const [upsellItem, setUpsellItem] = useState({
     id: "mentorship-addon-99", 
@@ -57,7 +57,6 @@ const CheckoutPage = () => {
     defaultValues: { name: "", email: "", phone: "" }
   });
 
-  // Prefill User Data
   useEffect(() => {
     if (session?.user) {
       setValue("name", session.user.name || "");
@@ -65,8 +64,6 @@ const CheckoutPage = () => {
     }
   }, [session, setValue]);
 
-  // --- EFFECT 1: Handle "Buy Now" Item (Depends ONLY on URL) ---
-  // This isolates the "fetch course" logic so cart updates don't break it.
   useEffect(() => {
     const fetchBuyNowCourse = async () => {
       if (!buyNowId) {
@@ -94,15 +91,12 @@ const CheckoutPage = () => {
     };
 
     fetchBuyNowCourse();
-  }, [buyNowId]); // <--- CRITICAL: removed cartStore from here
+  }, [buyNowId]);
 
-  // --- EFFECT 2: Handle Upsells (Depends on Cart + BuyNowItem) ---
   useEffect(() => {
     const fetchUpsells = async () => {
         if (!cartStore) return;
-
         const idsToAnalyze: string[] = [];
-        
         if (buyNowItem) idsToAnalyze.push(buyNowItem.id);
         if (cartStore.items.length > 0) idsToAnalyze.push(...cartStore.items.map(i => i.id));
 
@@ -123,9 +117,8 @@ const CheckoutPage = () => {
             }
         }
     };
-    
     fetchUpsells();
-  }, [buyNowItem, cartStore]); // This handles recommendations separately
+  }, [buyNowItem, cartStore?.items]);
 
   if (!cartStore || isLoadingBuyNow) {
     return (
@@ -135,18 +128,14 @@ const CheckoutPage = () => {
     );
   }
 
-  const { items, addItem, removeItem, clearCart } = cartStore;
-
-  // --- Logic ---
+  const { items, addItem, removeItem } = cartStore;
   const displayItems = buyNowItem ? [buyNowItem] : items;
   const isEmpty = displayItems.length === 0;
   
-  // Check if upsell is in the *current* list (BuyNow or Cart)
   const isUpsellInCart = buyNowItem 
     ? buyNowItem.id === upsellItem.id
     : !!items.find((i) => i.id === upsellItem.id);
 
-  // --- Calculations ---
   const itemsTotal = displayItems.reduce((acc: number, item: any) => acc + item.price, 0);
   const tax = itemsTotal * taxRate;
   const currentSubtotal = (itemsTotal - tax);
@@ -165,16 +154,10 @@ const CheckoutPage = () => {
 
   const handleAddUpsell = async () => {
     if (buyNowItem) {
-        // 1. Add both to global store
         await addItem(buyNowItem, isLoggedIn);
         await addItem(upsellItem, isLoggedIn);
-        
-        // 2. Clear local state IMMEDIATELY (UI updates instantly)
         setBuyNowItem(null); 
-        
         toast.success("Bundle created! Switching to cart view...");
-        
-        // 3. Update URL (Background process, won't re-trigger Effect 1 badly now)
         router.push('/checkout'); 
     } else {
         await addItem(upsellItem, isLoggedIn);
@@ -183,13 +166,9 @@ const CheckoutPage = () => {
   };
 
   const onPaymentSubmit = async (data: CheckoutFormValues) => {
-    if (!isLoggedIn) { toast.info("Please login to continue"); return; }
     setIsProcessing(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      if (!buyNowItem) clearCart();
-      toast.success("Payment Successful!");
-      router.push('/success');
+        await initiateZwitch({...data, amount: total});
     } catch (error) {
       toast.error("Payment Failed");
     } finally {
@@ -218,15 +197,15 @@ const CheckoutPage = () => {
                </div>
                <h2 className="text-2xl font-semibold text-zinc-900 mb-2">Your checkout is empty</h2>
                <p className="text-zinc-500 max-w-sm mb-8">
-                 Looks like you haven't selected any courses yet.
+                  Looks like you haven't selected any courses yet.
                </p>
-               <Button onClick={() => router.push('/courses')} size="lg" className="px-8 rounded-full">
+               <Button onClick={() => router.push('/')} size="lg" className="px-8 rounded-full">
                  Browse Courses
                </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              {/* Left: Contact Form + Upsell */}
+              {/* Left Column */}
               <div className="space-y-8">
                  <div className="flex items-center gap-2 mb-2">
                     <ShieldCheck className="text-green-600" size={20} />
@@ -237,7 +216,8 @@ const CheckoutPage = () => {
                     <h2 className="text-xl font-medium text-zinc-900 mb-6 flex items-center gap-2">
                        <User size={20} className="text-blue-600"/> Contact Information
                     </h2>
-                    <div className="space-y-4">
+                    {/* Wrapped in form for better accessibility */}
+                    <form id="checkout-form" onSubmit={handleSubmit(onPaymentSubmit)} className="space-y-4">
                        <div>
                           <label className="block text-xs font-medium text-zinc-700 uppercase mb-1">Full Name</label>
                           <div className="relative">
@@ -262,7 +242,7 @@ const CheckoutPage = () => {
                           </div>
                           {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
                        </div>
-                    </div>
+                    </form>
                  </div>
 
                  {showUpsellCard && (
@@ -290,7 +270,7 @@ const CheckoutPage = () => {
                  )}
               </div>
 
-              {/* Right: Summary */}
+              {/* Right Column: Summary */}
               <div>
                  <div className="bg-white p-8 rounded-2xl border border-zinc-200 shadow-sm sticky top-28">
                     <h2 className="text-xl font-medium text-zinc-900 mb-6">Order Summary</h2>
@@ -332,7 +312,12 @@ const CheckoutPage = () => {
                        </div>
                     </div>
 
-                    <Button className="w-full mt-8 h-12 text-base" onClick={handleSubmit(onPaymentSubmit)} disabled={isProcessing}>
+                    <Button 
+                      form="checkout-form" 
+                      type="submit" 
+                      className="w-full mt-8 h-12 text-base" 
+                      disabled={isProcessing}
+                    >
                        {isProcessing ? (
                           <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin"/> Processing...</span>
                        ) : (
@@ -351,4 +336,15 @@ const CheckoutPage = () => {
   )
 }
 
-export default CheckoutPage;
+// 2. The main Page export with Suspense
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50">
+        <Loader2 className="w-8 h-8 animate-spin text-zinc-400" />
+      </div>
+    }>
+      <CheckoutContent />
+    </Suspense>
+  )
+}

@@ -87,7 +87,7 @@ const CartPage = () => {
                 <ShoppingBag size={32} />
              </div>
              <h2 className="text-xl font-medium text-zinc-900 mb-2">Your cart is empty</h2>
-             <Button asChild><Link href="/courses">Browse Courses</Link></Button>
+             <Button asChild><Link href="/">Browse Courses</Link></Button>
            </div>
         ) : (
            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">

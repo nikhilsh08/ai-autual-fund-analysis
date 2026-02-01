@@ -28,9 +28,9 @@ const FeaturedBento = async () => {
           ))}
         </div>
         
-        <div className="mt-12 text-center">
+        {/* <div className="mt-12 text-center">
           <Button variant="secondary" className="px-8">View All Courses</Button>
-        </div>
+        </div> */}
       </div>
     </section>
   );
