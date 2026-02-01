@@ -48,6 +48,14 @@ export class AuthService {
       },
     });
   }
+  static async authenticateUser(email:string, password:string){
+    const user = await this.getUserByEmail(email);
+    if(!user || !user.password){
+      return null;
+    }
+    const isValidPassword = await this.comparePassword(password, user.password);
+    return isValidPassword ? {success:true,user} : null;
+  }
 
   static async updateUserEmailVerification(userId: string) {
     return prisma.user.update({

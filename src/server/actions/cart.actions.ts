@@ -96,3 +96,5 @@ export async function removeFromCartAction(courseId: string) {
     return { success: false };
   }
 }
+
+// clear cart 

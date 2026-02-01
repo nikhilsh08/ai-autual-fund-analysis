@@ -1,6 +1,6 @@
 "use client"
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/store/cart-store';
 import { useStore } from '@/hooks/use-store';
+import { getUpsellRecommendations } from '@/server/actions/get-recommendations';
+
 
 const CartPage = () => {
   const router = useRouter();
@@ -18,13 +20,40 @@ const CartPage = () => {
   const isLoggedIn = !!session;
   const cartStore = useStore(useCartStore, (state) => state);
 
-  // Hardcoded upsell ID (Use a string that won't conflict with MongoDB ObjectIDs)
-  const upsellItem = {
+  // State for dynamic upsell
+  const [upsellItem, setUpsellItem] = useState({
     id: "mentorship-offer-99", 
     title: "1-on-1 Career Mentorship",
     price: 99,
     thumbnail: "" 
-  };
+  });
+
+  // Fetch dynamic recommendation when cart items change
+  useEffect(() => {
+    const fetchRecommendation = async () => {
+      if (cartStore && cartStore.items.length > 0) {
+        // Get IDs of items currently in cart
+        const currentIds = cartStore.items.map(item => item.id);
+        
+        // Call server action
+        const recommendations = await getUpsellRecommendations(currentIds);
+        console.log(recommendations,"recommendation");
+        
+        // If we get a recommendation, update the upsell item
+        if (recommendations && recommendations.length > 0) {
+          const rec = recommendations[0];
+          setUpsellItem({
+            id: rec.id,
+            title: rec.title,
+            price: rec.price,
+            thumbnail: rec.thumbnail || ""
+          });
+        }
+      }
+    };
+
+    fetchRecommendation();
+  }, [cartStore?.items]); // Re-run when items change
 
   if (!cartStore) {
     return (
@@ -36,20 +65,13 @@ const CartPage = () => {
 
   const { items, removeItem, clearCart, addItem, getCartTotal } = cartStore;
   const subtotal = getCartTotal();
-  const tax = subtotal * 0.08;
-  const total = subtotal + tax;
+  const tax = subtotal * 0.18;
+  const total = (subtotal-tax) + tax;
 
   const handleCheckout = () => {
-    // if (!isLoggedIn) {
-    //   toast.info("Please login to checkout");
-    //   router.push(`/auth/signin?callbackUrl=/cart`);
-    //   return;
-    // }
-    // toast.success("Redirecting to payment...");
-    // // Trigger your Zwitch payment logic here
+    router.push("/checkout");
   };
-  console.log(items);
-
+  
   const handleAddUpsell = () => {
     addItem(upsellItem, isLoggedIn);
   };
@@ -94,13 +116,13 @@ const CartPage = () => {
                             <X size={20} />
                           </button>
                         </div>
-                        <div className="mt-2 text-zinc-600 font-mono text-sm">${item.price}</div>
+                        <div className="mt-2 text-zinc-600 font-mono text-sm">₹{item.price}</div>
                      </div>
                    </div>
                  ))}
                </div>
 
-               {/* Upsell Logic */}
+               {/* Upsell Logic - Dynamically Fetched Item */}
                {!items.find((i) => i.id === upsellItem.id) && (
                  <div className="mt-12 p-6 bg-zinc-50 border border-zinc-200 rounded-2xl relative overflow-hidden">
                     {/* Decorative Blob */}
@@ -108,8 +130,12 @@ const CartPage = () => {
                    
                    <div className="relative z-10 flex flex-col sm:flex-row justify-between gap-4 items-center">
                       <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-lg bg-yellow-100 flex items-center justify-center text-yellow-600">
-                            <Zap size={24} />
+                        <div className="w-16 h-16 rounded-lg bg-yellow-100 flex items-center justify-center text-yellow-600 overflow-hidden relative">
+                            {upsellItem.thumbnail ? (
+                                <Image src={upsellItem.thumbnail} alt={upsellItem.title} fill className="object-cover" />
+                            ) : (
+                                <Zap size={24} />
+                            )}
                         </div>
                         <div>
                           <h4 className="font-medium text-zinc-900">{upsellItem.title}</h4>
@@ -128,8 +154,8 @@ const CartPage = () => {
                 <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-6 sticky top-28 shadow-sm">
                    <h3 className="font-medium text-zinc-900 mb-6">Order Summary</h3>
                    <div className="space-y-4 text-sm mb-6">
-                     <div className="flex justify-between text-zinc-500"><span>Subtotal</span><span className="font-mono">${subtotal.toFixed(2)}</span></div>
-                     <div className="flex justify-between text-zinc-500"><span>Tax (8%)</span><span className="font-mono">${tax.toFixed(2)}</span></div>
+                     <div className="flex justify-between text-zinc-500"><span>Subtotal</span><span className="font-mono">₹{subtotal.toFixed(2)}</span></div>
+                     <div className="flex justify-between text-zinc-500"><span>GST (18%)</span><span className="font-mono">₹{tax.toFixed(2)}</span></div>
                      <div className="pt-4 border-t border-zinc-200 flex justify-between font-medium text-lg">
                        <span>Total</span><span className="font-mono">${total.toFixed(2)}</span>
                      </div>
