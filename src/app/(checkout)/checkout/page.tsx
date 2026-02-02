@@ -154,7 +154,7 @@ const CheckoutContent = () => {
 
   const handleAddUpsell = async () => {
     if (buyNowItem) {
-        await clearCart();
+        await clearCart(isLoggedIn);
         await addItem(buyNowItem, isLoggedIn);
         await addItem(upsellItem, isLoggedIn);
         setBuyNowItem(null); 

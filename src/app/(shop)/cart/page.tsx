@@ -95,7 +95,7 @@ const CartPage = () => {
              <div className="lg:col-span-2">
                <div className="flex justify-between items-center mb-6">
                  <span className="text-sm text-zinc-500 font-medium">{items.length} Course{items.length !== 1 && 's'}</span>
-                 <button onClick={clearCart} className="text-sm text-red-500 hover:text-red-600 flex items-center gap-2">
+                 <button onClick={() => clearCart(isLoggedIn)} className="text-sm text-red-500 hover:text-red-600 flex items-center gap-2">
                    <Trash2 size={14} /> Clear Cart
                  </button>
                </div>

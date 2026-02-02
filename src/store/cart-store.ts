@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 import { toast } from 'sonner';
-import { addToCartAction, removeFromCartAction } from '@/server/actions/cart.actions';
+import { addToCartAction,clearCartAction, removeFromCartAction } from '@/server/actions/cart.actions';
 
 export type CartItem = {
   id: string; // Course ID
@@ -20,7 +20,7 @@ type CartState = {
   addItem: (item: CartItem, isLoggedIn: boolean) => Promise<void>;
   removeItem: (id: string, isLoggedIn: boolean) => Promise<void>;
   setItems: (items: CartItem[]) => void;
-  clearCart: () => void;
+  clearCart: (isLoggedIn: boolean) => void;
   getCartTotal: () => number;
 };
 
@@ -69,7 +69,12 @@ export const useCartStore = create<CartState>()(
       },
 
       setItems: (items) => set({ items }),
-      clearCart: () => set({ items: [] }),
+      clearCart: async (isLoggedIn) =>{
+        if(isLoggedIn){
+          await clearCartAction();
+        }
+         set({ items: [] })
+        },
       getCartTotal: () => get().items.reduce((total, item) => total + item.price, 0),
     }),
     {

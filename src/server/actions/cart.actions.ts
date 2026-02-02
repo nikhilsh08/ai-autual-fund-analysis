@@ -98,3 +98,21 @@ export async function removeFromCartAction(courseId: string) {
 }
 
 // clear cart 
+export async function clearCartAction() {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false };
+
+  try {
+    const cart = await prisma.cart.findUnique({ where: { userId: session.user.id } });
+    if (!cart) return { success: false };
+
+    await prisma.cartItem.deleteMany({
+      where: { cartId: cart.id }
+    });
+
+    revalidatePath('/cart');
+    return { success: true };
+  } catch (error) {
+    return { success: false };
+  }
+}
