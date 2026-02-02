@@ -128,7 +128,7 @@ const CheckoutContent = () => {
     );
   }
 
-  const { items, addItem, removeItem } = cartStore;
+  const { items,clearCart, addItem, removeItem } = cartStore;
   const displayItems = buyNowItem ? [buyNowItem] : items;
   const isEmpty = displayItems.length === 0;
   
@@ -154,6 +154,7 @@ const CheckoutContent = () => {
 
   const handleAddUpsell = async () => {
     if (buyNowItem) {
+        await clearCart();
         await addItem(buyNowItem, isLoggedIn);
         await addItem(upsellItem, isLoggedIn);
         setBuyNowItem(null); 

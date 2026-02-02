@@ -64,9 +64,10 @@ const CartPage = () => {
   }
 
   const { items, removeItem, clearCart, addItem, getCartTotal } = cartStore;
-  const subtotal = getCartTotal();
-  const tax = subtotal * 0.18;
-  const total = (subtotal-tax) + tax;
+  const cartTotal = getCartTotal();
+  const tax = cartTotal * 0.18;
+  const subtotal = cartTotal-tax;
+  const total = (cartTotal-tax) + tax;
 
   const handleCheckout = () => {
     router.push("/checkout");
@@ -157,7 +158,7 @@ const CartPage = () => {
                      <div className="flex justify-between text-zinc-500"><span>Subtotal</span><span className="font-mono">₹{subtotal.toFixed(2)}</span></div>
                      <div className="flex justify-between text-zinc-500"><span>GST (18%)</span><span className="font-mono">₹{tax.toFixed(2)}</span></div>
                      <div className="pt-4 border-t border-zinc-200 flex justify-between font-medium text-lg">
-                       <span>Total</span><span className="font-mono">${total.toFixed(2)}</span>
+                       <span>Total</span><span className="font-mono">₹{total.toFixed(2)}</span>
                      </div>
                    </div>
                    <Button className="w-full" onClick={handleCheckout}>Checkout</Button>
