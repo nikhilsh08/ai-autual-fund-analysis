@@ -1,5 +1,5 @@
 'use server'
-import { prisma } from "@/lib/dbPrisma";
+import { dataBasePrisma } from "@/lib/dbPrisma";
 
 export async function getUpsellRecommendations(currentCourseIds: string[]) {
   // If no items in cart/checkout, return nothing
@@ -7,7 +7,7 @@ export async function getUpsellRecommendations(currentCourseIds: string[]) {
 
   try {
     // 1. Get the categories of the items the user is currently buying
-    const currentCourses = await prisma.course.findMany({
+    const currentCourses = await dataBasePrisma.course.findMany({
       where: {
         id: { in: currentCourseIds }
       },
@@ -22,7 +22,7 @@ export async function getUpsellRecommendations(currentCourseIds: string[]) {
     if (categoryIds.length === 0) return [];
 
     // 2. Find other courses in the same categories
-    const recommendations = await prisma.course.findMany({
+    const recommendations = await dataBasePrisma.course.findMany({
       where: {
         isPublished: true,
         categoryId: { in: categoryIds }, // Match the category

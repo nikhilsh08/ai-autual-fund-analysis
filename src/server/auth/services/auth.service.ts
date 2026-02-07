@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { prisma } from "../../../lib/dbPrisma";
+import { dataBasePrisma } from "../../../lib/dbPrisma";
 import { RegisterInput } from "../schemas/auth.schema";
 // import { Role } from "@prisma/client";
 
@@ -18,13 +18,13 @@ export class AuthService {
   }
 
   static async getUserByEmail(email: string) {
-    return prisma.user.findUnique({
+    return dataBasePrisma.user.findUnique({
       where: { email },
     });
   }
 
   static async getUserById(id: string) {
-    return prisma.user.findUnique({
+    return dataBasePrisma.user.findUnique({
       where: { id },
     });
   }
@@ -39,7 +39,7 @@ export class AuthService {
 
     const hashedPassword = await this.hashPassword(password);
 
-    return prisma.user.create({
+    return dataBasePrisma.user.create({
       data: {
         name,
         email,
@@ -58,7 +58,7 @@ export class AuthService {
   }
 
   static async updateUserEmailVerification(userId: string) {
-    return prisma.user.update({
+    return dataBasePrisma.user.update({
       where: { id: userId },
       data: { emailVerified: new Date() },
     });

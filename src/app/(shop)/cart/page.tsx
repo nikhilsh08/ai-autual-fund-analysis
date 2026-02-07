@@ -77,6 +77,8 @@ const CartPage = () => {
     addItem(upsellItem, isLoggedIn);
   };
 
+  console.log(items,"cart items");
+
   return (
     <div className="pt-28 pb-32 px-6 min-h-screen bg-white">
       <div className="max-w-7xl mx-auto">
