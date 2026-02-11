@@ -1,22 +1,18 @@
 import ModernTemplate from "@/components/templates/ModernTemplate";
+import MutualFoundBentoTheme from "@/components/templates/MutualFound-BentoTheme";
+import { getCourseByIdAction } from "@/server/actions/get-courses";
 
 
 
 export default async function CoursePage({ params }: { params: { courseId: string } }) {
-  // 1. Fetch Data
-let course = {
-    theme:"val"
-}
+
+  let course = await getCourseByIdAction(params.courseId);
 
   if (!course) return <div>Course not found</div>;
 
-//   const recommendations = await getRecommendations(params.courseId);
-
-  // 2. The Switcher Logic
-  // This decides which UI to show based on the DB field
   switch (course.theme) {
-    case "coding":
-      return <ModernTemplate course={'course'} recommendations={'recommendations'} />;
+    case "Bento-Minimalism":
+      return <MutualFoundBentoTheme />;
       
     case "artistic":
       return <ModernTemplate course={'course'} recommendations={'recommendations'} />;

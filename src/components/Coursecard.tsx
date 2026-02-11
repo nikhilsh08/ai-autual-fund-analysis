@@ -9,7 +9,7 @@ import { getRandomValue } from '@/Utils/get-random-value';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
-const Coursecard = ({ course, onSelect, className = "" }: any) => {
+const Coursecard = ({ course, className = "" }: any) => {
   const [showMobileDetails, setShowMobileDetails] = useState(false);
   const { data: session } = useSession();
   const isLoggedIn = !!session;
@@ -29,6 +29,9 @@ const Coursecard = ({ course, onSelect, className = "" }: any) => {
 
   const toggleDetails = () => {
     setShowMobileDetails(!showMobileDetails);
+  };
+  const onSelect = (courseId: string) => {
+    router.push(`/course/${courseId}`);
   };
 
   const onBuyNow = (course: any) => {
