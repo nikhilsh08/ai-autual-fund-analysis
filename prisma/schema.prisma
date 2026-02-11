@@ -174,7 +174,26 @@ model Order {
 
   orderId   String? @unique
   paymentId String?
+  paymentTransaction PaymentTransaction?
 
+  createdAt DateTime @default(now())
+}
+
+model PaymentTransaction {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  
+  orderId String @unique @db.ObjectId
+  order Order @relation(fields: [orderId], references: [id])
+  
+  paymentGateway String @default("CASHFREE")
+  paymentId String // Cashfree Payment ID
+  amount Float
+  currency String @default("INR")
+  status String // SUCCESS, FAILED, PENDING, USER_DROPPED
+  
+  paymentMethod String? // UPI, CARD, NET_BANKING
+  rawResponse Json? // Full response from PG
+  
   createdAt DateTime @default(now())
 }
 

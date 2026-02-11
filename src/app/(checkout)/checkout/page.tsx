@@ -46,12 +46,7 @@ const CheckoutContent = () => {
   const { initiateZwitch } = useZwitchPayment();
   let zwitchPayment = false;
 
-  const [upsellItem, setUpsellItem] = useState({
-    id: "mentorship-addon-99",
-    title: "1-on-1 Career Mentorship",
-    price: 99,
-    thumbnail: ""
-  });
+  const [upsellItem, setUpsellItem] = useState<any>(null);
 
   const taxRate = 0.18;
 
@@ -135,9 +130,11 @@ const CheckoutContent = () => {
   const displayItems = buyNowItem ? [buyNowItem] : items;
   const isEmpty = displayItems.length === 0;
 
-  const isUpsellInCart = buyNowItem
-    ? buyNowItem.id === upsellItem.id
-    : !!items.find((i) => i.id === upsellItem.id);
+  const isUpsellInCart = upsellItem
+    ? (buyNowItem
+      ? buyNowItem.id === upsellItem.id
+      : !!items.find((i) => i.id === upsellItem.id))
+    : false;
 
   const itemsTotal = displayItems.reduce((acc: number, item: any) => acc + item.price, 0);
   const tax = itemsTotal * taxRate;

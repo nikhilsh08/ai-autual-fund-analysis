@@ -15,7 +15,7 @@ export async function POST(req: Request) {
         // Validation
         if (!name || !email || !phone || !courseIds) {
             return NextResponse.json(
-                { success: false, error: 'Missing required fields' }, 
+                { success: false, error: 'Missing required fields' },
                 { status: 400 }
             );
         }
@@ -25,12 +25,12 @@ export async function POST(req: Request) {
 
         if (courseIdArray.length === 0) {
             return NextResponse.json(
-                { success: false, error: 'At least one course must be selected' }, 
+                { success: false, error: 'At least one course must be selected' },
                 { status: 400 }
             );
         }
 
-            // fetch courses for price calculation and validation
+        // fetch courses for price calculation and validation
         const courses = await dataBasePrisma.course.findMany({
             where: {
                 id: { in: courseIdArray },
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
         // Validate all courses exist
         if (courses.length !== courseIdArray.length) {
             return NextResponse.json(
-                { success: false, error: 'One or more courses not found or unavailable' }, 
+                { success: false, error: 'One or more courses not found or unavailable' },
                 { status: 404 }
             );
         }
@@ -59,17 +59,17 @@ export async function POST(req: Request) {
             if (course.type === 'LIVE') {
                 if (course.maxSeats && course.seatsSold >= course.maxSeats) {
                     return NextResponse.json(
-                        { 
-                            success: false, 
-                            error: `Course "${course.title}" is sold out` 
-                        }, 
+                        {
+                            success: false,
+                            error: `Course "${course.title}" is sold out`
+                        },
                         { status: 400 }
                     );
                 }
             }
         }
 
-        const subtotal = courses.reduce((sum, course) => sum + course.price, 0);
+        const subtotal = courses.reduce((sum: any, course: any) => sum + course.price, 0);
         const taxAmount = subtotal * TAX_RATE;
         const totalAmount = subtotal + taxAmount;
 
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
 
         const orderId = `ORDER_CF_${uuidv4()}`;
         const user = await currentUser();
-        
+
         // Save Lead or Order data
         if (!user) {
             const existingLead = await dataBasePrisma.lead.findUnique({
@@ -121,14 +121,14 @@ export async function POST(req: Request) {
                     status: 'PENDING',
                     orderId: orderId,
                     items: {
-                        create: courses.map(course => ({
+                        create: courses.map((course: any) => ({
                             courseId: course.id,
                             price: course.price
                         }))
                     }
                 }
             });
-        } 
+        }
         // Create Cashfree payment
         const cashfreePaymentRes = await createCashfreeOrder(orderId, finalAmount, {
             name: name,
@@ -138,8 +138,8 @@ export async function POST(req: Request) {
 
         console.log("cashfreePaymentRes", cashfreePaymentRes);
 
-        return NextResponse.json({ 
-            success: true, 
+        return NextResponse.json({
+            success: true,
             message: "Payment initiated successfully",
             orderId: orderId,
             priceBreakdown: {
@@ -147,19 +147,19 @@ export async function POST(req: Request) {
                 tax: taxAmount,
                 taxRate: `${TAX_RATE * 100}%`,
                 total: finalAmount,
-                courses: courses.map(c => ({
+                courses: courses.map((c: any) => ({
                     id: c.id,
                     title: c.title,
                     price: c.price
                 }))
             },
-            paymentSession: cashfreePaymentRes 
+            paymentSession: cashfreePaymentRes
         });
-        
+
     } catch (error) {
         console.error("Payment initiation error:", error);
         return NextResponse.json(
-            { success: false, error: 'Failed to initiate payment' }, 
+            { success: false, error: 'Failed to initiate payment' },
             { status: 500 }
         );
     }
