@@ -1,12 +1,12 @@
 'use server'
 
 import { auth } from "@/server/auth/auth";
-import {prisma} from "../../lib/dbPrisma"
+import {dataBasePrisma} from "../../lib/dbPrisma"
 
 // get all courses
 export async function getCoursesAction() {
   try {
-    const courses = await prisma.course.findMany({
+    const courses = await dataBasePrisma.course.findMany({
       orderBy: { createdAt: 'desc' }
       ,
       include: {
@@ -24,7 +24,7 @@ export async function getCoursesAction() {
 //get single course by id
 export async function getCourseByIdAction(id: string) {
   try {
-    const course = await prisma.course.findUnique({
+    const course = await dataBasePrisma.course.findUnique({
       where: { id },
       include: {
         category: true,

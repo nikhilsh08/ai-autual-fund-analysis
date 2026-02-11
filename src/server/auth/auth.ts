@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import authConfig from "./auth.config";
-import { prisma } from "../../lib/dbPrisma";
+import { dataBasePrisma } from "../../lib/dbPrisma";
 import { Role } from "@prisma/client";
 
 export const {
@@ -10,7 +10,7 @@ export const {
   signIn,
   signOut,
 } = NextAuth({
-  adapter: PrismaAdapter(prisma) as any,
+  adapter: PrismaAdapter(dataBasePrisma) as any,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/sign-in",
@@ -19,7 +19,7 @@ export const {
   events: {
     async linkAccount({ user }) {
       if (user.id) {
-        await prisma.user.update({
+        await dataBasePrisma.user.update({
           where: { id: user.id },
           data: { emailVerified: new Date() },
         });
@@ -36,7 +36,7 @@ export const {
       // For credentials, verify email if needed
       if (!user.id) return false;
       
-      const existingUser = await prisma.user.findUnique({
+      const existingUser = await dataBasePrisma.user.findUnique({
         where: { id: user.id },
       });
 
@@ -74,7 +74,7 @@ export const {
       if (!token.sub) return token;
 
       try {
-        const existingUser = await prisma.user.findUnique({
+        const existingUser = await dataBasePrisma.user.findUnique({
           where: { id: token.sub },
         });
 

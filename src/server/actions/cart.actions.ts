@@ -1,7 +1,7 @@
 'use server'
 
 import { auth } from "@/server/auth/auth";
-import {prisma} from "../../lib/dbPrisma"
+import {dataBasePrisma} from "../../lib/dbPrisma"
 import { revalidatePath } from "next/cache";
 
 // FETCH CART
@@ -10,7 +10,7 @@ export async function getCartAction() {
   if (!session?.user?.id) return [];
 
   try {
-    const cart = await prisma.cart.findUnique({
+    const cart = await dataBasePrisma.cart.findUnique({
       where: { userId: session.user.id },
       include: {
         items: {
@@ -41,25 +41,25 @@ export async function addToCartAction(courseId: string) {
 
   try {
     // 1. Get or Create Cart
-    let cart = await prisma.cart.findUnique({
+    let cart = await dataBasePrisma.cart.findUnique({
       where: { userId: session.user.id }
     });
 
     if (!cart) {
-      cart = await prisma.cart.create({
+      cart = await dataBasePrisma.cart.create({
         data: { userId: session.user.id }
       });
     }
 
     // 2. Check strict deduplication
-    const exists = await prisma.cartItem.findFirst({
+    const exists = await dataBasePrisma.cartItem.findFirst({
       where: { cartId: cart.id, courseId }
     });
 
     if (exists) return { success: true };
 
     // 3. Create Item
-    await prisma.cartItem.create({
+    await dataBasePrisma.cartItem.create({
       data: {
         cartId: cart.id,
         courseId: courseId
@@ -80,10 +80,10 @@ export async function removeFromCartAction(courseId: string) {
   if (!session?.user?.id) return { success: false };
 
   try {
-    const cart = await prisma.cart.findUnique({ where: { userId: session.user.id } });
+    const cart = await dataBasePrisma.cart.findUnique({ where: { userId: session.user.id } });
     if (!cart) return { success: false };
 
-    await prisma.cartItem.deleteMany({
+    await dataBasePrisma.cartItem.deleteMany({
       where: {
         cartId: cart.id,
         courseId: courseId
@@ -103,10 +103,10 @@ export async function clearCartAction() {
   if (!session?.user?.id) return { success: false };
 
   try {
-    const cart = await prisma.cart.findUnique({ where: { userId: session.user.id } });
+    const cart = await dataBasePrisma.cart.findUnique({ where: { userId: session.user.id } });
     if (!cart) return { success: false };
 
-    await prisma.cartItem.deleteMany({
+    await dataBasePrisma.cartItem.deleteMany({
       where: { cartId: cart.id }
     });
 

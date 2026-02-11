@@ -19,6 +19,8 @@ import { useStore } from '@/hooks/use-store';
 import { getUpsellRecommendations } from '@/server/actions/get-recommendations';
 import { getCourseByIdAction } from '@/server/actions/get-courses';
 import { useZwitchPayment } from '@/hooks/useZwitchPayment';
+import { getCashfreeInstance } from '@/lib/PGinitialize';
+import axios from 'axios';
 
 const checkoutSchema = z.object({
   name: z.string().min(2, { message: "Full name is required" }),
@@ -42,8 +44,14 @@ const CheckoutContent = () => {
   const [buyNowItem, setBuyNowItem] = useState<any>(null);
   const [isLoadingBuyNow, setIsLoadingBuyNow] = useState(!!buyNowId);
   const { initiateZwitch } = useZwitchPayment();
+  let zwitchPayment = false;
 
-  const [upsellItem, setUpsellItem] = useState<any>(null);
+  const [upsellItem, setUpsellItem] = useState({
+    id: "mentorship-addon-99",
+    title: "1-on-1 Career Mentorship",
+    price: 99,
+    thumbnail: ""
+  });
 
   const taxRate = 0.18;
 
@@ -127,11 +135,9 @@ const CheckoutContent = () => {
   const displayItems = buyNowItem ? [buyNowItem] : items;
   const isEmpty = displayItems.length === 0;
 
-  const isUpsellInCart = upsellItem
-    ? (buyNowItem
-      ? buyNowItem.id === upsellItem.id
-      : !!items.find((i) => i.id === upsellItem.id))
-    : false;
+  const isUpsellInCart = buyNowItem
+    ? buyNowItem.id === upsellItem.id
+    : !!items.find((i) => i.id === upsellItem.id);
 
   const itemsTotal = displayItems.reduce((acc: number, item: any) => acc + item.price, 0);
   const tax = itemsTotal * taxRate;
@@ -164,13 +170,69 @@ const CheckoutContent = () => {
   };
 
   const onPaymentSubmit = async (data: CheckoutFormValues) => {
+    console.log("Payment Data:", data, { total });
     setIsProcessing(true);
-    try {
-      await initiateZwitch({ ...data, amount: total });
-    } catch (error) {
-      toast.error("Payment Failed");
-    } finally {
-      setIsProcessing(false);
+    if (zwitchPayment) {
+      try {
+        await initiateZwitch({ ...data, amount: total });
+      } catch (error) {
+        toast.error("Payment Failed");
+      } finally {
+        setIsProcessing(false);
+      }
+    }
+    else {
+      try {
+
+
+        const paymentSession = await axios.post('/api/payment/cashfree/initiate', {
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          courseIds: displayItems.map((item: any) => item.id)
+        });
+
+        console.log("Payment Session Response:", paymentSession?.data?.paymentSession);
+        const { payment_session_id } = paymentSession?.data?.paymentSession?.data;
+        console.log("Initiating Cashfree Checkout with Session ID:", payment_session_id);
+
+        if (paymentSession?.data?.paymentSession?.success === true && payment_session_id) {
+          console.log("Payment session created successfully. Launching Cashfree Checkout...");
+
+          const cashfree = await getCashfreeInstance();
+
+          let checkOutOptions = {
+            paymentSessionId: payment_session_id,
+            redirectTarget: "_modal",
+          }
+
+
+          // use setTimeout to ensure the checkout is triggered after the current call stack is cleared and .then .catch handlers are set up properly;
+
+          setTimeout(() => {
+            cashfree.checkout(checkOutOptions)
+              .then((response: any) => {
+                console.log("Cashfree Checkout Success Response:", response);
+                toast.success("Payment Successful! Redirecting...");
+                // Redirect to order confirmation or dashboard after successful payment
+                router.push('/dashboard');
+              })
+              .catch((error: any) => {
+                console.error("Cashfree Checkout Error:", error);
+                toast.error("Payment Failed. Please try again.");
+              });
+          }, 1000);
+
+        }
+
+
+
+
+      } catch (error) {
+        toast.error("Payment Failed");
+      } finally {
+        setIsProcessing(false);
+      }
     }
   };
 
