@@ -190,6 +190,7 @@ const CheckoutContent = () => {
         });
 
         console.log("Payment Session Response:", paymentSession?.data?.paymentSession);
+        const orderId = paymentSession?.data?.orderId;
         const { payment_session_id } = paymentSession?.data?.paymentSession?.data;
         console.log("Initiating Cashfree Checkout with Session ID:", payment_session_id);
 
@@ -212,7 +213,7 @@ const CheckoutContent = () => {
                 console.log("Cashfree Checkout Success Response:", response);
                 toast.success("Payment Successful! Redirecting...");
                 // Redirect to order confirmation or dashboard after successful payment
-                router.push('/dashboard');
+                router.push(`/order-status?order_id=${orderId}`);
               })
               .catch((error: any) => {
                 console.error("Cashfree Checkout Error:", error);
