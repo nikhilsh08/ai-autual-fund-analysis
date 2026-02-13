@@ -38,7 +38,7 @@ export async function enrollUserInTrainerCentral(
         // Split name into First and Last (Required by v4 API)
         const nameParts = fullName.split(" ");
         const firstName = nameParts[0];
-        const lastName = nameParts.slice(1).join(" ") || "."; // Fallback if no last name
+        const lastName = nameParts.slice(1).join(" ") || firstName; // Fallback to firstName if no last name
 
         // CORRECT API V4 ENDPOINT
         const url = `${API_BASE_URL}/api/v4/${orgId}/addCourseAttendee.json`;
