@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google"; // Fixed import
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { CartSync } from "@/components/cart/cart-sync";
 import { Toaster } from "@/components/ui/sonner";
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+import MetaPixel from "@/components/analytics/MetaPixel";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +36,8 @@ export default function RootLayout({
           <CartSync />
           {children}
           <Toaster />
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID!} />
+          <MetaPixel pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID!} />
         </SessionProvider>
       </body>
     </html>

@@ -25,6 +25,7 @@ async function getAccessToken() {
 }
 
 export async function enrollUserInTrainerCentral(
+    type: "LIVE" | "RECORDED",
     email: string,
     fullName: string,
     tcCourseId: string
@@ -64,6 +65,15 @@ export async function enrollUserInTrainerCentral(
         return response.data;
 
     } catch (error: any) {
+        const errorData = error.response?.data;
+        const errorMessage = JSON.stringify(errorData || error.message).toLowerCase();
+
+        // Check for "already enrolled" indicators
+        if (errorMessage.includes("already") || errorMessage.includes("exists") || errorMessage.includes("duplicate")) {
+            console.log(`INFO: User ${email} is already enrolled in course ${tcCourseId}. Skipping.`);
+            return { status: "already_enrolled" };
+        }
+
         // Log the detailed error from Zoho to understand what failed
         console.error(
             "ENROLLMENT FAILED:",

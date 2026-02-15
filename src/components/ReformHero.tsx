@@ -31,7 +31,7 @@ const ReformHero = () => (
           </p>
           
           <div className="flex flex-wrap gap-4">
-            <Button variant="primary" className="h-12 px-8" >Browse Catalog</Button>
+            <Button variant="primary" className="h-12 px-8" >Buy Now</Button>
             <Button variant="outline" className="h-12 px-8 bg-white/50 backdrop-blur-sm border-zinc-200 text-zinc-900">View Syllabus</Button>
           </div>
         </div>

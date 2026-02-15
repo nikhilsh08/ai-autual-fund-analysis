@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import Image from 'next/image';
 import {
   ChevronLeft, User, Mail, Lock, Loader2, Plus, Phone, X, ShoppingBag,
-  ShieldCheck, ArrowRight, Zap
+  ShieldCheck, ArrowRight, Zap, Tag
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,7 @@ import { getUpsellRecommendations } from '@/server/actions/get-recommendations';
 import { getCourseByIdAction } from '@/server/actions/get-courses';
 import { useZwitchPayment } from '@/hooks/useZwitchPayment';
 import { getCashfreeInstance } from '@/lib/PGinitialize';
+import { validateCoupon } from '@/server/actions/coupon.action';
 import axios from 'axios';
 
 const checkoutSchema = z.object({
@@ -47,6 +48,12 @@ const CheckoutContent = () => {
   let zwitchPayment = false;
 
   const [upsellItem, setUpsellItem] = useState<any>(null);
+
+  // Coupon State
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountAmount: number; couponId: string } | null>(null);
+  const [couponError, setCouponError] = useState("");
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
 
   const taxRate = 0.18;
 
@@ -78,6 +85,7 @@ const CheckoutContent = () => {
             id: buyNowId,
             title: course.title,
             price: course.price || 0,
+            originalPrice: (course as any).originalPrice,
             thumbnail: course.thumbnail || ""
           });
         }
@@ -118,15 +126,7 @@ const CheckoutContent = () => {
     fetchUpsells();
   }, [buyNowItem, cartStore?.items]);
 
-  if (!cartStore || isLoadingBuyNow) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50">
-        <Loader2 className="w-8 h-8 animate-spin text-zinc-400" />
-      </div>
-    );
-  }
-
-  const { items, clearCart, addItem, removeItem } = cartStore;
+  const items = cartStore?.items ?? [];
   const displayItems = buyNowItem ? [buyNowItem] : items;
   const isEmpty = displayItems.length === 0;
 
@@ -137,9 +137,78 @@ const CheckoutContent = () => {
     : false;
 
   const itemsTotal = displayItems.reduce((acc: number, item: any) => acc + item.price, 0);
-  const tax = itemsTotal * taxRate;
-  const currentSubtotal = (itemsTotal - tax);
-  const total = itemsTotal;
+
+  // Totals Calculation
+  // Totals Calculation (Inclusive GST)
+  const grossTotal = itemsTotal;
+  const discount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  const total = Math.max(0, grossTotal - discount);
+  const tax = total * taxRate; // 18% of the final price (as per user example)
+  const subtotal = total - tax;
+
+  // Create a stable string of item IDs for dependency tracking
+  const itemIdsString = displayItems.map(i => i.id).sort().join(',');
+
+  // Re-validate coupon when items change
+  useEffect(() => {
+    if (appliedCoupon) {
+      validateCoupon(appliedCoupon.code, displayItems.map(i => i.id), itemsTotal)
+        .then(res => {
+          if (!res.success) {
+            setAppliedCoupon(null);
+            setCouponError("Coupon no longer valid for this order");
+            toast.error("Coupon removed: conditions not met");
+          } else {
+            // Cast to any to avoid TS issues with server action return type inference
+            const data = res.data as { code: string; discountAmount: number; couponId: string };
+            // Only update if discount changed to avoid loops
+            if (data.discountAmount !== appliedCoupon.discountAmount) {
+              setAppliedCoupon({ ...data, code: appliedCoupon.code });
+            }
+          }
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemsTotal, itemIdsString, appliedCoupon?.code]); // Stable dependencies
+
+  if (!cartStore || isLoadingBuyNow) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50">
+        <Loader2 className="w-8 h-8 animate-spin text-zinc-400" />
+      </div>
+    );
+  }
+
+  const { clearCart, addItem, removeItem } = cartStore;
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setIsValidatingCoupon(true);
+    setCouponError("");
+
+    try {
+      const courseIds = displayItems.map((item: any) => item.id);
+      const res = await validateCoupon(couponCode, courseIds, itemsTotal);
+
+      if (res.success && res.data) {
+        setAppliedCoupon(res.data as { code: string; discountAmount: number; couponId: string });
+        toast.success("Coupon applied!");
+      } else {
+        setCouponError(res.error || "Invalid coupon");
+        setAppliedCoupon(null);
+      }
+    } catch (error) {
+      setCouponError("Failed to validate coupon");
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponError("");
+  };
 
   const handleRemoveItem = (itemId: string) => {
     if (buyNowItem && itemId === buyNowItem.id) {
@@ -186,15 +255,24 @@ const CheckoutContent = () => {
           name: data.name,
           email: data.email,
           phone: data.phone,
-          courseIds: displayItems.map((item: any) => item.id)
+          courseIds: displayItems.map((item: any) => item.id),
+          couponCode: appliedCoupon?.code,
+          // Capture UTMs
+          utmParams: {
+            utmSource: searchParams.get('utm_source') || undefined,
+            utmMedium: searchParams.get('utm_medium') || undefined,
+            utmCampaign: searchParams.get('utm_campaign') || undefined,
+            utmTerm: searchParams.get('utm_term') || undefined,
+            utmContent: searchParams.get('utm_content') || undefined,
+          }
         });
 
         console.log("Payment Session Response:", paymentSession?.data?.paymentSession);
         const orderId = paymentSession?.data?.orderId;
-        const { payment_session_id } = paymentSession?.data?.paymentSession?.data;
+        const payment_session_id = paymentSession?.data?.paymentSession?.payment_session_id;
         console.log("Initiating Cashfree Checkout with Session ID:", payment_session_id);
 
-        if (paymentSession?.data?.paymentSession?.success === true && payment_session_id) {
+        if (paymentSession?.data?.success === true && payment_session_id) {
           console.log("Payment session created successfully. Launching Cashfree Checkout...");
 
           const cashfree = await getCashfreeInstance();
@@ -227,6 +305,7 @@ const CheckoutContent = () => {
 
 
       } catch (error) {
+        console.error("Payment Error:", error);
         toast.error("Payment Failed");
       } finally {
         setIsProcessing(false);
@@ -343,7 +422,12 @@ const CheckoutContent = () => {
                       <div className="flex-1 flex flex-col justify-center pr-6">
                         <div className="font-medium text-zinc-900 text-sm leading-tight line-clamp-2 mb-1">{item.title}</div>
                         <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2">Course</div>
-                        <div className="font-mono text-zinc-900 text-sm font-medium">₹{item.price}</div>
+                        <div className="font-mono text-zinc-900 text-sm font-medium">
+                          {item.originalPrice > item.price && (
+                            <span className="text-zinc-400 line-through text-xs mr-2">₹{item.originalPrice}</span>
+                          )}
+                          ₹{item.price}
+                        </div>
                       </div>
                       <button
                         onClick={() => handleRemoveItem(item.id)}
@@ -355,16 +439,50 @@ const CheckoutContent = () => {
                   ))}
                 </div>
 
+
+
+                {/* Coupon Input */}
+                <div className="pt-6 border-t border-zinc-100">
+                  <label className="block text-xs font-medium text-zinc-700 uppercase mb-2">Coupon Code</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      disabled={!!appliedCoupon}
+                      placeholder="ENTER CODE"
+                      className="flex-1 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 uppercase"
+                    />
+                    {appliedCoupon ? (
+                      <Button onClick={removeCoupon} variant="outline" size="sm" className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700">
+                        Remove
+                      </Button>
+                    ) : (
+                      <Button onClick={handleApplyCoupon} disabled={!couponCode || isValidatingCoupon} size="sm" className="bg-zinc-900 text-white hover:bg-zinc-800">
+                        {isValidatingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply"}
+                      </Button>
+                    )}
+                  </div>
+                  {couponError && <p className="text-red-500 text-xs mt-1">{couponError}</p>}
+                  {appliedCoupon && <p className="text-green-600 text-xs mt-1 flex items-center gap-1"><Tag size={12} /> Coupon applied successfully!</p>}
+                </div>
+
                 <div className="space-y-3 pt-6 border-t border-zinc-100 text-sm">
                   <div className="flex justify-between text-zinc-500">
                     <span>Subtotal</span>
-                    <span>₹{currentSubtotal.toFixed(2)}</span>
+                    <span>₹{subtotal.toFixed(2)}</span>
                   </div>
+                  {appliedCoupon && (
+                    <div className="flex justify-between text-green-600 font-medium">
+                      <span>Discount ({appliedCoupon.code})</span>
+                      <span>-₹{discount.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-zinc-500">
                     <span>GST (18%)</span>
                     <span>₹{tax.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-lg font-medium text-zinc-900 pt-2">
+                  <div className="flex justify-between text-lg font-medium text-zinc-900 pt-2 border-t border-zinc-100">
                     <span>Total</span>
                     <span>₹{total.toFixed(2)}</span>
                   </div>

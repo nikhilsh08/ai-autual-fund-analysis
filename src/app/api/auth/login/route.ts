@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
         password,
         redirect: false,
       });
-      
+
     } catch (error) {
       if (error instanceof AuthError) {
         switch (error.type) {
@@ -33,21 +33,16 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
         }
       }
-      throw error; 
+      throw error;
     }
 
-    const session = await auth();
-
-    if (!session) {
-      return NextResponse.json(
-        { error: "Authentication successful but session not found" },
-        { status: 500 }
-      );
-    }
+    // We don't call auth() here because it reads the *incoming* request cookies,
+    // which won't have the new session cookie yet.
+    // If signIn didn't throw, the login was successful.
 
     return NextResponse.json({
       message: "Login successful",
-      user: session.user,
+      // user: session.user, // Cannot return user immediately without reading DB again or decoding token manually
     }, { status: 200 });
 
   } catch (error) {

@@ -1,59 +1,60 @@
-import { Button } from "./ui/button";
-
-
+// src/components/footer.tsx
+import Link from "next/link";
 
 export const Footer = () => (
-  <footer className="py-20 bg-zinc-50 border-t border-zinc-200 text-sm">
+  <footer className="py-20 bg-white border-t border-zinc-200 text-sm">
     <div className="max-w-7xl mx-auto px-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-20">
-        <div className="col-span-2 lg:col-span-2">
-          <div className="flex items-center gap-2 font-bold text-lg text-zinc-900 mb-6">
-            <div className="w-5 h-5 bg-black rounded-sm flex items-center justify-center">
-              <div className="w-2.5 h-2.5 bg-white rounded-full" />
-            </div>
-            CFC ACADEMY
-          </div>
-          <p className="text-zinc-500 max-w-xs mb-8">
-            The learning platform for ambitious developers. Master your craft with institutional-grade resources.
-          </p>
-          <div className="flex gap-4">
-             <Button variant="secondary" className="py-2 px-4 h-auto text-xs bg-white">Join Discord</Button>
-          </div>
-        </div>
-        
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
+
+        {/* Brand Column */}
         <div>
-           <h4 className="font-medium text-zinc-900 mb-6">Platform</h4>
-           <ul className="space-y-4 text-zinc-500">
-             <li><a href="#" className="hover:text-zinc-900 transition-colors">Courses</a></li>
-             <li><a href="#" className="hover:text-zinc-900 transition-colors">Workshops</a></li>
-             <li><a href="#" className="hover:text-zinc-900 transition-colors">Pricing</a></li>
-           </ul>
+          <h3 className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 font-bold text-lg mb-6">CashFlowCrew</h3>
+          <p className="text-zinc-500 leading-relaxed">
+            Empowering individuals with professional-grade mutual fund investment knowledge and strategies.
+          </p>
         </div>
 
+        {/* Quick Links Column */}
         <div>
-           <h4 className="font-medium text-zinc-900 mb-6">Company</h4>
-           <ul className="space-y-4 text-zinc-500">
-             <li><a href="#" className="hover:text-zinc-900 transition-colors">About</a></li>
-             <li><a href="#" className="hover:text-zinc-900 transition-colors">Careers</a></li>
-             <li><a href="#" className="hover:text-zinc-900 transition-colors">Blog</a></li>
-           </ul>
+          <h4 className="font-medium text-zinc-900 mb-6">Quick Links</h4>
+          <ul className="space-y-4 text-zinc-500">
+            <li><Link href="/delivery-policy" className="hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-600 hover:to-indigo-600 transition-colors">Delivery Policy</Link></li>
+            <li><Link href="/contact-us" className="hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-600 hover:to-indigo-600 transition-colors">Workshop Details</Link></li>
+            <li><Link href="#" className="hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-600 hover:to-indigo-600 transition-colors">FAQs</Link></li>
+          </ul>
         </div>
-        
+
+        {/* Legal Column */}
         <div>
-           <h4 className="font-medium text-zinc-900 mb-6">Legal</h4>
-           <ul className="space-y-4 text-zinc-500">
-             <li><a href="#" className="hover:text-zinc-900 transition-colors">Privacy</a></li>
-             <li><a href="#" className="hover:text-zinc-900 transition-colors">Terms</a></li>
-           </ul>
+          <h4 className="font-medium text-zinc-900 mb-6">Legal</h4>
+          <ul className="space-y-4 text-zinc-500">
+            <li><Link href="/privacy-policy" className="hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-600 hover:to-indigo-600 transition-colors">Privacy Policy</Link></li>
+            <li><Link href="/terms-conditions" className="hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-600 hover:to-indigo-600 transition-colors">Terms & Conditions</Link></li>
+            <li><Link href="/refund-policy" className="hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-600 hover:to-indigo-600 transition-colors">Refund Policy</Link></li>
+            <li><Link href="/delivery-policy" className="hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-600 hover:to-indigo-600 transition-colors">Delivery Policy</Link></li>
+            <li><Link href="/contact-us" className="hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-600 hover:to-indigo-600 transition-colors">Contact us</Link></li>
+          </ul>
+        </div>
+
+        {/* Contact Us Column */}
+        <div>
+          <h4 className="font-medium text-zinc-900 mb-6">Contact Us</h4>
+          <ul className="space-y-4 text-zinc-500">
+            <li><a href="mailto:support@cashflowcrew.in" className="hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-600 hover:to-indigo-600 transition-colors">support@cashflowcrew.in</a></li>
+            <li className="font-medium text-zinc-900">CollaBroot Marketing Private Limited</li>
+            <li className="leading-relaxed">
+              3rd Floor, Vision Comptech Integrators Limited, Time Square, 106 Sushant Lok Phase 1, B-Block<br />
+              Gurugram, Haryana, 122009
+            </li>
+          </ul>
         </div>
       </div>
-      
+
+      {/* Bottom Bar */}
       <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-zinc-200 text-zinc-500 text-xs">
-        <div>&copy; 2024 CashFlowCrew Academy. All rights reserved.</div>
-        <div className="flex gap-6 mt-4 md:mt-0">
-          <span>San Francisco</span>
-          <span>Tokyo</span>
-          <span>London</span>
+        <div>&copy; 2026 CashFlowCrew. All rights reserved.</div>
+        <div className="mt-4 md:mt-0">
+          <Link href="#" className="hover:text-zinc-900 transition-colors">Cookie Policy</Link>
         </div>
       </div>
     </div>

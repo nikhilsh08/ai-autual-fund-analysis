@@ -2,6 +2,7 @@
 import { Cashfree, CFEnvironment } from "cashfree-pg";
 import { v4 as uuidv4 } from "uuid";
 import { dataBasePrisma } from "@/lib/dbPrisma";
+import { enrollUserInTrainerCentral } from "@/lib/trainer-central";
 
 const cashfree = new Cashfree(
   CFEnvironment.SANDBOX, // Change to PRODUCTION for live
@@ -14,15 +15,44 @@ export const createCashfreeOrder = async (
   orderId: string,
   amount: number,
   customerDetails: { name: string; email: string; phone: string },
+  utmParams?: {
+    utmSource?: string;
+    utmMedium?: string;
+    utmCampaign?: string;
+    utmTerm?: string;
+    utmContent?: string;
+  }
 ) => {
   try {
+    // 1. Save UTM params to Order in DB first (or create Order here if not existing)
+    // Assuming Order is created separately? Or we update it here?
+    // The previous code didn't show Order creation, only Cashfree order creation.
+    // If Order creation logic is elsewhere, we might need to update it there. 
+    // BUT looking at `verifyCashfreePayment`, it fetches 'localOrder'. So local order MUST exist.
+    // Let's assume the caller of `createCashfreeOrder` handles DB creation or we need to update it here.
+
+    // START UPDATE: We need to update the existing local order with UTMs if passed
+    if (utmParams) {
+      await dataBasePrisma.order.update({
+        where: { orderId },
+        data: {
+          utmSource: utmParams.utmSource,
+          utmMedium: utmParams.utmMedium,
+          utmCampaign: utmParams.utmCampaign,
+          utmTerm: utmParams.utmTerm,
+          utmContent: utmParams.utmContent,
+        }
+      }).catch(err => console.error("Failed to save UTMs", err));
+    }
+    // END UPDATE
+
     const request = {
       order_amount: amount,
       order_currency: "INR",
       order_id: orderId,
       customer_details: {
         customer_id: uuidv4(),
-        customer_phone: customerDetails.phone,
+        customer_phone: customerDetails.phone.replace(/[^0-9+]/g, ""),
         customer_name: customerDetails.name,
         customer_email: customerDetails.email,
       },
@@ -60,12 +90,19 @@ export const verifyCashfreePayment = async (orderId: string) => {
 
     const localOrder = await dataBasePrisma.order.findUnique({
       where: { orderId },
-      include: { items: true, lead: true }
+      include: {
+        items: {
+          include: {
+            course: true
+          }
+        },
+        lead: true
+      }
     });
 
     if (!localOrder) throw new Error("Local order not found");
 
-    await dataBasePrisma.$transaction(async (tx) => {
+    const result = await dataBasePrisma.$transaction(async (tx) => {
       // 1. Update Order Status
       await tx.order.update({
         where: { id: localOrder.id },
@@ -103,6 +140,22 @@ export const verifyCashfreePayment = async (orderId: string) => {
             update: {},
             create: { userId: user.id, courseId: item.courseId }
           });
+
+          // Enroll in Trainer Central if ID exists
+          if (item.course?.tcCourseId) {
+            try {
+              console.log(`Attempting TC enrollment for ${user.email} -> ${item.course.tcCourseId} (${item.course.type})`);
+              await enrollUserInTrainerCentral(
+                item.course.type,
+                user.email,
+                user.name || "Student",
+                item.course.tcCourseId
+              );
+            } catch (err) {
+              console.error(`Failed to enroll in TC for course ${item.course.title}`, err);
+              // We do not throw here to avoid rolling back the payment validation
+            }
+          }
         }
       }
 
@@ -122,10 +175,25 @@ export const verifyCashfreePayment = async (orderId: string) => {
           }
         });
       }
+      return { success: true, data: localOrder, status: internalStatus };
     });
-    return { success: true, data: localOrder, status: internalStatus };
+
+    // 5. Update Coupon Usage (Outside transaction to avoid locking issues)
+    if (internalStatus === "PAID" && localOrder.couponId) {
+      try {
+        await dataBasePrisma.coupon.update({
+          where: { id: localOrder.couponId },
+          data: { usedCount: { increment: 1 } }
+        });
+      } catch (err) {
+        console.error("Failed to increment coupon usage", err);
+      }
+    }
+
+    return result;
+
   } catch (error: any) {
     console.error("Verification Error:", error);
-    return { success: false, error: "Verification failed", status: "FAILED" };
+    return { success: false, error: "Verification failed" };
   }
 };

@@ -107,6 +107,7 @@ model Course {
   description String
   thumbnail   String?
   price       Float
+  originalPrice Float? // NEW: For "Compare at" price
   isPublished Boolean    @default(false)
   type        CourseType @default(RECORDED)
 
@@ -167,9 +168,19 @@ model Order {
   // Snapshot Data (Safety backup)
   guestEmail String?
   guestPhone String? // Added for snapshot
+  
+  // Analytics / UTM Tracking
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmTerm     String?
+  utmContent  String?
 
   items       OrderItem[]
   totalAmount Float
+  discountAmount Float @default(0)
+  couponId    String?  @db.ObjectId
+  
   status      OrderStatus @default(PENDING)
 
   orderId   String? @unique
@@ -215,4 +226,24 @@ model Purchase {
   createdAt DateTime @default(now())
 
   @@unique([userId, courseId])
+}
+
+model Coupon {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  code        String   @unique
+  discount    Float
+  discountType String  // "PERCENTAGE" or "FIXED"
+  expiryDate  DateTime
+  usageLimit  Int?
+  usedCount   Int      @default(0)
+  minAmount   Float    @default(0)
+  maxDiscount Float?   // For percentage
+  description String?
+  isEnabled   Boolean  @default(true)
+  
+  // Relation to courses (optional, if empty applies to all)
+  applicableCourseIds String[] @db.ObjectId
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

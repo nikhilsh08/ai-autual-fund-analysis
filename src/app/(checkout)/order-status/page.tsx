@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { CheckCircle2, XCircle, AlertCircle, ShoppingBag, ArrowRight } from 'lucide-react';
 import { redirect } from 'next/navigation';
+import PurchaseEvent from '@/components/analytics/PurchaseEvent';
 
 export default async function OrderStatusPage({
     searchParams,
@@ -15,15 +16,44 @@ export default async function OrderStatusPage({
         redirect('/');
     }
 
-    const verification = await verifyCashfreePayment(orderId);
+    const verification = await verifyCashfreePayment(orderId) as any;
 
     // If status is paid, we show success
     const isSuccess = verification.success && verification.status === 'PAID';
     const isPending = verification.status === 'PENDING';
     const isFailed = verification.status === 'FAILED';
+    const orderData = verification.data;
+
+    // Prepare purchase event data
+    const purchaseEventData = isSuccess && orderData ? {
+        amount: orderData.totalAmount,
+        currency: "INR",
+        transactionId: orderData.paymentId || orderData.id,
+        items: orderData.items.map((item: any) => ({
+            item_id: item.courseId,
+            item_name: item.course?.title || "Course",
+            price: item.price
+        })),
+        utm: {
+            source: orderData.utmSource || undefined,
+            medium: orderData.utmMedium || undefined,
+            campaign: orderData.utmCampaign || undefined,
+            term: orderData.utmTerm || undefined,
+            content: orderData.utmContent || undefined,
+        }
+    } : null;
 
     return (
         <div className="min-h-screen pt-24 pb-12 px-4 bg-zinc-50 flex items-center justify-center">
+            {purchaseEventData && (
+                <PurchaseEvent
+                    amount={purchaseEventData.amount}
+                    currency={purchaseEventData.currency}
+                    transactionId={purchaseEventData.transactionId}
+                    items={purchaseEventData.items}
+                    utm={purchaseEventData.utm}
+                />
+            )}
             <div className="max-w-md w-full bg-white rounded-3xl shadow-sm border border-zinc-200 p-8 text-center">
                 {isSuccess ? (
                     <div className="space-y-6">
