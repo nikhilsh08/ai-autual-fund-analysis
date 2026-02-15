@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/server/auth/auth";
-import { prisma } from "@/lib/dbPrisma";
+import { dataBasePrisma as prisma } from "@/lib/dbPrisma";
 
 // create category 
 export async function POST(request: Request) {
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json({success:true, category});
+    return NextResponse.json({ success: true, category });
   } catch (error) {
     console.log("[CATEGORY_POST]", error);
     return new NextResponse("Internal Error", { status: 500 });
@@ -52,7 +52,7 @@ export async function PATCH(request: Request) {
       },
     });
 
-    return NextResponse.json({success:true, category});
+    return NextResponse.json({ success: true, category });
   } catch (error) {
     console.log("[CATEGORY_PATCH]", error);
     return new NextResponse("Internal Error", { status: 500 });

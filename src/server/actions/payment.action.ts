@@ -1,3 +1,4 @@
+"use server"
 // server/actions/payment.action.ts
 import { Cashfree, CFEnvironment } from "cashfree-pg";
 import { v4 as uuidv4 } from "uuid";
@@ -42,7 +43,7 @@ export const createCashfreeOrder = async (
           utmTerm: utmParams.utmTerm,
           utmContent: utmParams.utmContent,
         }
-      }).catch(err => console.error("Failed to save UTMs", err));
+      }).catch((err: any) => console.error("Failed to save UTMs", err));
     }
     // END UPDATE
 
@@ -102,7 +103,7 @@ export const verifyCashfreePayment = async (orderId: string) => {
 
     if (!localOrder) throw new Error("Local order not found");
 
-    const result = await dataBasePrisma.$transaction(async (tx) => {
+    const result = await dataBasePrisma.$transaction(async (tx: any) => {
       // 1. Update Order Status
       await tx.order.update({
         where: { id: localOrder.id },

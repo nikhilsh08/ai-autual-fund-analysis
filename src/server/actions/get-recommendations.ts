@@ -15,13 +15,14 @@ export async function getUpsellRecommendations(currentCourseIds: string[]) {
         categoryId: true
       }
     });
-    
+
     // Extract unique Category IDs (e.g., ["coding-id", "design-id"])
-    const categoryIds = [...new Set(currentCourses.map(c => c.categoryId))];
+    const categoryIds = [...new Set(currentCourses.map((c: any) => c.categoryId))];
 
     if (categoryIds.length === 0) return [];
 
     // 2. Find other courses in the same categories
+    console.log("Searching for upsells in categories:", categoryIds, "Excluding:", currentCourseIds);
     const recommendations = await dataBasePrisma.course.findMany({
       where: {
         isPublished: true,
@@ -39,6 +40,8 @@ export async function getUpsellRecommendations(currentCourseIds: string[]) {
         thumbnail: true,
       }
     });
+
+    console.log("Found upsell recommendations:", recommendations);
 
     return recommendations;
   } catch (error) {

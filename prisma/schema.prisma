@@ -108,11 +108,15 @@ model Course {
   thumbnail   String?
   price       Float
   originalPrice Float? // NEW: For "Compare at" price
-  isPublished Boolean    @default(false)
+  isPublished Boolean    @default(true)
   type        CourseType @default(RECORDED)
 
   // The "Different UI" Field
   theme String @default("standard")
+
+  slug        String   @unique
+  staticRoute String?  @unique
+  visibility  String   @default("show")
 
   // TrainerCentral Links
   tcCourseId  String  @unique

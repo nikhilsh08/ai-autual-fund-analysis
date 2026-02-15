@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, CheckCircle, FileText, AlertCircle } from 'lucide-react';
 import axios from 'axios';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 
 export const Popup: React.FC = () => {
@@ -16,7 +16,7 @@ export const Popup: React.FC = () => {
       const scrollTop = window.scrollY;
       const docHeight = document.documentElement.scrollHeight;
       const winHeight = window.innerHeight;
-      
+
       // Calculate scroll percentage (0 to 1)
       const scrollPercent = scrollTop / (docHeight - winHeight);
 
@@ -28,7 +28,7 @@ export const Popup: React.FC = () => {
     };
 
     window.addEventListener('scroll', handleScroll);
-    
+
     // Check immediately in case page is loaded already scrolled
     handleScroll();
 
@@ -46,7 +46,7 @@ export const Popup: React.FC = () => {
 
     // Basic regex check for format
     const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    
+
     if (!email.match(emailRegex)) {
       setError('Please enter a valid email address');
       return;
@@ -55,18 +55,18 @@ export const Popup: React.FC = () => {
     // Strict domain check
     const allowedDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'live.com'];
     const domain = email.split('@')[1]?.toLowerCase();
-    
+
     if (!domain || !allowedDomains.includes(domain)) {
       setError('Please enter a valid email address');
       return;
     }
 
-        try {
-      const res = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/v1/email/newletter`, { email: email});
+    try {
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/v1/email/newletter`, { email: email });
       // console.log("apply coupon res", res.data);
       if (res.data.success) {
         setIsSubmitted(true);
-  
+
       }
 
 
@@ -88,9 +88,9 @@ export const Popup: React.FC = () => {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-all duration-300 animate-in fade-in">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full relative overflow-hidden transform transition-all scale-100 animate-in zoom-in-95 duration-200">
-        
+
         {/* Close Button */}
-        <button 
+        <button
           onClick={() => setIsOpen(false)}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors p-1 bg-gray-50 rounded-full hover:bg-gray-100 z-10"
         >
@@ -107,7 +107,7 @@ export const Popup: React.FC = () => {
               <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-6 mx-auto">
                 <FileText className="w-8 h-8 text-blue-600" />
               </div>
-              
+
               <h2 className="text-2xl font-bold text-slate-900 mb-2 leading-tight">
                 Get <span className="text-blue-600">3 free investment checklists</span>
               </h2>
@@ -125,11 +125,10 @@ export const Popup: React.FC = () => {
                       placeholder="Enter your email address"
                       value={email}
                       onChange={handleEmailChange}
-                      className={`w-full px-4 py-3 border rounded-lg outline-none transition-all text-sm text-gray-900 bg-white placeholder:text-gray-400 ${
-                        error 
-                          ? 'border-red-300 focus:ring-2 focus:ring-red-200 focus:border-red-400 bg-red-50' 
-                          : 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg outline-none transition-all text-sm text-gray-900 bg-white placeholder:text-gray-400 ${error
+                        ? 'border-red-300 focus:ring-2 focus:ring-red-200 focus:border-red-400 bg-red-50'
+                        : 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                        }`}
                     />
                     {error && (
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -143,7 +142,7 @@ export const Popup: React.FC = () => {
                     </p>
                   )}
                 </div>
-                <button type="submit"  className="text-base py-3 w-full shadow-blue-200 !bg-none !bg-blue-600 hover:!bg-blue-700 relative inline-flex items-center justify-center font-bold text-white uppercase tracking-wide transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg rounded-md overflow-hidden bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600">
+                <button type="submit" className="text-base py-3 w-full shadow-blue-200 !bg-none !bg-blue-600 hover:!bg-blue-700 relative inline-flex items-center justify-center font-bold text-white uppercase tracking-wide transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg rounded-md overflow-hidden bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600">
                   Send me the PDFs
                 </button>
                 <p className="text-[10px] text-center text-gray-400 mt-4">
@@ -162,8 +161,8 @@ export const Popup: React.FC = () => {
               <p className="text-gray-600 leading-relaxed text-sm">
                 We've sent a confirmation link to <span className="font-semibold text-slate-800">{email}</span>. Click it to unlock your downloads.
               </p>
-              
-              <button 
+
+              <button
                 onClick={() => setIsOpen(false)}
                 className="mt-8 text-sm text-blue-600 font-semibold hover:text-blue-700 underline underline-offset-2"
               >

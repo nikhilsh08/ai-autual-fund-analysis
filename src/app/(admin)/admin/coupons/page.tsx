@@ -44,7 +44,7 @@ export default function CouponsPage() {
                 ]);
 
                 if (couponsRes.success) {
-                    setCoupons(couponsRes.data);
+                    setCoupons(couponsRes.data || []);
                 }
                 if (coursesRes) {
                     setCourses(coursesRes);
@@ -67,9 +67,15 @@ export default function CouponsPage() {
         reset,
         formState: { errors, isSubmitting },
     } = useForm<CouponFormValues>({
-        resolver: zodResolver(couponSchema),
+        resolver: zodResolver(couponSchema) as any,
         defaultValues: {
+            code: "",
+            discount: 0,
             discountType: "PERCENTAGE",
+            expiryDate: "",
+            usageLimit: undefined,
+            minAmount: undefined,
+            description: "",
             applicableCourseIds: [],
         },
     });

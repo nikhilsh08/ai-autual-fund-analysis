@@ -1,7 +1,11 @@
 import React from "react";
 import { CheckCircle } from "lucide-react";
 
-export const MoneyBackGuarantee: React.FC = () => {
+interface MoneyBackGuaranteeProps {
+  onEnroll?: () => void;
+}
+
+export const MoneyBackGuarantee: React.FC<MoneyBackGuaranteeProps> = ({ onEnroll }) => {
 
 
   return (
@@ -40,7 +44,8 @@ export const MoneyBackGuarantee: React.FC = () => {
             </div>
 
             <button
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xl font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-200"
+              onClick={onEnroll}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xl font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-200 cursor-pointer"
             >
               Enroll Risk-Free! Get an Exclusive Discount Today
             </button>
