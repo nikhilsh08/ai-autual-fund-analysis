@@ -12,6 +12,17 @@ export const {
 } = NextAuth({
   adapter: PrismaAdapter(dataBasePrisma) as any,
   session: { strategy: "jwt" },
+  cookies: {
+    sessionToken: {
+      name: `authjs.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'none',
+        path: '/',
+        secure: true,
+      },
+    },
+  },
   pages: {
     signIn: "/sign-in",
     error: "/error",
@@ -35,7 +46,7 @@ export const {
 
       // For credentials, verify email if needed
       if (!user.id) return false;
-      
+
       const existingUser = await dataBasePrisma.user.findUnique({
         where: { id: user.id },
       });
@@ -52,7 +63,7 @@ export const {
       if (token.sub && session.user) {
         session.user.id = token.sub;
       }
-      
+
       if (token.role && session.user) {
         session.user.role = token.role as Role;
       }

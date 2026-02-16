@@ -4,7 +4,21 @@ import axios from 'axios';
 import { toast } from 'sonner';
 
 
-export const Popup: React.FC = () => {
+interface PopupProps {
+  title?: string;
+  highlightedText?: string;
+  description?: string;
+  buttonText?: string;
+  apiEndpoint?: string;
+}
+
+export const Popup: React.FC<PopupProps> = ({
+  title = "Get",
+  highlightedText = "3 free investment checklists",
+  description = "& join CashFlowCrew's mailing list, to master your personal finances",
+  buttonText = "Send me the PDFs",
+  apiEndpoint = "/api/v1/email/newletter"
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [email, setEmail] = useState('');
@@ -62,7 +76,7 @@ export const Popup: React.FC = () => {
     }
 
     try {
-      const res = await axios.post(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/v1/email/newletter`, { email: email });
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_APP_URL || ''}${apiEndpoint}`, { email: email });
       // console.log("apply coupon res", res.data);
       if (res.data.success) {
         setIsSubmitted(true);
@@ -109,10 +123,10 @@ export const Popup: React.FC = () => {
               </div>
 
               <h2 className="text-2xl font-bold text-slate-900 mb-2 leading-tight">
-                Get <span className="text-blue-600">3 free investment checklists</span>
+                {title} <span className="text-blue-600">{highlightedText}</span>
               </h2>
               <p className="text-gray-600 mb-8 text-sm">
-                & join CashFlowCrew's mailing list, to master your personal finances
+                {description}
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-4 text-left" noValidate>
@@ -143,7 +157,7 @@ export const Popup: React.FC = () => {
                   )}
                 </div>
                 <button type="submit" className="text-base py-3 w-full shadow-blue-200 !bg-none !bg-blue-600 hover:!bg-blue-700 relative inline-flex items-center justify-center font-bold text-white uppercase tracking-wide transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg rounded-md overflow-hidden bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600">
-                  Send me the PDFs
+                  {buttonText}
                 </button>
                 <p className="text-[10px] text-center text-gray-400 mt-4">
                   Join 15,000+ investors. Unsubscribe at any time.

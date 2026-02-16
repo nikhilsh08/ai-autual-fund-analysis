@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { signIn, auth } from "@/server/auth/auth";
 import { loginSchema } from "@/server/auth/schemas/auth.schema";
 import { AuthError } from "next-auth";
+import { dataBasePrisma } from "@/lib/dbPrisma";
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,13 +37,34 @@ export async function POST(request: NextRequest) {
       throw error;
     }
 
-    // We don't call auth() here because it reads the *incoming* request cookies,
-    // which won't have the new session cookie yet.
     // If signIn didn't throw, the login was successful.
+    // Fetch user to return details as requested
+    const user = await dataBasePrisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        role: true,
+      }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found after login" }, { status: 500 });
+    }
 
     return NextResponse.json({
+      success: true,
       message: "Login successful",
-      // user: session.user, // Cannot return user immediately without reading DB again or decoding token manually
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        role: user.role,
+        isAdmin: user.role === "ADMIN"
+      }
     }, { status: 200 });
 
   } catch (error) {

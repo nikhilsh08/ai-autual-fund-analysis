@@ -1,0 +1,433 @@
+﻿
+> ai-autual-fund-analysis@0.1.0 lint
+> eslint
+
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\Utils\zwitch-utils.ts
+   10:28  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   12:20  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   19:39  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   19:63  warning  'secretkey' is defined but never used     @typescript-eslint/no-unused-vars
+   31:39  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   37:53  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   37:67  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   74:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   88:70  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  105:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  114:74  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  131:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\(admin)\admin\coupons\page.tsx
+   8:48  warning  'Check' is defined but never used         @typescript-eslint/no-unused-vars
+  33:44  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  34:44  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  53:22  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  70:48  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\(auth)\sign-in\page.tsx
+    9:10  warning  'Github' is defined but never used                               @typescript-eslint/no-unused-vars
+  164:14  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\(checkout)\checkout\page.tsx
+   45:48  error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+   48:7   error    'zwitchPayment' is never reassigned. Use 'const' instead                                                      prefer-const
+   50:48  error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+   88:39  error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+  127:6   warning  React Hook useEffect has a missing dependency: 'cartStore'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  139:62  error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+  190:49  error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+  200:14  warning  'error' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+  244:16  warning  'error' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+  258:46  error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+  280:15  error    'checkOutOptions' is never reassigned. Use 'const' instead                                                    prefer-const
+  290:32  error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+  296:30  error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+  337:35  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                               react/no-unescaped-entities
+  415:44  error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\(checkout)\order-status\page.tsx
+   4:46  warning  'ShoppingBag' is defined but never used        @typescript-eslint/no-unused-vars
+  19:66  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  24:11  warning  'isFailed' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  32:43  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\(marketing)\contact-us\page.tsx
+  25:67   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  25:109  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\(marketing)\delivery-policy\page.tsx
+   47:61   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   69:56   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   89:64   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  125:203  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\(marketing)\privacy-policy\page.tsx
+  60:41  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\(marketing)\refund-policy\page.tsx
+  35:43   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  35:116  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\(shop)\cart\page.tsx
+   9:10  warning  'toast' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+  24:48  error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+  51:6   warning  React Hook useEffect has a missing dependency: 'cartStore'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\(shop)\course\[slug]\page.tsx
+  9:7  error  'course' is never reassigned. Use 'const' instead  prefer-const
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\api\admin\coupons\[couponId]\route.ts
+  23:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  53:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\api\admin\coupons\route.ts
+  18:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  39:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\api\auth\login\route.ts
+  2:18  warning  'auth' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\api\payment\cashfree\initiate\route.ts
+  138:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\api\payment\cashfree\verify\route.ts
+  19:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\api\payment\cashfree\webhook\route.ts
+  55:76  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  58:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\api\zwitch\initiate\route.ts
+   4:10  warning  'AuthService' is defined but never used     @typescript-eslint/no-unused-vars
+  14:41  warning  'city' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  14:47  warning  'Event' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  65:19  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\api\zwitch\verify\route.ts
+  48:11  warning  'isSuccess' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  69:19  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\payment\callback\page.tsx
+   5:41  warning  'AlertCircle' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  19:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\payment\callback\page.tsx:19:13
+  17 |     useEffect(() => {
+  18 |         if (!orderId) {
+> 19 |             setStatus('FAILED');
+     |             ^^^^^^^^^ Avoid calling setState() directly within an effect
+  20 |             setMessage('Order ID not found');
+  21 |             return;
+  22 |         }  react-hooks/set-state-in-effect
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\app\test\page.tsx
+  11:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\Coursecard.tsx
+   3:10  warning  'Check' is defined but never used         @typescript-eslint/no-unused-vars
+  12:49  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:29  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\FeaturedBento.tsx
+  2:10  warning  'Button' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\TestimonialGrid.tsx
+  15:18   error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  15:73   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  15:95   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  15:136  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  38:89   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\analytics\MetaPixel.tsx
+  14:20  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  41:14  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+  43:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\analytics\PurchaseEvent.tsx
+  37:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  54:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  55:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\navbar.tsx
+  12:7  warning  'LogoIcon' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\ModernTemplate.tsx
+  3:27  warning  'course' is defined but never used           @typescript-eslint/no-unused-vars
+  3:35  warning  'recommendations' is defined but never used  @typescript-eslint/no-unused-vars
+  3:54  error    Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\MutualFound-BentoTheme\components\FAQ.tsx
+   3:22   warning  'ChevronDown' is defined but never used                          @typescript-eslint/no-unused-vars
+  40:41   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  40:72   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  41:34   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  41:77   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  42:78   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  42:150  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  46:43   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  46:130  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  52:130  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  56:27   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  56:65   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  56:182  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  56:202  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  57:42   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\MutualFound-BentoTheme\components\GuiltActivation.tsx
+    3:24   warning  'AlertCircle' is defined but never used                          @typescript-eslint/no-unused-vars
+    3:81   warning  'Coffee' is defined but never used                               @typescript-eslint/no-unused-vars
+   60:16   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   68:26   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   68:119  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+   68:137  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+   69:122  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+   69:126  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   69:155  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+   70:134  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+   70:150  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+   71:59   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   72:26   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   72:160  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+   72:163  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   72:180  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+   88:19   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   88:46   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   89:89   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  116:20   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\MutualFound-BentoTheme\components\Hero.tsx
+  112:129  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\MutualFound-BentoTheme\components\IncentiveProblem.tsx
+    3:51   warning  'Quote' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+   45:61   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+   45:68   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+   59:16   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+   70:13   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+   70:69   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+   81:95   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+   81:127  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  116:104  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  116:210  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  172:115  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\MutualFound-BentoTheme\components\InformationAsymmetry.tsx
+   51:190  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+   51:197  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+   68:48   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   72:105  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  164:103  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  164:113  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  164:183  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  166:17   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\MutualFound-BentoTheme\components\Navbar.tsx
+  8:49  warning  'theme' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\MutualFound-BentoTheme\components\Pricing.tsx
+   3:24   warning  'IndianRupee' is defined but never used                          @typescript-eslint/no-unused-vars
+   3:49   warning  'ShieldCheck' is defined but never used                          @typescript-eslint/no-unused-vars
+  58:203  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  61:15   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  61:19   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  61:40   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  61:47   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  61:53   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  61:132  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\MutualFound-BentoTheme\components\ProofItWorks.tsx
+   3:10   warning  'Quote' is defined but never used                                @typescript-eslint/no-unused-vars
+  23:115  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  23:123  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  99:120  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  99:129  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  99:152  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\MutualFound-BentoTheme\components\TheDecision.tsx
+    3:33   warning  'ArrowRight' is defined but never used                           @typescript-eslint/no-unused-vars
+   94:120  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+   94:129  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  139:152  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\MutualFound-BentoTheme\components\VerificationCapability.tsx
+   67:24   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   67:62   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   67:175  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   68:88   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  139:50   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\MutualFound-BentoTheme\components\WhatWeSacrifice.tsx
+    3:10   warning  'XCircle' is defined but never used                              @typescript-eslint/no-unused-vars
+   40:24   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   88:171  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+   88:188  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  117:19   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  117:71   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  117:88   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  124:112  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  124:138  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  128:112  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  128:145  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  135:15   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  135:79   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  135:138  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  135:167  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\MutualFound-BentoTheme\components\WhoTeachesThis.tsx
+    3:10   warning  'ShieldCheck' is defined but never used                          @typescript-eslint/no-unused-vars
+    3:31   warning  'Zap' is defined but never used                                  @typescript-eslint/no-unused-vars
+   60:122  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   86:29   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  116:19   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  116:47   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  116:63   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  116:76   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\MutualFound-BentoTheme\components\WorkshopDetails.tsx
+   77:25   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   78:44   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   78:109  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   85:120  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  135:27   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  152:141  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\master-mutual-funds\components\CTA.tsx
+  12:10  warning  'showNewPrice' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\master-mutual-funds\components\Header.tsx
+  19:6  warning  React Hook useEffect has a missing dependency: 'START_TIME'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\master-mutual-funds\components\InstructorCard.tsx
+  35:7  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\master-mutual-funds\components\MentorSection.tsx
+  23:13   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  40:15   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  40:22   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  40:45   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  40:167  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  60:15   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  60:370  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\master-mutual-funds\components\MoneyBackGuarantee.tsx
+  23:21  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  23:72  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  74:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\master-mutual-funds\components\OfferDetails.tsx
+  76:25  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\master-mutual-funds\components\PaymentIframe.tsx
+  11:38  warning  'onClose' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+  20:11  error    Error: Cannot access variable before it is declared
+
+`handleRedirect` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\master-mutual-funds\components\PaymentIframe.tsx:20:11
+  18 |         if (prev <= 1) {
+  19 |           clearInterval(timer);
+> 20 |           handleRedirect();
+     |           ^^^^^^^^^^^^^^ `handleRedirect` accessed before it is declared
+  21 |           return 0;
+  22 |         }
+  23 |         return prev - 1;
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\master-mutual-funds\components\PaymentIframe.tsx:30:3
+  28 |   }, []);
+  29 |
+> 30 |   const handleRedirect = () => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 31 |     setHasRedirected(true);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 32 |     window.location.href = paymentUrl;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 33 |   };
+     | ^^^^^ `handleRedirect` is declared here
+  34 |
+  35 |   return (
+  36 |     <div className="fixed inset-0 bg-gray-900 z-50">  react-hooks/immutability
+  28:6   warning  React Hook useEffect has a missing dependency: 'handleRedirect'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    react-hooks/exhaustive-deps
+  69:16  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react/no-unescaped-entities
+  69:44  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\master-mutual-funds\components\Popup.tsx
+    4:10  warning  'toast' is defined but never used                                @typescript-eslint/no-unused-vars
+   73:21  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  115:36  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  162:19  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\master-mutual-funds\components\Testimonials.tsx
+  15:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\master-mutual-funds\components\Timeline.tsx
+  34:19  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\components\templates\master-mutual-funds\data\index.ts
+   3:3   warning  'Calendar' is defined but never used                                                      @typescript-eslint/no-unused-vars
+   4:3   warning  'Clock' is defined but never used                                                         @typescript-eslint/no-unused-vars
+   5:3   warning  'Video' is defined but never used                                                         @typescript-eslint/no-unused-vars
+  59:10  error    Prefer using the primitive `number` as a type name, rather than the upper-cased `Number`  @typescript-eslint/no-wrapper-object-types
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\hooks\useZwitchPayment.ts
+   7:43  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  34:27  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  37:17  warning  'verifyRes' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  43:11  warning  'err' is defined but never used                 @typescript-eslint/no-unused-vars
+  43:16  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  48:14  warning  'error' is defined but never used               @typescript-eslint/no-unused-vars
+  48:21  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\lib\PGinitialize.ts
+  4:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\lib\authDetails.ts
+  2:10  warning  'dataBasePrisma' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\lib\trainer-central.ts
+  21:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  67:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\server\actions\cart.actions.ts
+   95:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  115:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\server\actions\coupon.action.ts
+   42:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   59:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   76:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   94:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  168:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\server\actions\get-courses.ts
+  3:10  warning  'auth' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\server\actions\get-recommendations.ts
+  20:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\server\actions\payment.action.ts
+   17:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   54:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   75:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   86:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   94:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  114:65  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  183:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  204:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\src\server\auth\auth.ts
+  13:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\niteesh\OneDrive\Desktop\coding\ai-autual-fund-analysis\zwitch.d.ts
+  17:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  18:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 258 problems (202 errors, 56 warnings)
+  4 errors and 1 warning potentially fixable with the `--fix` option.
+

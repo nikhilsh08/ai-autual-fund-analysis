@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/dbPrisma';
 import { getLayerPaymentDetails, verifyLayerHash } from '@/Utils/zwitch-utils';
 
 const ZWITCH_ACCESS_KEY = process.env.ZWITCH_API_KEY;
@@ -45,11 +44,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'Amount mismatch' }, { status: 400 });
     }
 
-    // 5. Update Database (Using Prisma/MongoDB pattern from your projects)
+    // 5. Update Database (Using dataBasePrisma/MongoDB pattern from your projects)
     const isSuccess = paymentDetails.status === 'captured' || paymentDetails.payment_token?.status === 'paid';
 
     // Find the user/order in your database
-    // const updatedUser = await prisma.user.update({
+    // const updatedUser = await dataBasePrisma.user.update({
     //   where: { email: 'user@example.com' }, // Replace with actual lookup
     //   data: { 
     //     isSubscribed: isSuccess,

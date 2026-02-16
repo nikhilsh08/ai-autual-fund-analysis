@@ -12,6 +12,14 @@ const cashfree = new Cashfree(
 );
 cashfree.XApiVersion = "2023-08-01";
 
+export interface PaymentVerificationResult {
+  success: boolean;
+  data?: any;
+  status?: string;
+  error?: string;
+}
+
+
 export const createCashfreeOrder = async (
   orderId: string,
   amount: number,
@@ -69,7 +77,7 @@ export const createCashfreeOrder = async (
   }
 };
 
-export const verifyCashfreePayment = async (orderId: string) => {
+export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVerificationResult> => {
   try {
     const orderResponse = await cashfree.PGFetchOrder(orderId);
     const cfOrder = orderResponse.data;

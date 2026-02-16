@@ -26,7 +26,7 @@ const MasterMutualFunds: React.FC<MasterMutualFundsProps> = ({ course }) => {
             <Header />
             <div className="flex flex-col items-center space-y-8 max-w-6xl mx-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-                <EventDetails startDate={course.startDate} />
+                <EventDetails course={course} />
                 <InstructorCard />
               </div>
               <CTA
@@ -46,7 +46,12 @@ const MasterMutualFunds: React.FC<MasterMutualFundsProps> = ({ course }) => {
         </div>
       </div>
       <Disclaimer />
-      <Popup />
+      <Popup
+        title="Get"
+        highlightedText="3 free investment checklists"
+        description="& join CashFlowCrew's mailing list, to master your personal finances"
+        buttonText="Send me the PDFs"
+      />
     </>
   );
 };

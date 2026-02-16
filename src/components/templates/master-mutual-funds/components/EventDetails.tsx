@@ -1,15 +1,16 @@
 import React from 'react';
-import { Calendar, Clock, Video, Timer } from 'lucide-react';
+import { Calendar, Clock, Video, Timer, MapPin } from 'lucide-react';
+import { Course } from '@prisma/client';
 
 interface EventDetailsProps {
-  startDate?: Date | null;
+  course: Course;
 }
 
-export const EventDetails: React.FC<EventDetailsProps> = ({ startDate }) => {
+export const EventDetails: React.FC<EventDetailsProps> = ({ course }) => {
 
-  if (!startDate) return null;
+  if (!course.startDate) return null;
 
-  const dateObj = new Date(startDate);
+  const dateObj = new Date(course.startDate);
 
   const dateStr = dateObj.toLocaleDateString('en-US', {
     month: 'long',
@@ -17,8 +18,10 @@ export const EventDetails: React.FC<EventDetailsProps> = ({ startDate }) => {
     year: 'numeric',
   });
 
-  // Calculate end time (assuming 4 hours duration based on the screenshot)
-  const endDateObj = new Date(dateObj.getTime() + 4 * 60 * 60 * 1000);
+  // Calculate end time (assuming 4 hours duration)
+  // TODO: Add duration field to Course model if dynamic duration is needed
+  const durationHours = 4;
+  const endDateObj = new Date(dateObj.getTime() + durationHours * 60 * 60 * 1000);
 
   const startTimeStr = dateObj.toLocaleTimeString('en-US', {
     hour: '2-digit',
@@ -33,7 +36,8 @@ export const EventDetails: React.FC<EventDetailsProps> = ({ startDate }) => {
 
   const timeRangeStr = `${startTimeStr} - ${endTimeStr}`;
 
-  const details = [
+  // Default details (Unified/Old view)
+  let details = [
     {
       icon: Timer,
       label: "1 Day",
@@ -55,6 +59,32 @@ export const EventDetails: React.FC<EventDetailsProps> = ({ startDate }) => {
       color: "text-blue-600"
     }
   ];
+
+  // If LIVE, we show the specific requested fields
+  if (course.type === 'LIVE') {
+    details = [
+      {
+        icon: Calendar,
+        label: dateStr,
+        color: "text-blue-600"
+      },
+      {
+        icon: Clock,
+        label: `Start: ${startTimeStr}`,
+        color: "text-blue-600"
+      },
+      {
+        icon: Timer,
+        label: `${durationHours} Hours`,
+        color: "text-blue-600"
+      },
+      {
+        icon: MapPin,
+        label: "Online - Live Session",
+        color: "text-blue-600"
+      }
+    ];
+  }
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-zinc-100 p-8">
