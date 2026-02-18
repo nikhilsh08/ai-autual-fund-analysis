@@ -14,7 +14,8 @@ export async function POST(req: Request) {
         const {
             title, description, price, originalPrice,
             thumbnail, type, theme, slug, tcCourseId,
-            tcCourseUrl, startDate, maxSeats, categoryId
+            tcCourseUrl, startDate, maxSeats, categoryId,
+            staticRoute,visibility
         } = body;
 
         // Validation
@@ -37,7 +38,11 @@ export async function POST(req: Request) {
                 startDate: startDate ? new Date(startDate) : null,
                 maxSeats: maxSeats ? parseInt(maxSeats) : null,
                 categoryId,
-                isPublished: true // Default to true?
+                isPublished: true, // Default to true?
+                staticRoute: staticRoute || "",
+                visibility:visibility || "show"
+
+
             }
         });
 

@@ -23,13 +23,15 @@ export async function GET(req: Request) {
                                 id: true,
                                 name: true,
                                 email: true,
-                                image: true
+                                image: true,
+                                phone: true
                             }
                         }
                     }
                 }
             }
         });
+        // console.log("transactionsSuccess", transactionsSuccess);
 
         // 2. Failed Transactions (PaymentTransaction status != SUCCESS)
         const transactionsFailed = await dataBasePrisma.paymentTransaction.findMany({
@@ -43,7 +45,8 @@ export async function GET(req: Request) {
                                 id: true,
                                 name: true,
                                 email: true,
-                                image: true
+                                image: true,
+                                phone: true
                             }
                         }
                     }
@@ -62,13 +65,15 @@ export async function GET(req: Request) {
                                 id: true,
                                 name: true,
                                 email: true,
-                                image: true
+                                image: true,
+                                phone: true
                             }
                         }
                     }
                 }
             }
         });
+
 
         // 4. Unprocessed Transactions (Users with PENDING orders? Or Orders that are pending?)
         // The user code checks "User.transactionStatus: PENDING".
@@ -83,7 +88,8 @@ export async function GET(req: Request) {
                     select: {
                         id: true,
                         name: true,
-                        email: true
+                        email: true,
+                        phone: true
                     }
                 },
                 lead: true
@@ -99,6 +105,8 @@ export async function GET(req: Request) {
             userId: tx.order?.user || null, // Map order.user to userId to match expected format
             // Add other fields if necessary
         });
+        // console.log("allTransactions",allTransactions, allTransactions.length);
+        console.log("pendingOrders",pendingOrders, pendingOrders.length);
 
 
         return NextResponse.json({

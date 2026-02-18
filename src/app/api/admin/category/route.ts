@@ -2,6 +2,27 @@ import { NextResponse } from "next/server";
 import { auth } from "@/server/auth/auth";
 import { dataBasePrisma as prisma } from "@/lib/dbPrisma";
 
+
+// get all categories
+export async function GET() {
+  try {
+    const categories = await prisma.category.findMany({
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      categories,
+    });
+  } catch (error) {
+    console.log("[CATEGORIES_GET]", error);
+    return new NextResponse("Internal Error", { status: 500 });
+  }
+}
+
+
 // create category 
 export async function POST(request: Request) {
   const user = await auth();
@@ -30,6 +51,7 @@ export async function POST(request: Request) {
 // update category 
 export async function PATCH(request: Request) {
   const user = await auth();
+  console.log(user)
 
   if (!user || !user.user || user.user.role !== "ADMIN") {
     return new NextResponse("Unauthorized", { status: 401 });
