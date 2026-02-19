@@ -45,22 +45,20 @@ export const Navbar = () => {
                   CashFlowCrew
                 </span>
               </div>
-
-              {/* Tagline */}
-              <span className="text-xs text-gray-500 hidden sm:block">
-                Master Your Finances
-              </span>
             </div>
           </div>
         </Link>
-
-        {/* <div className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-500">
-          <Link href="#" className="hover:text-zinc-900 transition-colors">Enterprise</Link>
-          <Link href="#" className="hover:text-zinc-900 transition-colors">Resources</Link>
-          <Link href="#" className="hover:text-zinc-900 transition-colors">Pricing</Link>
-        </div> */}
+        
+        {/* Desktop Navigation Links */}
+        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-600">
+           <Link href="/courses" className="hover:text-blue-600 transition-colors">Courses</Link>
+           <Link href="/about" className="hover:text-blue-600 transition-colors">About</Link>
+           <Link href="/workshops" className="hover:text-blue-600 transition-colors">Workshops</Link>
+           <Link href="/sign-in" className="hover:text-blue-600 transition-colors">Log In</Link>
+        </div>
 
         <div className="flex items-center gap-3">
+          {/* Cart - keeping it as it was likely already there and useful */}
           <button
             className="text-zinc-500 hover:text-zinc-900 transition-colors p-2 relative"
             aria-label="Cart"
@@ -74,19 +72,15 @@ export const Navbar = () => {
               </span>
             )}
           </button>
-          <Link
-            href={"/sign-in"}
-            className="hidden md:block text-sm text-zinc-500 hover:text-zinc-900 cursor-pointer mr-2"
-          >
-            Sign in
-          </Link>
+          
           <Button
             variant="primary"
-            className="py-2 px-4 h-9 text-xs"
-            onClick={() => router.push('/sign-up')}
+            className="hidden md:flex py-2 px-4 h-9 text-xs"
+            onClick={() => router.push('/courses')}
           >
-            Get Started
+            Explore Courses
           </Button>
+
           <button className="md:hidden text-zinc-900" onClick={() => setIsOpen(!isOpen)}>
             {isOpen ? <X /> : <Menu />}
           </button>
@@ -96,9 +90,21 @@ export const Navbar = () => {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden bg-white border-b border-zinc-200 p-6 space-y-4 shadow-lg">
-          <button onClick={() => { setIsOpen(false); }} className="block w-full text-left text-zinc-600 hover:text-zinc-900">Catalog</button>
-          <button onClick={() => { setIsOpen(false); }} className="block w-full text-left text-zinc-600 hover:text-zinc-900">Sign In</button>
-          <button onClick={() => { setIsOpen(false); }} className="block w-full text-left text-zinc-600 hover:text-zinc-900">Sign Up</button>
+          <Link href="/courses" onClick={() => setIsOpen(false)} className="block w-full text-left text-zinc-600 hover:text-zinc-900 font-medium">Courses</Link>
+          <Link href="/about" onClick={() => setIsOpen(false)} className="block w-full text-left text-zinc-600 hover:text-zinc-900 font-medium">About</Link>
+          <Link href="/workshops" onClick={() => setIsOpen(false)} className="block w-full text-left text-zinc-600 hover:text-zinc-900 font-medium">Workshops</Link>
+          <div className="h-px bg-zinc-100 my-2"></div>
+          <Link href="/sign-in" onClick={() => setIsOpen(false)} className="block w-full text-left text-zinc-600 hover:text-zinc-900 font-medium">Log In</Link>
+          <Button
+            variant="primary"
+            className="w-full justify-center mt-4"
+            onClick={() => {
+              router.push('/courses');
+              setIsOpen(false);
+            }}
+          >
+            Explore Courses
+          </Button>
         </div>
       )}
     </nav>

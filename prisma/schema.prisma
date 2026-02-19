@@ -104,7 +104,10 @@ model VerificationToken {
 model Course {
   id          String     @id @default(auto()) @map("_id") @db.ObjectId
   title       String
+  subHeading  String?
   description String
+  status      String   @default("Coming Soon") // Options: "Available", "Coming Soon"
+  content     String?
   thumbnail   String?
   price       Float
   originalPrice Float? // NEW: For "Compare at" price
@@ -117,6 +120,7 @@ model Course {
   slug        String   @unique
   staticRoute String?  @unique
   visibility  String   @default("show")
+  
 
   // TrainerCentral Links
   tcCourseId  String  @unique
