@@ -1,7 +1,7 @@
 'use server'
 
 import { auth } from "@/server/auth/auth";
-import {dataBasePrisma} from "../../lib/dbPrisma"
+import { dataBasePrisma } from "../../lib/dbPrisma"
 
 // get all courses
 export async function getCoursesAction() {
@@ -10,8 +10,10 @@ export async function getCoursesAction() {
       where: {
         visibility: 'show'
       },
-      orderBy: { createdAt: 'desc' }
-      ,
+      orderBy: [
+        { status: 'asc' }, // "Available" comes before "Coming Soon" alphabetically
+        { createdAt: 'desc' }
+      ],
       include: {
         category: true,
       }
@@ -56,14 +58,14 @@ export async function getCourseBySlugAction(slug: string) {
       include: { category: true }
     });
     if (bySlug) return bySlug;
-    
+
     // Try finding by ID (only if it looks like an ObjectId)
     if (slug.match(/^[0-9a-fA-F]{24}$/)) {
-        const byId = await dataBasePrisma.course.findUnique({
-            where: { id: slug },
-            include: { category: true }
-        });
-        if (byId) return byId;
+      const byId = await dataBasePrisma.course.findUnique({
+        where: { id: slug },
+        include: { category: true }
+      });
+      if (byId) return byId;
     }
 
     return null;

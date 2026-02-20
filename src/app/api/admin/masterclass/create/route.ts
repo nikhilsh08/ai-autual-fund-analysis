@@ -12,35 +12,49 @@ export async function POST(req: Request) {
     try {
         const body = await req.json();
         const {
-            title, description, price, originalPrice,
-            thumbnail, type, theme, slug, tcCourseId,
+            title, subHeading, status, description, price, originalPrice,
+            thumbnail, type, tcCourseId,
             tcCourseUrl, startDate, maxSeats, categoryId,
-            staticRoute,visibility
+            staticRoute, visibility
         } = body;
+        let slug = title.trim().toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
 
-        // Validation
-        if (!title || !price || !slug || !tcCourseId || !categoryId) {
-            return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
+        let uniqueSlug = slug;
+        let count = 1;
+
+        while (await dataBasePrisma.course.findUnique({ where: { slug: uniqueSlug } })) {
+            uniqueSlug = `${slug}-${count}`;
+            count++;
         }
 
+        slug = uniqueSlug;
+        console.log(title,price,tcCourseId,categoryId)
+
+        // Validation
+        if (!title || !price || !tcCourseId || !categoryId) {
+            console.log("Missing required fields", !title || !price || !tcCourseId || !categoryId)
+            return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
+        }
+        console.log(staticRoute, "static route")
         const newCourse = await dataBasePrisma.course.create({
             data: {
                 title,
+                subHeading,
+                status,
                 description,
                 price: parseFloat(price),
-                originalPrice: originalPrice ? parseFloat(originalPrice) : null,
+                originalPrice: originalPrice ? parseFloat(originalPrice) : undefined,
                 thumbnail,
                 type: type as CourseType || "RECORDED",
-                theme: theme || "standard",
                 slug,
                 tcCourseId,
                 tcCourseUrl,
-                startDate: startDate ? new Date(startDate) : null,
-                maxSeats: maxSeats ? parseInt(maxSeats) : null,
+                startDate: startDate ? new Date(startDate) : undefined,
+                maxSeats: maxSeats ? parseInt(maxSeats) : undefined,
                 categoryId,
                 isPublished: true, // Default to true?
-                staticRoute: staticRoute || "",
-                visibility:visibility || "show"
+                staticRoute: staticRoute || undefined,
+                visibility: visibility || "show"
 
 
             }

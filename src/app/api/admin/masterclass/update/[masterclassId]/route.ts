@@ -21,6 +21,12 @@ export async function PUT(
         if (body.originalPrice) updateData.originalPrice = parseFloat(body.originalPrice);
         if (body.startDate) updateData.startDate = new Date(body.startDate);
 
+        // Prevent unique constraint collision if staticRoute is sent as empty string
+        if (updateData.staticRoute === "") {
+            updateData.staticRoute = undefined; // Prisma will ignore updating it
+            // Ideally if we want to unset it, we'd use null or unset, but undefined is safer if they just left it blank
+        }
+
         // Check existence
         const existing = await dataBasePrisma.course.findUnique({ where: { id: masterclassId } });
         if (!existing) {

@@ -12,10 +12,20 @@ export const IncentiveProblem: React.FC<IncentiveProblemProps> = ({ courseId, pr
             <div className="max-w-5xl mx-auto">
                 {/* Charlie Munger Quote */}
                 <div className="text-center mb-12">
-                    <blockquote className="text-2xl md:text-3xl font-serif italic text-zinc-700 mb-6">
+                    <blockquote className="text-2xl md:text-3xl font-serif italic text-zinc-700">
                         "Show me the incentive, and I will show you the outcome."
                     </blockquote>
-                    <p className="text-lg text-zinc-600">— Charlie Munger</p>
+                    <div className="flex items-center justify-center gap-4 mt-6">
+                        <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-zinc-200 shadow-sm">
+                            <img
+                                src="https://upload.wikimedia.org/wikipedia/commons/5/56/Charlie_Munger_%28cropped%29.jpg"
+                                alt="Charlie Munger"
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                            />
+                        </div>
+                        <p className="text-lg text-zinc-600 font-medium">— Charlie Munger</p>
+                    </div>
                 </div>
 
                 <h2 className="text-3xl md:text-5xl font-bold text-zinc-900 text-center mb-12">

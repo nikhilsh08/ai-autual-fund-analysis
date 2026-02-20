@@ -10,9 +10,12 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-    const course = await dataBasePrisma.course.findUnique({
+    const course = await dataBasePrisma.course.findFirst({
         where: {
-            staticRoute: "master-mutual-funds",
+            OR: [
+                { staticRoute: "master-mutual-funds" },
+                { slug: "master-mutual-funds" }
+            ]
         },
     });
 

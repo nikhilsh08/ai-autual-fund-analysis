@@ -1,4 +1,4 @@
-import { courses } from "@/data/courses";
+import { getCourseBySlugAction } from "@/server/actions/get-courses";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
-    const course = courses.find((c) => c.slug === slug);
+    const course = await getCourseBySlugAction(slug) as any;
 
     if (!course) {
         return {
@@ -30,7 +30,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CoursePage({ params }: Props) {
     const { slug } = await params;
-    const course = courses.find((c) => c.slug === slug);
+    const course = await getCourseBySlugAction(slug) as any;
+    const categoryName = typeof course?.category === 'object' ? course.category.name : course?.category || 'Uncategorized';
 
     if (!course) {
         notFound();
@@ -48,7 +49,7 @@ export default async function CoursePage({ params }: Props) {
                             </Link>
                             <div className="flex items-center gap-3 mb-6">
                                 <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-100">
-                                    {course.category}
+                                    {categoryName}
                                 </Badge>
                                 {course.status === "Coming Soon" && (
                                     <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50">Coming Soon</Badge>
@@ -117,7 +118,7 @@ export default async function CoursePage({ params }: Props) {
                         <div className="mb-16">
                             <h2 className="text-2xl font-bold text-zinc-900 mb-6">What You'll Learn</h2>
                             <div className="grid gap-4">
-                                {course.curriculum.map((item, i) => (
+                                {course.curriculum.map((item: string, i: number) => (
                                     <div key={i} className="flex items-start gap-3 p-4 rounded-xl border border-zinc-100 bg-zinc-50">
                                         <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 shrink-0" />
                                         <span className="text-zinc-700 font-medium">{item}</span>

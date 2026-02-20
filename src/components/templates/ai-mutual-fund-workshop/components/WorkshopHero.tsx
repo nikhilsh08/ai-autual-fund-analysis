@@ -40,7 +40,7 @@ export const WorkshopHero: React.FC<WorkshopHeroProps> = ({ courseId, price, ori
                 courseId={courseId}
                 price={price}
                 originalPrice={originalPrice}
-                discountCode="EARLYBIRD"
+                discountCode=""
             />
 
             {/* Micro-hook */}

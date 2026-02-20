@@ -11,7 +11,10 @@ export async function GET(req: Request) {
     try {
         // "all-classes"
         const courses = await dataBasePrisma.course.findMany({
-            orderBy: { createdAt: "desc" },
+            orderBy: {
+                status: 'asc'
+            },
+
             include: { category: true }
         });
 

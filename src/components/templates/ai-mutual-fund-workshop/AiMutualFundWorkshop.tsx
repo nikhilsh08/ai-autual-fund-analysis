@@ -29,9 +29,9 @@ interface AiMutualFundWorkshopProps {
 
 const AiMutualFundWorkshop: React.FC<AiMutualFundWorkshopProps> = ({ course }) => {
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white ">
             {/* Hero Section with Dream Sequence */}
-            <section className="max-w-7xl mx-auto px-6 py-16">
+            <section className="max-w-7xl mx-auto px-6 py-16 mt-16">
                 <DreamSequence />
                 <WorkshopHero
                     courseId={course.id}
