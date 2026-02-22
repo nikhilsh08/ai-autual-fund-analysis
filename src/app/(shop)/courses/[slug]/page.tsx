@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, BookOpen, Clock, BarChart, BellRing } from "lucide-react";
 import Link from "next/link";
 import { Metadata } from "next";
+import { NotifyCourseButton } from "@/components/NotifyCourseButton";
 
 interface Props {
     params: Promise<{
@@ -85,10 +86,13 @@ export default async function CoursePage({ params }: Props) {
                                         </Button>
                                     </>
                                 ) : (
-                                    <Button size="lg" variant="outline" className="h-12 px-8 text-base gap-2">
-                                        <BellRing size={18} />
-                                        Notify Me When Available
-                                    </Button>
+                                    <NotifyCourseButton
+                                        courseId={course.id}
+                                        variant="outline"
+                                        size="lg"
+                                        className="h-12 px-8 text-base gap-2"
+                                        text="Notify Me When Available"
+                                    />
                                 )}
                             </div>
                         </div>
@@ -136,9 +140,11 @@ export default async function CoursePage({ params }: Props) {
                                 Get Instant Access — {course.price}
                             </Button>
                         ) : (
-                            <Button variant="outline">
-                                Get Notified
-                            </Button>
+                            <NotifyCourseButton
+                                courseId={course.id}
+                                variant="outline"
+                                text="Get Notified"
+                            />
                         )}
                     </div>
 

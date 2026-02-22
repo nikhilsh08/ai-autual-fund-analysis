@@ -8,6 +8,7 @@ import { useSession } from "next-auth/react";
 import { useCartStore } from "@/store/cart-store";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { NotifyCourseButton } from "./NotifyCourseButton";
 
 export interface CourseData {
     id: string;
@@ -28,10 +29,6 @@ interface CourseCatalogProps {
 
 export const CourseCatalog = ({ courses = [], categories = [] }: CourseCatalogProps) => {
     const [activeCategory, setActiveCategory] = useState("All");
-    const [notifyCourseId, setNotifyCourseId] = useState<string | null>(null);
-    const [notifyEmail, setNotifyEmail] = useState("");
-    const [notifying, setNotifying] = useState(false);
-
     const { data: session } = useSession();
     const isLoggedIn = !!session?.user;
     const addItem = useCartStore((state) => state.addItem);
@@ -54,33 +51,6 @@ export const CourseCatalog = ({ courses = [], categories = [] }: CourseCatalogPr
             title: course.title,
             price: course.price,
         }, isLoggedIn);
-    };
-
-    const handleNotifySubmit = async (e: React.FormEvent, courseId: string) => {
-        e.preventDefault();
-        if (!notifyEmail) return toast.error("Please enter your email");
-
-        setNotifying(true);
-        try {
-            const res = await fetch("/api/notify", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: notifyEmail, courseId })
-            });
-
-            const data = await res.json();
-            if (res.ok) {
-                toast.success(data.message || "You will be notified!");
-                setNotifyCourseId(null);
-                setNotifyEmail("");
-            } else {
-                toast.error(data.message || "Something went wrong.");
-            }
-        } catch (error) {
-            toast.error("Failed to submit request.");
-        } finally {
-            setNotifying(false);
-        }
     };
 
     return (
@@ -169,38 +139,7 @@ export const CourseCatalog = ({ courses = [], categories = [] }: CourseCatalogPr
                                                 <span className="text-sm font-medium text-amber-600 bg-amber-50 px-3 py-1 rounded-full">
                                                     Coming Soon
                                                 </span>
-                                                {notifyCourseId === course.id ? (
-                                                    <form
-                                                        onSubmit={(e) => handleNotifySubmit(e, course.id)}
-                                                        className="flex items-center gap-2 absolute bottom-4 right-4 left-4 bg-white p-2 rounded-lg shadow-xl border border-zinc-200 z-20"
-                                                        onClick={(e) => e.stopPropagation()}
-                                                    >
-                                                        <input
-                                                            type="email"
-                                                            placeholder="Email address"
-                                                            className="flex-grow bg-zinc-50 border border-zinc-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                            value={notifyEmail}
-                                                            onChange={(e) => setNotifyEmail(e.target.value)}
-                                                            required
-                                                            autoFocus
-                                                        />
-                                                        <Button type="submit" size="sm" className="bg-zinc-900 text-white" disabled={notifying}>
-                                                            {notifying ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save"}
-                                                        </Button>
-                                                        <Button type="button" size="sm" variant="ghost" className="px-2" onClick={(e) => { e.stopPropagation(); setNotifyCourseId(null); }}>
-                                                            ✕
-                                                        </Button>
-                                                    </form>
-                                                ) : (
-                                                    <Button variant="outline" size="sm" className="gap-2 text-zinc-600 hover:text-amber-600 hover:border-amber-200" onClick={(e) => {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        setNotifyCourseId(course.id);
-                                                    }}>
-                                                        <BellRing size={14} />
-                                                        Notify Me
-                                                    </Button>
-                                                )}
+                                                <NotifyCourseButton courseId={course.id} />
                                             </>
                                         )}
                                     </div>
