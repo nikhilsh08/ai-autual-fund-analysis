@@ -6,6 +6,8 @@ import { CartSync } from "@/components/cart/cart-sync";
 import { Toaster } from "@/components/ui/sonner";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import MetaPixel from "@/components/analytics/MetaPixel";
+import GoogleTagManager, { GoogleTagManagerNoScript } from "@/components/analytics/GoogleTagManager";
+import MicrosoftClarity from "@/components/analytics/MicrosoftClarity";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,12 +34,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <GoogleTagManagerNoScript gtmId={process.env.NEXT_PUBLIC_GTM_ID!} />
         <SessionProvider>
           <CartSync />
           {children}
           <Toaster />
           <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID!} />
           <MetaPixel pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID!} />
+          <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID!} />
+          <MicrosoftClarity clarityId={process.env.NEXT_PUBLIC_CLARITY_ID!} />
         </SessionProvider>
       </body>
     </html>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, CheckCircle, FileText, AlertCircle } from 'lucide-react';
-import axios from 'axios';
 import { toast } from 'sonner';
+import { registerNewsletter } from '@/server/actions/newsletter.action';
 
 
 interface PopupProps {
@@ -76,18 +76,14 @@ export const Popup: React.FC<PopupProps> = ({
     }
 
     try {
-      const res = await axios.post(`${process.env.NEXT_PUBLIC_APP_URL || ''}${apiEndpoint}`, { email: email });
-      // console.log("apply coupon res", res.data);
-      if (res.data.success) {
+      const res = await registerNewsletter(email);
+      if (res.success) {
         setIsSubmitted(true);
-
+      } else {
+        setError(res.error || res.message || "Email address already subscribed or not found.");
       }
-
-
-    } catch (error: any) {
-      setError(error?.response?.data?.message || "email not found");
-      // console.error("Error applying coupon", error);
-
+    } catch (err: any) {
+      setError("An unexpected error occurred.");
     }
   };
 

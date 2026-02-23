@@ -72,7 +72,7 @@ const CartPage = () => {
     addItem(upsellItem, isLoggedIn);
   };
 
-  console.log(items,"cart items");
+  console.log(items, "cart items");
 
   return (
     <div className="pt-28 pb-32 px-6 min-h-screen bg-white">
@@ -137,7 +137,7 @@ const CartPage = () => {
                       </div>
                       <div>
                         <h4 className="font-medium text-zinc-900">{upsellItem.title}</h4>
-                        <p className="text-sm text-zinc-500 font-mono">${upsellItem.price}</p>
+                        <p className="text-sm text-zinc-500 font-mono">₹{upsellItem.price}</p>
                       </div>
                     </div>
                     <Button variant="secondary" onClick={handleAddUpsell} className="bg-white shadow-sm w-full sm:w-auto">

@@ -10,6 +10,7 @@ export async function getUpsellRecommendations(currentCourseIds: string[]) {
     const currentCourses = await dataBasePrisma.course.findMany({
       where: {
         id: { in: currentCourseIds }
+      
       },
       select: {
         categoryId: true
@@ -26,6 +27,8 @@ export async function getUpsellRecommendations(currentCourseIds: string[]) {
     const recommendations = await dataBasePrisma.course.findMany({
       where: {
         isPublished: true,
+        visibility: 'show',
+        status: 'Available',
         categoryId: { in: categoryIds }, // Match the category
         id: { notIn: currentCourseIds }  // EXCLUDE items they are already buying
       },
