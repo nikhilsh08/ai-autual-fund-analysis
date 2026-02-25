@@ -13,7 +13,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { title, description, price, thumbnail, category,tcCourseId, type, startDate,staticRoute } = body;
+    const { title, description, price, thumbnail, category, tcCourseId, type, startDate, staticRoute, duration } = body;
     let slug = title.trim().toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
 
     let uniqueSlug = slug;
@@ -36,6 +36,7 @@ export async function POST(request: Request) {
         tcCourseId,
         type,
         startDate: new Date(startDate),
+        duration,
         staticRoute,
         slug,
       },

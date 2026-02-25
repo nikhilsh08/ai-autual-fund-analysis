@@ -83,6 +83,8 @@ const AiMutualFundV2: React.FC<AiMutualFundV2Props> = ({ course }) => {
                 price={course.price}
                 originalPrice={course.originalPrice}
                 startDate={course.startDate}
+                duration={course.duration}
+                type={course.type}
             />
 
             {/* Bonuses */}

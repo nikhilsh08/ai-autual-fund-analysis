@@ -39,9 +39,11 @@ export const V2Credibility = () => {
 
                 <div className="bg-white border border-zinc-200 rounded-2xl p-8 mb-8">
                     <div className="flex items-start gap-6 mb-6">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center font-extrabold text-xl flex-shrink-0">
-                            NS
-                        </div>
+                        <img
+                            src="https://res.cloudinary.com/dq1llsy7f/image/upload/v1738855885/c1gzyxcgfokizkisio3j.jpg"
+                            alt="Nikhil Sharma"
+                            className="w-16 h-16 rounded-full object-cover flex-shrink-0"
+                        />
                         <div>
                             <p className="text-xl font-bold text-zinc-900">Nikhil Sharma</p>
                             <p className="text-zinc-500">Founder, CashFlowCrew | Ex-Goldman Sachs</p>

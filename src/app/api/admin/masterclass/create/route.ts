@@ -15,7 +15,7 @@ export async function POST(req: Request) {
             title, subHeading, status, description, price, originalPrice,
             thumbnail, type, tcCourseId,
             tcCourseUrl, startDate, maxSeats, categoryId,
-            staticRoute, visibility
+            staticRoute, visibility,duration
         } = body;
         let slug = title.trim().toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
 
@@ -53,6 +53,7 @@ export async function POST(req: Request) {
                 maxSeats: maxSeats ? parseInt(maxSeats) : undefined,
                 categoryId,
                 isPublished: true, // Default to true?
+                duration,
                 staticRoute: staticRoute || undefined,
                 visibility: visibility || "show"
 

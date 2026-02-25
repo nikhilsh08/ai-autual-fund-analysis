@@ -5,6 +5,8 @@ interface V2PricingProps {
     price: number;
     originalPrice?: number | null;
     startDate?: Date | null | undefined;
+    duration?: string | null;
+    type?: string | null;
 }
 
 const formatDate = (date: Date | null | undefined) => {
@@ -16,7 +18,7 @@ const formatDate = (date: Date | null | undefined) => {
     });
 };
 
-export const V2Pricing: React.FC<V2PricingProps> = ({ courseId, price, originalPrice, startDate }) => {
+export const V2Pricing: React.FC<V2PricingProps> = ({ courseId, price, originalPrice, startDate, duration, type }) => {
     return (
         <section className="py-20 px-6 bg-white">
             <div className="max-w-xl mx-auto text-center">
@@ -71,8 +73,8 @@ export const V2Pricing: React.FC<V2PricingProps> = ({ courseId, price, originalP
                     <div className="space-y-3">
                         {[
                             { label: "Date", value: formatDate(startDate) },
-                            { label: "Duration", value: "Full Day Workshop" },
-                            { label: "Format", value: "Live + Recording (lifetime access)" },
+                            { label: "Duration", value: duration || "Full Day Workshop" },
+                            { label: "Format", value: type === "HYBRID" ? "Live + Recorded" : type === "LIVE" ? "Live" : type === "RECORDED" ? "Recorded" : "Live + Recording (lifetime access)" },
                         ].map((item) => (
                             <div key={item.label} className="flex justify-between">
                                 <span className="text-zinc-500">{item.label}</span>

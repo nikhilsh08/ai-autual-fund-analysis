@@ -6,6 +6,12 @@ interface EventDetailsProps {
   course: Course;
 }
 
+const formatLabel = (type: string) => {
+  if (type === 'LIVE') return 'Online - Live Session';
+  if (type === 'HYBRID') return 'Live + Recorded';
+  return 'Recorded Session';
+};
+
 export const EventDetails: React.FC<EventDetailsProps> = ({ course }) => {
 
   if (!course.startDate) return null;
@@ -18,36 +24,15 @@ export const EventDetails: React.FC<EventDetailsProps> = ({ course }) => {
     year: 'numeric',
   });
 
-  // Calculate end time (assuming 4 hours duration)
-  // TODO: Add duration field to Course model if dynamic duration is needed
-  const durationHours = 4;
-  const endDateObj = new Date(dateObj.getTime() + durationHours * 60 * 60 * 1000);
-
   const startTimeStr = dateObj.toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
   });
 
-  const endTimeStr = endDateObj.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZoneName: 'short'
-  });
+  const isLiveOrHybrid = course.type === 'LIVE' || course.type === 'HYBRID';
 
-  const timeRangeStr = `${startTimeStr} - ${endTimeStr}`;
-
-  // Default details (Unified/Old view)
-  let details = [
-    {
-      icon: Timer,
-      label: "1 Day",
-      color: "text-blue-600"
-    },
-    {
-      icon: Video,
-      label: "Live Session",
-      color: "text-blue-600"
-    },
+  // Build details array dynamically from course data
+  const details = [
     {
       icon: Calendar,
       label: dateStr,
@@ -55,36 +40,21 @@ export const EventDetails: React.FC<EventDetailsProps> = ({ course }) => {
     },
     {
       icon: Clock,
-      label: timeRangeStr,
+      label: `Start: ${startTimeStr}`,
+      color: "text-blue-600"
+    },
+    // Show duration only for LIVE or HYBRID sessions
+    ...(isLiveOrHybrid ? [{
+      icon: Timer,
+      label: course.duration || '4 Hours',
+      color: "text-blue-600"
+    }] : []),
+    {
+      icon: course.type === 'LIVE' || course.type === 'HYBRID' ? MapPin : Video,
+      label: formatLabel(course.type),
       color: "text-blue-600"
     }
   ];
-
-  // If LIVE, we show the specific requested fields
-  if (course.type === 'LIVE') {
-    details = [
-      {
-        icon: Calendar,
-        label: dateStr,
-        color: "text-blue-600"
-      },
-      {
-        icon: Clock,
-        label: `Start: ${startTimeStr}`,
-        color: "text-blue-600"
-      },
-      {
-        icon: Timer,
-        label: `${durationHours} Hours`,
-        color: "text-blue-600"
-      },
-      {
-        icon: MapPin,
-        label: "Online - Live Session",
-        color: "text-blue-600"
-      }
-    ];
-  }
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-zinc-100 p-8">

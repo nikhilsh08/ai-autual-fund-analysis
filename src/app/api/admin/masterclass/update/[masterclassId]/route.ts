@@ -26,6 +26,7 @@ export async function PUT(
             updateData.staticRoute = undefined; // Prisma will ignore updating it
             // Ideally if we want to unset it, we'd use null or unset, but undefined is safer if they just left it blank
         }
+        console.log(updateData)
 
         // Check existence
         const existing = await dataBasePrisma.course.findUnique({ where: { id: masterclassId } });

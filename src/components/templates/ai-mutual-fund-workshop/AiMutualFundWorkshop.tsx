@@ -75,6 +75,8 @@ const AiMutualFundWorkshop: React.FC<AiMutualFundWorkshopProps> = ({ course }) =
                 price={course.price}
                 originalPrice={course.originalPrice}
                 startDate={course.startDate}
+                duration={course.duration}
+                type={course.type}
             />
             <BonusesSection />
             <MoneyBackGuarantee courseId={course.id} price={course.price} />

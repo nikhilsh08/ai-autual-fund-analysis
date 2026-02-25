@@ -53,5 +53,8 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: "/api/:path*",
+    matcher: [
+        // Match all API routes EXCEPT /api/uploadthing (UploadThing handles its own auth/CORS)
+        "/api/((?!uploadthing).*)",
+    ],
 };

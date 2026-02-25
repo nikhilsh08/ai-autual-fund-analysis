@@ -5,6 +5,8 @@ interface PricingSectionProps {
     price: number;
     originalPrice?: number | null;
     startDate?: Date | null | undefined;
+    duration?: string | null;
+    type?: string | null;
 }
 
 const formatDate = (date: Date | null | undefined) => {
@@ -18,6 +20,8 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
     price,
     originalPrice,
     startDate,
+    duration,
+    type,
 }) => {
     const formattedDate = formatDate(startDate);
 
@@ -53,18 +57,20 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
 
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8 md:p-12 mb-12 border border-blue-200">
                     <h3 className="text-2xl font-bold text-zinc-900 mb-6">Workshop Details:</h3>
-                    <div className="grid md:grid-cols-2 gap-6 text-lg">
-                        <div>
-                            <p className="text-zinc-600 mb-1">Date:</p>
-                            <p className="font-bold text-zinc-900">{formattedDate}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-base">
+                        <div className="flex flex-col gap-1">
+                            <p className="text-zinc-500 text-sm font-medium uppercase tracking-wide">Date</p>
+                            <p className="font-bold text-zinc-900 text-lg">{formattedDate}</p>
                         </div>
-                        <div>
-                            <p className="text-zinc-600 mb-1">Duration:</p>
-                            <p className="font-bold text-zinc-900">Full Day Workshop</p>
+                        <div className="flex flex-col gap-1">
+                            <p className="text-zinc-500 text-sm font-medium uppercase tracking-wide">Duration</p>
+                            <p className="font-bold text-zinc-900 text-lg">{duration || "Full Day Workshop"}</p>
                         </div>
-                        <div className="md:col-span-2">
-                            <p className="text-zinc-600 mb-1">Format:</p>
-                            <p className="font-bold text-zinc-900">Live + recording (lifetime access)</p>
+                        <div className="flex flex-col gap-1">
+                            <p className="text-zinc-500 text-sm font-medium uppercase tracking-wide">Format</p>
+                            <p className="font-bold text-zinc-900 text-lg">
+                                {type === "HYBRID" ? "Live + Recorded" : type === "LIVE" ? "Live" : type === "RECORDED" ? "Recorded" : "Live + Recording"}
+                            </p>
                         </div>
                     </div>
                     <p className="text-sm text-zinc-500 mt-6">
@@ -76,7 +82,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                     courseId={courseId}
                     price={price}
                     originalPrice={originalPrice}
-                    discountCode="EARLYBIRD"
+                    discountCode=""
                     className="scale-110"
                 />
             </div>

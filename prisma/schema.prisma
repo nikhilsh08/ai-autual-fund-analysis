@@ -11,6 +11,7 @@ datasource db {
 enum CourseType {
   RECORDED
   LIVE
+  HYBRID
 }
 
 enum Role {
@@ -128,6 +129,7 @@ model Course {
 
   // Live Metadata
   startDate DateTime?
+  duration  String?
   maxSeats  Int?
   seatsSold Int       @default(0)
 
@@ -265,4 +267,12 @@ model NotificationRequest {
   
   // A user can only request notification for a specific course once
   @@unique([email, courseId])
+}
+
+model Image {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  url       String
+  key       String   @unique
+  name      String?
+  createdAt DateTime @default(now())
 }
