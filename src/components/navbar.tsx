@@ -35,7 +35,7 @@ export const Navbar = () => {
           href={"/"}
           className="flex items-center gap-2 cursor-pointer"
         >
-           <div  className="flex cursor-pointer items-center gap-3">
+          <div className="flex cursor-pointer items-center gap-3">
             <HeaderLogo />
 
             <div className="flex flex-col">
@@ -48,13 +48,13 @@ export const Navbar = () => {
             </div>
           </div>
         </Link>
-        
+
         {/* Desktop Navigation Links */}
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-600">
-           <Link href="/courses" className="hover:text-blue-600 transition-colors">Courses</Link>
-           <Link href="/about" className="hover:text-blue-600 transition-colors">About</Link>
-           <Link href="/workshops" className="hover:text-blue-600 transition-colors">Workshops</Link>
-           <Link href="/sign-in" className="hover:text-blue-600 transition-colors">Log In</Link>
+          <Link href="/courses" className="hover:text-blue-600 transition-colors">Courses</Link>
+          <Link href="/ai-mutual-fund-workshop" className="hover:text-blue-600 transition-colors">Workshops</Link>
+          <Link href="/#about" className="hover:text-blue-600 transition-colors">About</Link>
+          <Link href="/sign-in" className="hover:text-blue-600 transition-colors">Log In</Link>
         </div>
 
         <div className="flex items-center gap-3">
@@ -72,7 +72,7 @@ export const Navbar = () => {
               </span>
             )}
           </button>
-          
+
           <Button
             variant="primary"
             className="hidden md:flex py-2 px-4 h-9 text-xs"
@@ -91,8 +91,8 @@ export const Navbar = () => {
       {isOpen && (
         <div className="md:hidden bg-white border-b border-zinc-200 p-6 space-y-4 shadow-lg">
           <Link href="/courses" onClick={() => setIsOpen(false)} className="block w-full text-left text-zinc-600 hover:text-zinc-900 font-medium">Courses</Link>
-          <Link href="/about" onClick={() => setIsOpen(false)} className="block w-full text-left text-zinc-600 hover:text-zinc-900 font-medium">About</Link>
-          <Link href="/workshops" onClick={() => setIsOpen(false)} className="block w-full text-left text-zinc-600 hover:text-zinc-900 font-medium">Workshops</Link>
+          <Link href="/ai-mutual-fund-workshop" onClick={() => setIsOpen(false)} className="block w-full text-left text-zinc-600 hover:text-zinc-900 font-medium">Workshops</Link>
+          <Link href="/#about" onClick={() => setIsOpen(false)} className="block w-full text-left text-zinc-600 hover:text-zinc-900 font-medium">About</Link>
           <div className="h-px bg-zinc-100 my-2"></div>
           <Link href="/sign-in" onClick={() => setIsOpen(false)} className="block w-full text-left text-zinc-600 hover:text-zinc-900 font-medium">Log In</Link>
           <Button

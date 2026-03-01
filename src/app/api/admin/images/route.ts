@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { auth } from "@/server/auth/auth";
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import { UTApi } from "uploadthing/server";
@@ -10,6 +11,8 @@ export async function GET(request: Request) {
         return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    // get authjs.session-token for header cookies 
+    const token = (await cookies()).get("authjs.session-token")?.value;
     try {
         const images = await dataBasePrisma.image.findMany({
             orderBy: {
@@ -17,7 +20,7 @@ export async function GET(request: Request) {
             }
         });
 
-        return NextResponse.json({ success: true, images });
+        return NextResponse.json({ success: true, images, token });
     } catch (error) {
         console.error("[IMAGES_GET]", error);
         return new NextResponse("Internal Error", { status: 500 });
@@ -42,6 +45,7 @@ export async function DELETE(request: Request) {
         const image = await dataBasePrisma.image.findUnique({
             where: { id }
         });
+        console.log(image,id,"delete")
 
         if (!image) {
             return new NextResponse("Image not found", { status: 404 });

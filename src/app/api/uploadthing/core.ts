@@ -10,11 +10,16 @@ const f = createUploadthing();
 export const ourFileRouter = {
     imageUploader: f({ image: { maxFileSize: "4MB", maxFileCount: 4 } })
         .middleware(async ({ req }) => {
+            console.log("====== UPLOADTHING MIDDLEWARE ======");
+            console.log("URL:", req.url);
+            console.log("Method:", req.method);
+            console.log("Headers:", Object.fromEntries(req.headers.entries()));
+
             let userId: string | null = null;
-            console.log("req", req);
 
             // --- Path 1: Session cookie (Next.js app users) ---
             const session = await auth();
+            console.log("session", session);
             if (session?.user?.role === "ADMIN" && session.user.id) {
                 userId = session.user.id;
             }

@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Check, ShoppingCart, Eye, Loader2, Trash2, X } from 'lucide-react';
 import { Button } from './ui/button';
 import { CartItem, useCartStore } from '@/store/cart-store';
@@ -32,9 +33,9 @@ const Coursecard = ({ course, className = "" }: any) => {
   };
   const onSelect = () => {
     const slug = course.staticRoute || course.slug || course.id;
-    if(course.staticRoute){
+    if (course.staticRoute) {
       router.push(`/${course.staticRoute}`);
-    }else{
+    } else {
       router.push(`/course/${slug}`);
     }
   };
@@ -68,9 +69,17 @@ const Coursecard = ({ course, className = "" }: any) => {
       {/* Base Card - Fades out when showMobileDetails is true or on desktop hover */}
       <div className={`h-full flex flex-col bg-white border border-zinc-200 rounded-2xl p-6 transition-opacity duration-200 shadow-sm cursor-pointer ${showMobileDetails ? 'opacity-0' : 'group-hover:opacity-0'}`}>
         <div className="aspect-[4/3] mb-6 rounded-lg bg-zinc-100 overflow-hidden relative border border-zinc-100">
-          <div className={`absolute inset-0 bg-gradient-to-br opacity-10 ${course.id % 3 === 0 ? 'from-blue-500 to-indigo-500' : course.id % 3 === 1 ? 'from-indigo-500 to-violet-500' : 'from-blue-400 to-cyan-400'
-            }`} />
-
+          {course.thumbnail ? (
+            <Image
+              src={course.thumbnail}
+              alt={course.title}
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <div className={`absolute inset-0 bg-gradient-to-br opacity-10 ${course.id % 3 === 0 ? 'from-blue-500 to-indigo-500' : course.id % 3 === 1 ? 'from-indigo-500 to-violet-500' : 'from-blue-400 to-cyan-400'
+              }`} />
+          )}
           <div className="absolute top-4 right-4 flex gap-2">
             {course.isNew && (
               <span className="px-2 py-1 bg-white/90 backdrop-blur-md rounded border border-blue-200 text-[10px] text-blue-600 font-bold uppercase tracking-wider shadow-sm">

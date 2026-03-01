@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { BellRing, BookOpen, ShoppingCart, Loader2 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useCartStore } from "@/store/cart-store";
 import { toast } from "sonner";
@@ -20,6 +21,7 @@ export interface CourseData {
     status: string;
     oneLiner?: string | null;
     description?: string;
+    thumbnail?: string | null;
 }
 
 interface CourseCatalogProps {
@@ -94,11 +96,22 @@ export const CourseCatalog = ({ courses = [], categories = [] }: CourseCatalogPr
                         return (
                             <div key={course.id} className="relative group flex flex-col bg-white border border-zinc-200 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:border-blue-200 cursor-pointer" onClick={() => router.push(courseUrl)}>
                                 {/* Thumbnail Placeholder */}
-                                <div className="h-48 bg-zinc-100 relative overflow-hidden">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-zinc-100 to-zinc-200 group-hover:scale-105 transition-transform duration-500" />
-                                    <div className="absolute inset-0 flex items-center justify-center text-zinc-300">
-                                        <BookOpen size={48} strokeWidth={1} />
-                                    </div>
+                                <div className="h-48 bg-zinc-100 relative overflow-hidden flex-shrink-0">
+                                    {course.thumbnail ? (
+                                        <Image
+                                            src={course.thumbnail}
+                                            alt={course.title}
+                                            fill
+                                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                        />
+                                    ) : (
+                                        <>
+                                            <div className="absolute inset-0 bg-gradient-to-br from-zinc-100 to-zinc-200 group-hover:scale-105 transition-transform duration-500" />
+                                            <div className="absolute inset-0 flex items-center justify-center text-zinc-300">
+                                                <BookOpen size={48} strokeWidth={1} />
+                                            </div>
+                                        </>
+                                    )}
                                     <div className="absolute top-4 left-4">
                                         <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm text-zinc-800 text-xs font-medium px-2 py-0.5 rounded-md border-0 shadow-sm">
                                             {catName}

@@ -1,4 +1,5 @@
-import React from 'react';
+"use client";
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Mail, MapPin } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,51 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 export default function ContactUsPage() {
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        message: ''
+    });
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        const { firstName, lastName, email, message } = formData;
+        const name = `${firstName} ${lastName}`.trim();
+        const subject = `Contact Form Inquiry from ${name}`;
+
+        const mailtoLink = `mailto:support@cashflowcrew.in?subject=${encodeURIComponent(
+            subject
+        )}&body=${encodeURIComponent(
+            `Name: ${name}\nEmail: ${email}\n\n${message}`
+        )}`;
+
+        window.location.href = mailtoLink;
+
+        setTimeout(() => setIsSubmitting(false), 500);
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { id, value } = e.target;
+        // Map hyphens to camelCase for the state
+        const fieldMap: Record<string, string> = {
+            'first-name': 'firstName',
+            'last-name': 'lastName',
+            'email': 'email',
+            'message': 'message'
+        };
+        const fieldName = fieldMap[id] || id;
+
+        setFormData(prev => ({
+            ...prev,
+            [fieldName]: value
+        }));
+    };
+
     return (
         <div className="min-h-screen bg-[#F9FAFB] py-12 px-4 sm:px-6 lg:px-8 font-sans text-[#111] flex flex-col items-center">
             <div className="max-w-2xl w-full">
@@ -48,30 +94,30 @@ export default function ContactUsPage() {
                         </div>
                     </div>
 
-                    <form className="space-y-4">
+                    <form className="space-y-4" onSubmit={handleSubmit}>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label htmlFor="first-name" className="text-sm font-medium text-zinc-700">First name</label>
-                                <Input id="first-name" placeholder="First name" />
+                                <Input id="first-name" placeholder="First name" required value={formData.firstName} onChange={handleChange} />
                             </div>
                             <div className="space-y-2">
                                 <label htmlFor="last-name" className="text-sm font-medium text-zinc-700">Last name</label>
-                                <Input id="last-name" placeholder="Last name" />
+                                <Input id="last-name" placeholder="Last name" required value={formData.lastName} onChange={handleChange} />
                             </div>
                         </div>
 
                         <div className="space-y-2">
                             <label htmlFor="email" className="text-sm font-medium text-zinc-700">Email</label>
-                            <Input id="email" type="email" placeholder="you@company.com" />
+                            <Input id="email" type="email" placeholder="you@company.com" required value={formData.email} onChange={handleChange} />
                         </div>
 
                         <div className="space-y-2">
                             <label htmlFor="message" className="text-sm font-medium text-zinc-700">Message</label>
-                            <Textarea id="message" placeholder="Leave us a message..." className="min-h-[120px]" />
+                            <Textarea id="message" placeholder="Leave us a message..." className="min-h-[120px]" required value={formData.message} onChange={handleChange} />
                         </div>
 
-                        <Button type="submit" size="lg" className="w-full">
-                            Send Message
+                        <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+                            {isSubmitting ? 'Opening Mail Client...' : 'Send Message'}
                         </Button>
                     </form>
                 </div>
