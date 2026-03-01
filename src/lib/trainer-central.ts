@@ -25,7 +25,7 @@ async function getAccessToken() {
 }
 
 export async function enrollUserInTrainerCentral(
-    type: "LIVE" | "RECORDED",
+    type: string,
     email: string,
     fullName: string,
     tcCourseId: string
