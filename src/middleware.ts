@@ -8,6 +8,7 @@ export function middleware(request: NextRequest) {
         "http://localhost:5173",
         "https://www.cashflowcrew.in",
         "https://ai-mutual-fund-analysis.vercel.app",
+        "https://admin-cashflowcrew-othh.vercel.app",
         process.env.ADMIN_PANNEL_URL
     ];
 
