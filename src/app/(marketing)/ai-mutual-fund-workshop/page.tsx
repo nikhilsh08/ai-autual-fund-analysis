@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import AiMutualFundWorkshop from "@/components/templates/ai-mutual-fund-workshop/AiMutualFundWorkshop";
 import { notFound } from "next/navigation";

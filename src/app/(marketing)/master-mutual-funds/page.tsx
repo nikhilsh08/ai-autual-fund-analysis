@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import MasterMutualFunds from "@/components/templates/master-mutual-funds/MasterMutualFunds";

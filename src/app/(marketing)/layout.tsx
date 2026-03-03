@@ -1,3 +1,5 @@
+export const revalidate = 0;
+
 import { Footer } from '@/components/footer'
 import { Navbar } from '@/components/navbar'
 import React from 'react'
@@ -9,9 +11,9 @@ type Props = {
 const Layout = ({ children }: Props) => {
   return (
     <div className="flex flex-col w-full h-full">
-        <Navbar/>
-        {children}
-        <Footer/>
+      <Navbar />
+      {children}
+      <Footer />
     </div>
   )
 }
