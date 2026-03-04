@@ -1,6 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Clock, Mail, Calendar, Video, FileText, Download, PlayCircle, Users, Headset } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Delivery Policy",
+    description: "Understanding how courses and workshops are delivered by CashFlowCrew.",
+};
 
 export default function DeliveryPolicyPage() {
     return (

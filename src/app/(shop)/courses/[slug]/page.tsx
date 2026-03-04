@@ -6,6 +6,7 @@ import { CheckCircle2, BookOpen, Clock, BarChart, BellRing } from "lucide-react"
 import Link from "next/link";
 import { Metadata } from "next";
 import { NotifyCourseButton } from "@/components/NotifyCourseButton";
+import { siteConfig } from "@/config/seo";
 
 interface Props {
     params: Promise<{
@@ -19,13 +20,36 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     if (!course) {
         return {
-            title: "Course Not Found",
+            title: "Course Not Found | CashFlowCrew",
         };
     }
+
+    const ogUrl = `${siteConfig.url}/courses/${slug}`;
+    const ogImage = course.thumbnail || siteConfig.ogImage;
 
     return {
         title: `${course.title} | CashFlowCrew`,
         description: course.oneLiner,
+        openGraph: {
+            title: `${course.title} | CashFlowCrew`,
+            description: course.oneLiner || siteConfig.description,
+            url: ogUrl,
+            images: [
+                {
+                    url: ogImage,
+                    width: 1200,
+                    height: 630,
+                    alt: course.title,
+                },
+            ],
+            type: "website", // Or 'article' based on content
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: `${course.title} | CashFlowCrew`,
+            description: course.oneLiner || siteConfig.description,
+            images: [ogImage],
+        },
     };
 }
 

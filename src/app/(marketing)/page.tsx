@@ -10,6 +10,17 @@ import { FAQ } from "@/components/FAQ";
 import { getCoursesAction } from "@/server/actions/get-courses";
 
 
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "CashFlowCrew | Learn to Invest like the Top 1%",
+  description: "Stop relying on basic mutual fund strategies. Learn the institutional-grade frameworks used to manage ₹65,000 Crore+ to build a wealth-generating portfolio.",
+  openGraph: {
+    title: "CashFlowCrew | Master Your Money With Confidence",
+    description: "Learn how to pick the right mutual funds and build a wealth-generating portfolio. Honest, data-driven financial education for Indian investors.",
+  }
+};
+
 export default async function Home() {
   const rawCourses = await getCoursesAction();
   // Safely map complex category objects to string names for the CourseCatalog

@@ -1,6 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Terms and Conditions",
+    description: "Read the Terms and Conditions for using CashFlowCrew.",
+};
 
 export default function TermsConditionsPage() {
     return (

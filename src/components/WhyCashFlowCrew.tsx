@@ -50,9 +50,9 @@ export const WhyCashFlowCrew = () => {
                     {values.map((item, index) => (
                         <div
                             key={index}
-                            className="bg-white p-8 rounded-2xl border border-zinc-200 hover:shadow-lg transition-all duration-300 group"
+                            className="bg-white p-8 rounded-2xl border border-zinc-200 hover:shadow-lg transition-all duration-300 group text-center"
                         >
-                            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 mx-auto">
                                 {item.icon}
                             </div>
                             <h3 className="text-xl font-bold text-zinc-900 mb-3">

@@ -1,6 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Refund Policy",
+    description: "Read the Refund Policy of CashFlowCrew's workshops and courses.",
+};
 
 export default function RefundPolicyPage() {
     return (

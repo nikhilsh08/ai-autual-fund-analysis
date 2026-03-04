@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form";
 import { useZwitchPayment } from "@/hooks/useZwitchPayment";
 import { User, CheckCircle } from "lucide-react";
+import MovingLoader from "@/components/MovingLoader";
 
 export default function MasterclassPage() {
   const { register, handleSubmit } = useForm();
@@ -13,6 +14,7 @@ export default function MasterclassPage() {
     const finalData = { ...data, amount: 1499 }; 
     await initiateZwitch(finalData);
   };
+  return <MovingLoader/>
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">

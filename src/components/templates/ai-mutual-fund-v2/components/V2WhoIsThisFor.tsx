@@ -22,38 +22,62 @@ export const V2WhoIsThisFor = () => {
                     Is This For You?
                 </h2>
 
-                <div className="grid md:grid-cols-2 gap-8">
-                    <div className="border border-emerald-200 rounded-2xl p-8 bg-emerald-50">
-                        <p className="font-bold text-emerald-800 text-lg mb-6">
-                            This Workshop Makes Sense If You:
-                        </p>
-                        <ul className="space-y-4">
-                            {forItems.map((item, i) => (
-                                <li key={i} className="flex items-start gap-3">
-                                    <span className="text-emerald-600 font-bold flex-shrink-0 mt-0.5">✅</span>
-                                    <p className="text-zinc-700 text-sm leading-relaxed">{item}</p>
-                                </li>
-                            ))}
-                        </ul>
+                <div className="grid md:grid-cols-2 gap-8 items-stretch">
+                    {/* FOR card */}
+                    <div className="flex flex-col rounded-2xl border border-zinc-200 overflow-hidden shadow-sm">
+                        <div className="h-1.5 w-full bg-emerald-500" />
+                        <div className="flex flex-col flex-1 p-8 bg-white">
+                            <div className="flex items-center gap-3 mb-6">
+                                <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-emerald-100 text-emerald-600 text-lg font-bold flex-shrink-0">
+                                    ✓
+                                </span>
+                                <p className="font-bold text-zinc-900 text-lg leading-snug">
+                                    This Workshop Makes Sense If You:
+                                </p>
+                            </div>
+                            <ul className="space-y-4 flex-1">
+                                {forItems.map((item, i) => (
+                                    <li key={i} className="flex items-start gap-3">
+                                        <span className="inline-block mt-1 w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 text-xs font-bold flex-shrink-0 text-center leading-5">
+                                            ✓
+                                        </span>
+                                        <p className="text-zinc-600 text-sm leading-relaxed">{item}</p>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
                     </div>
 
-                    <div className="border border-red-200 rounded-2xl p-8 bg-red-50">
-                        <p className="font-bold text-red-800 text-lg mb-6">This is NOT For You If:</p>
-                        <ul className="space-y-4">
-                            {notForItems.map((item, i) => (
-                                <li key={i} className="flex items-start gap-3">
-                                    <span className="text-red-500 font-bold flex-shrink-0 mt-0.5">❌</span>
-                                    <p className="text-zinc-700 text-sm leading-relaxed">{item}</p>
-                                </li>
-                            ))}
-                        </ul>
-                        <div className="mt-6 p-4 bg-white rounded-xl border border-red-100">
-                            <p className="text-zinc-600 text-xs leading-relaxed">
-                                <span className="font-semibold">Honest qualifier:</span> If your entire portfolio
-                                is in index funds and you're satisfied with passive investing, you probably don't
-                                need this. This workshop is most valuable for people in active equity funds who
-                                want to verify whether those funds are actually earning their keep.
-                            </p>
+                    {/* NOT FOR card */}
+                    <div className="flex flex-col rounded-2xl border border-zinc-200 overflow-hidden shadow-sm">
+                        <div className="h-1.5 w-full bg-rose-500" />
+                        <div className="flex flex-col flex-1 p-8 bg-white">
+                            <div className="flex items-center gap-3 mb-6">
+                                <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-rose-100 text-rose-600 text-lg font-bold flex-shrink-0">
+                                    ✕
+                                </span>
+                                <p className="font-bold text-zinc-900 text-lg leading-snug">
+                                    This is NOT For You If:
+                                </p>
+                            </div>
+                            <ul className="space-y-4 flex-1">
+                                {notForItems.map((item, i) => (
+                                    <li key={i} className="flex items-start gap-3">
+                                        <span className="inline-block mt-1 w-5 h-5 rounded-full bg-rose-100 text-rose-500 text-xs font-bold flex-shrink-0 text-center leading-5">
+                                            ✕
+                                        </span>
+                                        <p className="text-zinc-600 text-sm leading-relaxed">{item}</p>
+                                    </li>
+                                ))}
+                            </ul>
+                            <div className="mt-6 p-4 bg-zinc-50 rounded-xl border border-zinc-200">
+                                <p className="text-zinc-500 text-xs leading-relaxed">
+                                    <span className="font-semibold text-zinc-700">Honest qualifier:</span> If your entire portfolio
+                                    is in index funds and you're satisfied with passive investing, you probably don't
+                                    need this. This workshop is most valuable for people in active equity funds who
+                                    want to verify whether those funds are actually earning their keep.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>

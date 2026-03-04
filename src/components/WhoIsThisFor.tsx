@@ -50,19 +50,17 @@ export const WhoIsThisFor = () => {
                     {segments.map((segment, index) => (
                         <div
                             key={index}
-                            className="flex items-start gap-4 p-6 rounded-2xl bg-zinc-50 border border-zinc-100 hover:border-indigo-100 hover:bg-indigo-50/30 transition-colors duration-300"
+                            className="flex flex-col items-center text-center p-6 rounded-2xl bg-zinc-50 border border-zinc-100 hover:border-indigo-100 hover:bg-indigo-50/30 transition-colors duration-300"
                         >
-                            <div className="w-10 h-10 rounded-full bg-white border border-zinc-200 flex items-center justify-center shrink-0 shadow-sm">
+                            <div className="w-10 h-10 rounded-full bg-white border border-zinc-200 flex items-center justify-center shadow-sm mb-4">
                                 {segment.icon}
                             </div>
-                            <div>
-                                <h3 className="text-lg font-bold text-zinc-900 mb-2">
-                                    {segment.title}
-                                </h3>
-                                <p className="text-zinc-600 text-sm leading-relaxed">
-                                    {segment.description}
-                                </p>
-                            </div>
+                            <h3 className="text-lg font-bold text-zinc-900 mb-2">
+                                {segment.title}
+                            </h3>
+                            <p className="text-zinc-600 text-sm leading-relaxed">
+                                {segment.description}
+                            </p>
                         </div>
                     ))}
                 </div>

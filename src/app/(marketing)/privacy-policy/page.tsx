@@ -1,6 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Privacy Policy",
+    description: "Read the Privacy Policy of CashFlowCrew.",
+};
 
 export default function PrivacyPolicyPage() {
     return (
