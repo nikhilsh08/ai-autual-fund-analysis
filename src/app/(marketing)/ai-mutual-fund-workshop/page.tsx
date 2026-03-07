@@ -27,7 +27,7 @@ export default async function AiMutualFundWorkshopPage() {
     // Fetch course where theme is 'light-guru'
     const course = await dataBasePrisma.course.findFirst({
         where: {
-            theme: "light-guru",
+            slug: "are-your-mutual-funds-actually-good",
             isPublished: true,
         },
     });

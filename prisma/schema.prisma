@@ -55,6 +55,7 @@ model User {
   cart      Cart?
   orders    Order[]
   purchases Purchase[]
+  blogs     Blog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -276,3 +277,22 @@ model Image {
   name      String?
   createdAt DateTime @default(now())
 }
+
+model Blog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  slug        String   @unique
+  content     String
+  excerpt     String?
+  thumbnail   String?
+  authorId    String   @db.ObjectId
+  author      User     @relation(fields: [authorId], references: [id])
+  isPublished Boolean  @default(true)
+  seoTitle    String?
+  seoDesc     String?
+  tags        String[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+

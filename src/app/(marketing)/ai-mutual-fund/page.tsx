@@ -27,7 +27,7 @@ export const metadata = {
 export default async function AiMutualFundV2Page() {
     const course = await dataBasePrisma.course.findFirst({
         where: {
-            slug: "ai-mutual-fund-workshop",
+            slug: "are-your-mutual-funds-actually-good",
             isPublished: true,
         },
     });
