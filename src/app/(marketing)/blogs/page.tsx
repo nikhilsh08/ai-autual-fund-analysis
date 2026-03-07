@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import BlogCard from "@/components/templates/blogs/BlogCard";
 import { Metadata } from "next";

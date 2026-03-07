@@ -52,7 +52,6 @@ export async function PUT(
 
         const body = await req.json();
         const { title, slug, content, excerpt, thumbnail, isPublished, seoTitle, seoDesc, tags } = body;
-
         const updatedBlog = await dataBasePrisma.blog.update({
             where: { id },
             data: {
