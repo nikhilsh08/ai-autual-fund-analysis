@@ -23,6 +23,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         };
     });
 
+    // Fetch published blogs
+    const blogs = await dataBasePrisma.blog.findMany({
+        where: { isPublished: true },
+        select: { slug: true, updatedAt: true },
+    });
+
+    const blogUrls: MetadataRoute.Sitemap = blogs.map((blog) => ({
+        url: `${siteConfig.url}/blogs/${blog.slug}`,
+        lastModified: blog.updatedAt,
+        changeFrequency: 'monthly',
+        priority: 0.7,
+    }));
+
     const staticRoutes: MetadataRoute.Sitemap = [
         {
             url: `${siteConfig.url}/`,
@@ -35,6 +48,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             lastModified: new Date(),
             changeFrequency: 'weekly',
             priority: 0.9,
+        },
+        {
+            url: `${siteConfig.url}/blogs`,
+            lastModified: new Date(),
+            changeFrequency: 'daily',
+            priority: 0.8,
         },
         {
             url: `${siteConfig.url}/contact-us`,
@@ -68,5 +87,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         },
     ];
 
-    return [...staticRoutes, ...courseUrls];
+    return [...staticRoutes, ...courseUrls, ...blogUrls];
 }

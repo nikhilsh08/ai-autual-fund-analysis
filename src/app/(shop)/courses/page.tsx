@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { CourseCatalog } from "@/components/CourseCatalog";
 import { Metadata } from "next";
 import { getCoursesAction } from "@/server/actions/get-courses";

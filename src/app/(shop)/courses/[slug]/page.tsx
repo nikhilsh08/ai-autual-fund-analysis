@@ -1,3 +1,5 @@
+
+export const dynamic = 'force-dynamic';
 import { getCourseBySlugAction } from "@/server/actions/get-courses";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
