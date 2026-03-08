@@ -20,8 +20,8 @@ export async function createCoupon(data: {
             return { success: false, error: "Unauthorized" };
         }
 
-        const existing = await dataBasePrisma.coupon.findUnique({
-            where: { code: data.code },
+        const existing = await dataBasePrisma.coupon.findFirst({
+            where: { code: { equals: data.code, mode: "insensitive" } },
         });
 
         if (existing) {
@@ -102,8 +102,11 @@ export async function validateCoupon(
     orderTotal: number
 ) {
     try {
-        const coupon = await dataBasePrisma.coupon.findUnique({
-            where: { code, isEnabled: true },
+        const coupon = await dataBasePrisma.coupon.findFirst({
+            where: { 
+                code: { equals: code, mode: "insensitive" }, 
+                isEnabled: true 
+            },
         });
 
         if (!coupon) {
