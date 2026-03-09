@@ -9,7 +9,7 @@ export const Hero = () => {
     const router = useRouter();
 
     const features = [
-        "Lifetime Access",
+        "1 year access",
         "7-Day Refund Policy",
         "Apply the same, deeply-thought, risk management strategies used for billion-dollar portfolios, to break into the next wealth tier"
     ];
