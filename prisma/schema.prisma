@@ -275,6 +275,7 @@ model Image {
   url       String
   key       String   @unique
   name      String?
+  provider  String   @default("UPLOADTHING")
   createdAt DateTime @default(now())
 }
 

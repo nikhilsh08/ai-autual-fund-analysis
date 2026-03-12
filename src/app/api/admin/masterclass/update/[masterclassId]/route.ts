@@ -23,7 +23,7 @@ export async function PATCH(
         // Nullable string fields — safe to set to null to clear them
         const nullableStringFields = ["subHeading", "description", "thumbnail",
             "status", "tcCourseId", "tcCourseUrl",
-            "staticRoute", "visibility", "duration"];
+            "staticRoute", "visibility", "duration", "content"];
         for (const field of nullableStringFields) {
             if (field in body) {
                 updateData[field] = body[field] ?? null;

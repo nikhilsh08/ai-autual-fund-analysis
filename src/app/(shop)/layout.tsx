@@ -1,3 +1,4 @@
+import { Footer } from '@/components/footer'
 import { Navbar } from '@/components/navbar'
 import React from 'react'
 
@@ -10,6 +11,7 @@ const Layout = ({ children }: Props) => {
     <div className="flex flex-col w-full h-full">
         <Navbar/>
         {children}
+        <Footer/>
     </div>
   )
 }

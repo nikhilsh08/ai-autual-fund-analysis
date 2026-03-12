@@ -15,6 +15,9 @@ export async function GET(request: Request) {
     const token = (await cookies()).get("authjs.session-token")?.value;
     try {
         const images = await dataBasePrisma.image.findMany({
+            where: {
+                provider: "UPLOADTHING"
+            },
             orderBy: {
                 createdAt: 'desc'
             }
@@ -45,7 +48,7 @@ export async function DELETE(request: Request) {
         const image = await dataBasePrisma.image.findUnique({
             where: { id }
         });
-        console.log(image,id,"delete")
+        console.log(image, id, "delete")
 
         if (!image) {
             return new NextResponse("Image not found", { status: 404 });

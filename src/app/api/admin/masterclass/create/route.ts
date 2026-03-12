@@ -15,7 +15,7 @@ export async function POST(req: Request) {
             title, subHeading, status, description, price, originalPrice,
             thumbnail, type, tcCourseId,
             tcCourseUrl, startDate, maxSeats, categoryId,
-            staticRoute, visibility,duration
+            staticRoute, visibility,duration,content,
         } = body;
         let slug = title.trim().toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
 
@@ -43,6 +43,7 @@ export async function POST(req: Request) {
                 status,
                 description,
                 price: parseFloat(price),
+                content,
                 originalPrice: originalPrice ? parseFloat(originalPrice) : undefined,
                 thumbnail,
                 type: type as CourseType || "RECORDED",
