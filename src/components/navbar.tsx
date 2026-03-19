@@ -29,7 +29,7 @@ export const Navbar = () => {
   const cartCount = 1;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-zinc-200">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-cream/80 backdrop-blur-md border-b border-border">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <Link
           href={"/"}
@@ -41,8 +41,8 @@ export const Navbar = () => {
             <div className="flex flex-col">
               {/* Logo row */}
               <div className="flex items-center gap-2">
-                <span className="text-xl font-bold max-md:hidden text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
-                  CashFlowCrew
+                <span className="text-xl font-bold max-md:hidden text-ink">
+                  CashFlow<span className="text-accent">Crew</span>
                 </span>
               </div>
             </div>
@@ -50,25 +50,24 @@ export const Navbar = () => {
         </Link>
 
         {/* Desktop Navigation Links */}
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-600">
-          <Link href="/courses" className="hover:text-blue-600 transition-colors">Courses</Link>
-          <Link href="/ai-mutual-fund-workshop" className="hover:text-blue-600 transition-colors">Workshops</Link>
-          <Link href="/#about" className="hover:text-blue-600 transition-colors">About</Link>
-          <Link href="/sign-in" className="hover:text-blue-600 transition-colors">Log In</Link>
+        <div className="hidden md:flex items-center gap-8 text-sm font-medium">
+          <Link href="/courses" className="text-ink hover:text-accent transition-colors">courses</Link>
+          <Link href="/#about" className="text-ink hover:text-accent transition-colors">founder</Link>
+          <Link href="/blogs" className="text-ink hover:text-accent transition-colors">blog</Link>
         </div>
 
         <div className="flex items-center gap-3">
           {/* Cart - keeping it as it was likely already there and useful */}
           <button
-            className="text-zinc-500 hover:text-zinc-900 transition-colors p-2 relative"
+            className="text-ink-muted hover:text-ink transition-colors p-2 relative"
             aria-label="Cart"
             onClick={() => router.push('/cart')}
           >
             <ShoppingBag size={20} />
             {cartCount > 0 && (
               <span className="absolute top-1 right-0.5 flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent/40 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-accent"></span>
               </span>
             )}
           </button>
@@ -78,10 +77,10 @@ export const Navbar = () => {
             className="hidden md:flex py-2 px-4 h-9 text-xs"
             onClick={() => router.push('/courses')}
           >
-            Explore Courses
+            explore courses →
           </Button>
 
-          <button className="md:hidden text-zinc-900" onClick={() => setIsOpen(!isOpen)}>
+          <button className="md:hidden text-ink" onClick={() => setIsOpen(!isOpen)}>
             {isOpen ? <X /> : <Menu />}
           </button>
         </div>
@@ -89,12 +88,10 @@ export const Navbar = () => {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white border-b border-zinc-200 p-6 space-y-4 shadow-lg">
-          <Link href="/courses" onClick={() => setIsOpen(false)} className="block w-full text-left text-zinc-600 hover:text-zinc-900 font-medium">Courses</Link>
-          <Link href="/ai-mutual-fund-workshop" onClick={() => setIsOpen(false)} className="block w-full text-left text-zinc-600 hover:text-zinc-900 font-medium">Workshops</Link>
-          <Link href="/#about" onClick={() => setIsOpen(false)} className="block w-full text-left text-zinc-600 hover:text-zinc-900 font-medium">About</Link>
-          <div className="h-px bg-zinc-100 my-2"></div>
-          <Link href="/sign-in" onClick={() => setIsOpen(false)} className="block w-full text-left text-zinc-600 hover:text-zinc-900 font-medium">Log In</Link>
+        <div className="md:hidden bg-cream border-b border-border p-6 space-y-4 shadow-lg">
+          <Link href="/courses" onClick={() => setIsOpen(false)} className="block w-full text-left text-ink hover:text-accent font-medium">courses</Link>
+          <Link href="/#about" onClick={() => setIsOpen(false)} className="block w-full text-left text-ink hover:text-accent font-medium">founder</Link>
+          <Link href="/blogs" onClick={() => setIsOpen(false)} className="block w-full text-left text-ink hover:text-accent font-medium">blog</Link>
           <Button
             variant="primary"
             className="w-full justify-center mt-4"
@@ -103,7 +100,7 @@ export const Navbar = () => {
               setIsOpen(false);
             }}
           >
-            Explore Courses
+            explore courses →
           </Button>
         </div>
       )}

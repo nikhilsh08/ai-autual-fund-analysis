@@ -47,13 +47,13 @@ export const FAQ = () => {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
 
     return (
-        <section className="py-20 bg-white">
+        <section className="py-20 bg-card">
             <div className="max-w-3xl mx-auto px-6">
                 <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-4">
+                    <h2 className="text-3xl md:text-4xl font-bold font-serif text-ink mb-4">
                         Frequently Asked Questions
                     </h2>
-                    <p className="text-zinc-600">
+                    <p className="text-ink-secondary">
                         Everything you need to know about learning with us.
                     </p>
                 </div>
@@ -62,16 +62,16 @@ export const FAQ = () => {
                     {faqs.map((faq, index) => (
                         <div
                             key={index}
-                            className="border border-zinc-200 rounded-2xl bg-zinc-50/50 overflow-hidden transition-all duration-200"
+                            className="border border-border rounded-2xl bg-cream-dark/50 overflow-hidden transition-all duration-200"
                         >
                             <button
                                 className="w-full flex items-center justify-between p-6 text-left"
                                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
                             >
-                                <span className="font-semibold text-zinc-900 pr-8">
+                                <span className="font-semibold text-ink pr-8">
                                     {faq.question}
                                 </span>
-                                <span className="shrink-0 text-zinc-400">
+                                <span className="shrink-0 text-ink-muted">
                                     {openIndex === index ? <Minus size={20} /> : <Plus size={20} />}
                                 </span>
                             </button>
@@ -81,7 +81,7 @@ export const FAQ = () => {
                                     }`}
                             >
                                 <div className="overflow-hidden">
-                                    <div className="p-6 pt-0 text-zinc-600 leading-relaxed">
+                                    <div className="p-6 pt-0 text-ink-secondary leading-relaxed">
                                         {faq.answer}
                                     </div>
                                 </div>

@@ -44,7 +44,7 @@ export default async function OrderStatusPage({
     } : null;
 
     return (
-        <div className="min-h-screen pt-24 pb-12 px-4 bg-zinc-50 flex items-center justify-center">
+        <div className="min-h-screen pt-24 pb-12 px-4 bg-cream flex items-center justify-center">
             {purchaseEventData && (
                 <PurchaseEvent
                     amount={purchaseEventData.amount}
@@ -54,28 +54,28 @@ export default async function OrderStatusPage({
                     utm={purchaseEventData.utm}
                 />
             )}
-            <div className="max-w-md w-full bg-white rounded-3xl shadow-sm border border-zinc-200 p-8 text-center">
+            <div className="max-w-md w-full bg-card rounded-3xl shadow-sm border border-border p-8 text-center">
                 {isSuccess ? (
                     <div className="space-y-6">
-                        <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto">
-                            <CheckCircle2 className="w-10 h-10 text-green-500" />
+                        <div className="w-20 h-20 bg-teal/10 rounded-full flex items-center justify-center mx-auto">
+                            <CheckCircle2 className="w-10 h-10 text-teal" />
                         </div>
 
                         <div className="space-y-2">
-                            <h1 className="text-2xl font-bold text-zinc-900">Payment Successful!</h1>
-                            <p className="text-zinc-500">
+                            <h1 className="text-2xl font-bold text-ink">Payment Successful!</h1>
+                            <p className="text-ink-secondary">
                                 Thank you for your purchase. Your order has been confirmed.
                             </p>
                         </div>
 
-                        <div className="bg-zinc-50 rounded-2xl p-4 text-sm text-zinc-600 border border-zinc-100">
-                            <div className="flex justify-between py-2 border-b border-zinc-100">
+                        <div className="bg-cream-dark rounded-2xl p-4 text-sm text-ink-secondary border border-border">
+                            <div className="flex justify-between py-2 border-b border-border">
                                 <span>Order ID</span>
-                                <span className="font-mono font-medium text-zinc-900">{orderId}</span>
+                                <span className="font-mono font-medium text-ink">{orderId}</span>
                             </div>
                             <div className="flex justify-between py-2">
                                 <span>Status</span>
-                                <span className="font-medium text-green-600">Paid</span>
+                                <span className="font-medium text-teal">Paid</span>
                             </div>
                         </div>
 
@@ -94,25 +94,25 @@ export default async function OrderStatusPage({
                     </div>
                 ) : isPending ? (
                     <div className="space-y-6">
-                        <div className="w-20 h-20 bg-yellow-50 rounded-full flex items-center justify-center mx-auto">
-                            <AlertCircle className="w-10 h-10 text-yellow-500" />
+                        <div className="w-20 h-20 bg-gold/10 rounded-full flex items-center justify-center mx-auto">
+                            <AlertCircle className="w-10 h-10 text-gold" />
                         </div>
 
                         <div className="space-y-2">
-                            <h1 className="text-2xl font-bold text-zinc-900">Payment Pending</h1>
-                            <p className="text-zinc-500">
+                            <h1 className="text-2xl font-bold text-ink">Payment Pending</h1>
+                            <p className="text-ink-secondary">
                                 We are verifying your payment status. Please wait a moment or check back later.
                             </p>
                         </div>
 
-                        <div className="bg-zinc-50 rounded-2xl p-4 text-sm text-zinc-600 border border-zinc-100">
-                            <div className="flex justify-between py-2 border-b border-zinc-100">
+                        <div className="bg-cream-dark rounded-2xl p-4 text-sm text-ink-secondary border border-border">
+                            <div className="flex justify-between py-2 border-b border-border">
                                 <span>Order ID</span>
-                                <span className="font-mono font-medium text-zinc-900">{orderId}</span>
+                                <span className="font-mono font-medium text-ink">{orderId}</span>
                             </div>
                             <div className="flex justify-between py-2">
                                 <span>Status</span>
-                                <span className="font-medium text-yellow-600">Verification Pending</span>
+                                <span className="font-medium text-gold">Verification Pending</span>
                             </div>
                         </div>
 
@@ -122,7 +122,7 @@ export default async function OrderStatusPage({
                                     Check Status Again
                                 </Button>
                             </Link>
-                            <Link href="/contact">
+                            <Link href="/contact-us">
                                 <Button variant="outline" className="w-full h-12 rounded-xl text-base" size="lg">
                                     Contact Support
                                 </Button>
@@ -136,16 +136,16 @@ export default async function OrderStatusPage({
                         </div>
 
                         <div className="space-y-2">
-                            <h1 className="text-2xl font-bold text-zinc-900">Payment Failed</h1>
-                            <p className="text-zinc-500">
+                            <h1 className="text-2xl font-bold text-ink">Payment Failed</h1>
+                            <p className="text-ink-secondary">
                                 Something went wrong with your transaction. You have not been charged.
                             </p>
                         </div>
 
-                        <div className="bg-zinc-50 rounded-2xl p-4 text-sm text-zinc-600 border border-zinc-100">
-                            <div className="flex justify-between py-2 border-b border-zinc-100">
+                        <div className="bg-cream-dark rounded-2xl p-4 text-sm text-ink-secondary border border-border">
+                            <div className="flex justify-between py-2 border-b border-border">
                                 <span>Order ID</span>
-                                <span className="font-mono font-medium text-zinc-900">{orderId}</span>
+                                <span className="font-mono font-medium text-ink">{orderId}</span>
                             </div>
                             <div className="flex justify-between py-2">
                                 <span>Status</span>

@@ -3,45 +3,45 @@ import { ShieldCheck, BarChart3, Clock, Shuffle, Video, Globe2 } from "lucide-re
 export const WhyCashFlowCrew = () => {
     const values = [
         {
-            icon: <ShieldCheck className="w-6 h-6 text-blue-600" />,
+            icon: <ShieldCheck className="w-6 h-6 text-accent" />,
             title: "Goldman Sachs Frameworks",
             description: "The same analysis techniques used to manage ₹65,000 Crore+ in assets — now simplified for individual investors."
         },
         {
-            icon: <BarChart3 className="w-6 h-6 text-blue-600" />,
+            icon: <BarChart3 className="w-6 h-6 text-accent" />,
             title: "Practical, Not Theoretical",
             description: "Every course includes Excel sheets, AI tools, checklists, and step-by-step workflows you can use the same day."
         },
         {
-            icon: <Clock className="w-6 h-6 text-blue-600" />,
+            icon: <Clock className="w-6 h-6 text-accent" />,
             title: "Lifetime Access",
             description: "Learn at your own pace. Revisit any course, anytime — with one-time payment and no recurring fees."
         },
         {
-            icon: <Shuffle className="w-6 h-6 text-blue-600" />,
+            icon: <Shuffle className="w-6 h-6 text-accent" />,
             title: "Free Upgrades",
             description: "Markets change. Our courses do too. Get free updates whenever we refresh content with the latest data and strategies."
         },
         {
-            icon: <Video className="w-6 h-6 text-blue-600" />,
+            icon: <Video className="w-6 h-6 text-accent" />,
             title: "Live Q&A Sessions",
             description: "Join periodic live sessions with Nikhil for deep-dives & Q&A sessions"
         },
         {
-            icon: <Globe2 className="w-6 h-6 text-blue-600" />,
+            icon: <Globe2 className="w-6 h-6 text-accent" />,
             title: "Built for Indian Investors",
             description: "Indian tax rules, INR-denominated strategies — everything is built for the Indian context."
         }
     ];
 
     return (
-        <section className="py-20 bg-zinc-50 border-y border-zinc-200">
+        <section className="py-20 bg-cream-dark border-y border-border">
             <div className="max-w-7xl mx-auto px-6">
                 <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-6">
+                    <h2 className="text-3xl md:text-4xl font-bold font-serif text-ink mb-6">
                         Why Learn With CashFlowCrew?
                     </h2>
-                    <p className="text-zinc-600 max-w-2xl mx-auto">
+                    <p className="text-ink-secondary max-w-2xl mx-auto">
                         We bridge the gap between institutional strategies and individual investors.
                     </p>
                 </div>
@@ -50,15 +50,15 @@ export const WhyCashFlowCrew = () => {
                     {values.map((item, index) => (
                         <div
                             key={index}
-                            className="bg-white p-8 rounded-2xl border border-zinc-200 hover:shadow-lg transition-all duration-300 group text-center"
+                            className="bg-card p-8 rounded-2xl border border-border hover:shadow-lg transition-all duration-300 group text-center"
                         >
-                            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 mx-auto">
+                            <div className="w-12 h-12 bg-accent-light rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 mx-auto">
                                 {item.icon}
                             </div>
-                            <h3 className="text-xl font-bold text-zinc-900 mb-3">
+                            <h3 className="text-xl font-bold text-ink mb-3">
                                 {item.title}
                             </h3>
-                            <p className="text-zinc-600 leading-relaxed">
+                            <p className="text-ink-secondary leading-relaxed">
                                 {item.description}
                             </p>
                         </div>

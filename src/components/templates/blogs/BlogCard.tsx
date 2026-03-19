@@ -21,12 +21,12 @@ export default function BlogCard({ blog }: BlogCardProps) {
     const defaultThumbnail = "https://images.unsplash.com/photo-1432821596592-e2c18b78144f?w=800&q=80";
 
     return (
-        <article className="group relative flex flex-col items-start justify-between rounded-2xl bg-white p-4 shadow-sm transition-all hover:shadow-md border border-gray-100 dark:bg-zinc-900/50 dark:border-zinc-800">
+        <article className="group relative flex flex-col items-start justify-between rounded-2xl bg-card p-4 shadow-sm transition-all hover:shadow-md border border-border">
             <Link href={`/blogs/${blog.slug}`} className="absolute inset-0 z-10">
                 <span className="sr-only">View Blog Post</span>
             </Link>
 
-            <div className="relative w-full overflow-hidden rounded-xl aspect-[16/9] bg-gray-100 dark:bg-zinc-800">
+            <div className="relative w-full overflow-hidden rounded-xl aspect-[16/9] bg-cream-dark">
                 {/* Standard next/image with a fallback generic thumbnail if none provided */}
                 <Image
                     src={blog.thumbnail || defaultThumbnail}
@@ -44,7 +44,7 @@ export default function BlogCard({ blog }: BlogCardProps) {
                             {blog.tags.slice(0, 3).map((tag, idx) => (
                                 <span
                                     key={idx}
-                                    className="inline-flex items-center rounded-full bg-blue-50 dark:bg-blue-900/30 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-400"
+                                    className="inline-flex items-center rounded-full bg-accent-light px-2.5 py-0.5 text-xs font-medium text-accent"
                                 >
                                     {tag}
                                 </span>
@@ -52,20 +52,20 @@ export default function BlogCard({ blog }: BlogCardProps) {
                         </div>
                     )}
 
-                    <h3 className="mt-2 text-lg font-semibold leading-6 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 line-clamp-2">
+                    <h3 className="mt-2 text-lg font-semibold leading-6 text-ink group-hover:text-accent line-clamp-2">
                         {blog.title}
                     </h3>
 
-                    <p className="mt-3 text-sm leading-6 text-gray-600 dark:text-zinc-400 line-clamp-3">
+                    <p className="mt-3 text-sm leading-6 text-ink-secondary line-clamp-3">
                         {blog.excerpt || "Read more about this topic in the full article."}
                     </p>
                 </div>
 
                 <div className="relative mt-6 flex items-center gap-x-4">
-                    <div className="text-sm leading-6 flex items-center gap-4 text-gray-500 dark:text-zinc-500">
+                    <div className="text-sm leading-6 flex items-center gap-4 text-ink-muted">
                         <div className="flex items-center gap-1">
                             <User className="h-4 w-4" />
-                            <span className="font-semibold text-gray-900 dark:text-zinc-300">
+                            <span className="font-semibold text-ink">
                                 {blog.author.name || "Admin"}
                             </span>
                         </div>

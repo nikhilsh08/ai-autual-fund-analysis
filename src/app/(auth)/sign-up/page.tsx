@@ -58,21 +58,21 @@ const Page = () => {
   };
 
   return (
-    <div className="pt-28 pb-32 px-6 min-h-screen bg-zinc-50 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-2xl border border-zinc-200 shadow-sm max-w-md w-full">
+    <div className="pt-28 pb-32 px-6 min-h-screen bg-cream flex items-center justify-center">
+      <div className="bg-card p-8 rounded-2xl border border-border shadow-sm max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-medium text-zinc-900">Create an account</h1>
-          <p className="text-zinc-500 text-sm mt-2">
+          <h1 className="text-2xl font-medium font-serif text-ink">Create an account</h1>
+          <p className="text-ink-muted text-sm mt-2">
             Start your journey with CFC Academy today.
           </p>
         </div>
 
         {/* 4. Bind handleSubmit */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          
+
           {/* Full Name */}
           <div>
-            <label className="block text-xs font-medium text-zinc-700 uppercase mb-1">
+            <label className="block text-xs font-medium text-ink-secondary uppercase mb-1">
               Full Name
             </label>
             <input
@@ -80,10 +80,10 @@ const Page = () => {
               disabled={isPending}
               type="text"
               placeholder="John Doe"
-              className={`w-full px-4 py-3 bg-zinc-50 border rounded-lg text-sm focus:outline-none focus:ring-1 transition-all ${
-                errors.name 
-                  ? "border-red-500 focus:border-red-500 focus:ring-red-500" 
-                  : "border-zinc-200 focus:border-blue-500 focus:ring-blue-500"
+              className={`w-full px-4 py-3 bg-cream-dark border rounded-lg text-sm focus:outline-none focus:ring-1 transition-all ${
+                errors.name
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                  : "border-border focus:border-accent focus:ring-accent"
               }`}
             />
             {errors.name && (
@@ -93,7 +93,7 @@ const Page = () => {
 
           {/* Email */}
           <div>
-            <label className="block text-xs font-medium text-zinc-700 uppercase mb-1">
+            <label className="block text-xs font-medium text-ink-secondary uppercase mb-1">
               Email
             </label>
             <input
@@ -101,10 +101,10 @@ const Page = () => {
               disabled={isPending}
               type="email"
               placeholder="you@example.com"
-              className={`w-full px-4 py-3 bg-zinc-50 border rounded-lg text-sm focus:outline-none focus:ring-1 transition-all ${
+              className={`w-full px-4 py-3 bg-cream-dark border rounded-lg text-sm focus:outline-none focus:ring-1 transition-all ${
                 errors.email
                   ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                  : "border-zinc-200 focus:border-blue-500 focus:ring-blue-500"
+                  : "border-border focus:border-accent focus:ring-accent"
               }`}
             />
             {errors.email && (
@@ -114,7 +114,7 @@ const Page = () => {
 
           {/* Password */}
           <div>
-            <label className="block text-xs font-medium text-zinc-700 uppercase mb-1">
+            <label className="block text-xs font-medium text-ink-secondary uppercase mb-1">
               Password
             </label>
             <input
@@ -122,10 +122,10 @@ const Page = () => {
               disabled={isPending}
               type="password"
               placeholder="••••••••"
-              className={`w-full px-4 py-3 bg-zinc-50 border rounded-lg text-sm focus:outline-none focus:ring-1 transition-all ${
+              className={`w-full px-4 py-3 bg-cream-dark border rounded-lg text-sm focus:outline-none focus:ring-1 transition-all ${
                 errors.password
                   ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                  : "border-zinc-200 focus:border-blue-500 focus:ring-blue-500"
+                  : "border-border focus:border-accent focus:ring-accent"
               }`}
             />
             {errors.password && (
@@ -151,16 +151,16 @@ const Page = () => {
             )}
           </Button>
 
-          <p className="text-xs text-zinc-400 text-center leading-relaxed px-4">
+          <p className="text-xs text-ink-muted text-center leading-relaxed px-4">
             By joining, you agree to our Terms of Service and Privacy Policy.
           </p>
         </form>
 
-        <div className="mt-8 text-center text-sm text-zinc-500">
+        <div className="mt-8 text-center text-sm text-ink-muted">
           Already have an account?{" "}
           <button
             onClick={() => router.push("/sign-in")}
-            className="text-zinc-900 font-medium hover:underline"
+            className="text-ink font-medium hover:underline"
           >
             Sign in
           </button>

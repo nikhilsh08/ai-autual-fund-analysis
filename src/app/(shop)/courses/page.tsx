@@ -21,10 +21,10 @@ export default async function AllCoursesPage() {
 
     return (
         <>
-            <div className="pt-24 pb-8 bg-zinc-50 border-b border-zinc-200">
+            <div className="pt-24 pb-8 bg-cream-dark border-b border-border">
                 <div className="max-w-7xl mx-auto px-6 text-center">
-                    <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 mb-4">All Courses</h1>
-                    <p className="text-zinc-600 text-lg max-w-2xl mx-auto">
+                    <h1 className="font-serif font-black tracking-tighter leading-[1.02] text-ink text-[clamp(32px,5vw,48px)] mb-4">All Courses</h1>
+                    <p className="text-ink-secondary text-[clamp(16px,1.8vw,18px)] font-light max-w-2xl mx-auto">
                         Comprehensive training for every step of your wealth creation journey.
                     </p>
                 </div>

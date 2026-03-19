@@ -25,24 +25,24 @@ export const Testimonials = () => {
     ];
 
     return (
-        <section className="py-20 bg-zinc-900 text-white relative overflow-hidden">
+        <section className="py-20 bg-ink text-cream relative overflow-hidden">
             {/* Background Accents */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-                <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-blue-600/20 blur-[120px] rounded-full"></div>
-                <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-indigo-600/20 blur-[120px] rounded-full"></div>
+                <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-accent/20 blur-[120px] rounded-full"></div>
+                <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-teal/20 blur-[120px] rounded-full"></div>
             </div>
 
             <div className="max-w-7xl mx-auto px-6 relative z-10">
                 <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                    <h2 className="text-3xl md:text-4xl font-bold font-serif mb-6">
                         From Our Students
                     </h2>
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cream/10 border border-cream/20 backdrop-blur-sm">
                         <span className="flex h-2 w-2 relative">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal/75 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-teal"></span>
                         </span>
-                        <span className="text-sm font-medium text-zinc-200">10,000+ students and counting!</span>
+                        <span className="text-sm font-medium text-cream/80">10,000+ students and counting!</span>
                     </div>
                 </div>
 
@@ -50,19 +50,19 @@ export const Testimonials = () => {
                     {testimonials.map((testimonial, index) => (
                         <div
                             key={index}
-                            className="bg-zinc-800/50 backdrop-blur-md border border-zinc-700 p-8 rounded-2xl relative"
+                            className="bg-ink-body/50 backdrop-blur-md border border-ink-secondary/30 p-8 rounded-2xl relative"
                         >
-                            <Quote className="w-8 h-8 text-zinc-600 mb-6" />
-                            <p className="text-zinc-300 mb-8 leading-relaxed italic">
+                            <Quote className="w-8 h-8 text-ink-muted mb-6" />
+                            <p className="text-cream/80 mb-8 leading-relaxed italic">
                                 "{testimonial.quote}"
                             </p>
                             <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-teal flex items-center justify-center text-cream font-bold text-sm">
                                     {testimonial.name[0]}
                                 </div>
                                 <div>
-                                    <div className="font-bold text-white">{testimonial.name}</div>
-                                    <div className="text-xs text-zinc-400">{testimonial.role}</div>
+                                    <div className="font-bold text-cream">{testimonial.name}</div>
+                                    <div className="text-xs text-cream/60">{testimonial.role}</div>
                                 </div>
                             </div>
                         </div>

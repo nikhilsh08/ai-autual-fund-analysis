@@ -173,8 +173,8 @@ const CheckoutContent = () => {
 
   if (!cartStore || isLoadingBuyNow) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50">
-        <Loader2 className="w-8 h-8 animate-spin text-zinc-400" />
+      <div className="min-h-screen flex items-center justify-center bg-cream">
+        <Loader2 className="w-8 h-8 animate-spin text-ink-muted" />
       </div>
     );
   }
@@ -316,11 +316,11 @@ const CheckoutContent = () => {
   const showUpsellCard = !isEmpty && upsellItem && !isUpsellInCart;
 
   return (
-    <div className="pt-28 pb-32 px-6 min-h-screen bg-zinc-50">
+    <div className="pt-28 pb-32 px-6 min-h-screen bg-cream">
       <div className="max-w-7xl mx-auto mb-8">
         <button
           onClick={() => buyNowId ? router.push('/cart') : router.back()}
-          className="flex items-center gap-2 text-zinc-500 hover:text-zinc-900 transition-colors"
+          className="flex items-center gap-2 text-ink-muted hover:text-ink transition-colors"
         >
           <ChevronLeft size={16} /> {buyNowItem ? "Cancel & Go to Cart" : "Back"}
         </button>
@@ -328,12 +328,12 @@ const CheckoutContent = () => {
 
       <div className="max-w-7xl mx-auto">
         {isEmpty ? (
-          <div className="flex flex-col items-center justify-center py-20 px-4 bg-white rounded-3xl border-2 border-dashed border-zinc-200 text-center">
-            <div className="w-20 h-20 bg-zinc-50 rounded-full flex items-center justify-center mb-6">
-              <ShoppingBag size={32} className="text-zinc-300" />
+          <div className="flex flex-col items-center justify-center py-20 px-4 bg-cream-dark rounded-3xl border-2 border-dashed border-border text-center">
+            <div className="w-20 h-20 bg-cream-darkest rounded-full flex items-center justify-center mb-6">
+              <ShoppingBag size={32} className="text-ink-muted" />
             </div>
-            <h2 className="text-2xl font-semibold text-zinc-900 mb-2">Your checkout is empty</h2>
-            <p className="text-zinc-500 max-w-sm mb-8">
+            <h2 className="text-2xl font-semibold text-ink mb-2">Your checkout is empty</h2>
+            <p className="text-ink-secondary max-w-sm mb-8">
               Looks like you haven't selected any courses yet.
             </p>
             <Button onClick={() => router.push('/')} size="lg" className="px-8 rounded-full">
@@ -345,37 +345,37 @@ const CheckoutContent = () => {
             {/* Left Column */}
             <div className="space-y-8">
               <div className="flex items-center gap-2 mb-2">
-                <ShieldCheck className="text-green-600" size={20} />
-                <span className="text-sm font-medium text-green-700 bg-green-50 px-3 py-1 rounded-full border border-green-100">Secure Checkout</span>
+                <ShieldCheck className="text-teal" size={20} />
+                <span className="text-sm font-medium text-teal bg-teal/10 px-3 py-1 rounded-full border border-teal/20">Secure Checkout</span>
               </div>
 
-              <div className="bg-white p-8 rounded-2xl border border-zinc-200 shadow-sm relative overflow-hidden">
-                <h2 className="text-xl font-medium text-zinc-900 mb-6 flex items-center gap-2">
-                  <User size={20} className="text-blue-600" /> Contact Information
+              <div className="bg-card p-8 rounded-2xl border border-border shadow-sm relative overflow-hidden">
+                <h2 className="text-xl font-medium text-ink mb-6 flex items-center gap-2">
+                  <User size={20} className="text-accent" /> Contact Information
                 </h2>
                 {/* Wrapped in form for better accessibility */}
                 <form id="checkout-form" onSubmit={handleSubmit(onPaymentSubmit)} className="space-y-4">
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 uppercase mb-1">Full Name</label>
+                    <label className="block text-xs font-medium text-ink-secondary uppercase mb-1">Full Name</label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
-                      <input {...register("name")} type="text" placeholder="John Doe" className={`w-full pl-10 pr-4 py-3 bg-zinc-50 border rounded-lg text-sm focus:outline-none focus:ring-1 transition-all ${errors.name ? 'border-red-300 focus:ring-red-500' : 'border-zinc-200 focus:ring-blue-500'}`} />
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" size={16} />
+                      <input {...register("name")} type="text" placeholder="John Doe" className={`w-full pl-10 pr-4 py-3 bg-cream-dark border rounded-lg text-sm focus:outline-none focus:ring-1 transition-all ${errors.name ? 'border-red-300 focus:ring-red-500' : 'border-border focus:ring-accent'}`} />
                     </div>
                     {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 uppercase mb-1">Email Address</label>
+                    <label className="block text-xs font-medium text-ink-secondary uppercase mb-1">Email Address</label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
-                      <input {...register("email")} type="email" placeholder="you@example.com" className={`w-full pl-10 pr-4 py-3 bg-zinc-50 border rounded-lg text-sm focus:outline-none focus:ring-1 transition-all ${errors.email ? 'border-red-300 focus:ring-red-500' : 'border-zinc-200 focus:ring-blue-500'}`} />
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" size={16} />
+                      <input {...register("email")} type="email" placeholder="you@example.com" className={`w-full pl-10 pr-4 py-3 bg-cream-dark border rounded-lg text-sm focus:outline-none focus:ring-1 transition-all ${errors.email ? 'border-red-300 focus:ring-red-500' : 'border-border focus:ring-accent'}`} />
                     </div>
                     {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 uppercase mb-1">Mobile Number</label>
+                    <label className="block text-xs font-medium text-ink-secondary uppercase mb-1">Mobile Number</label>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
-                      <input {...register("phone")} type="tel" placeholder="+1 (555) 000-0000" className={`w-full pl-10 pr-4 py-3 bg-zinc-50 border rounded-lg text-sm focus:outline-none focus:ring-1 transition-all ${errors.phone ? 'border-red-300 focus:ring-red-500' : 'border-zinc-200 focus:ring-blue-500'}`} />
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" size={16} />
+                      <input {...register("phone")} type="tel" placeholder="+91 98765 43210" className={`w-full pl-10 pr-4 py-3 bg-cream-dark border rounded-lg text-sm focus:outline-none focus:ring-1 transition-all ${errors.phone ? 'border-red-300 focus:ring-red-500' : 'border-border focus:ring-accent'}`} />
                     </div>
                     {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
                   </div>
@@ -383,11 +383,11 @@ const CheckoutContent = () => {
               </div>
 
               {showUpsellCard && (
-                <div className="p-6 bg-zinc-50 border border-zinc-200 rounded-2xl relative overflow-hidden transition-all hover:border-zinc-300">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-100/50 blur-[50px] rounded-full pointer-events-none" />
+                <div className="p-6 bg-cream-dark border border-border rounded-2xl relative overflow-hidden transition-all hover:border-accent/30">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gold/20 blur-[50px] rounded-full pointer-events-none" />
                   <div className="relative z-10 flex flex-col sm:flex-row justify-between gap-4 items-center">
                     <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-lg bg-yellow-100 flex items-center justify-center text-yellow-600 flex-shrink-0 relative overflow-hidden">
+                      <div className="w-16 h-16 rounded-lg bg-gold/20 flex items-center justify-center text-gold flex-shrink-0 relative overflow-hidden">
                         {upsellItem.thumbnail ? (
                           <Image src={upsellItem.thumbnail} alt={upsellItem.title} fill className="object-cover" />
                         ) : (
@@ -395,11 +395,11 @@ const CheckoutContent = () => {
                         )}
                       </div>
                       <div>
-                        <h4 className="font-medium text-zinc-900">{upsellItem.title}</h4>
-                        <p className="text-sm text-zinc-500 font-mono">₹{upsellItem.price}</p>
+                        <h4 className="font-medium text-ink">{upsellItem.title}</h4>
+                        <p className="text-sm text-ink-muted font-mono">₹{upsellItem.price}</p>
                       </div>
                     </div>
-                    <Button variant="secondary" onClick={handleAddUpsell} className="bg-white shadow-sm w-full sm:w-auto hover:bg-zinc-50 border-zinc-200">
+                    <Button variant="secondary" onClick={handleAddUpsell} className="bg-card shadow-sm w-full sm:w-auto hover:bg-cream border-border">
                       <Plus size={14} className="mr-1" /> Add to Order
                     </Button>
                   </div>
@@ -409,29 +409,29 @@ const CheckoutContent = () => {
 
             {/* Right Column: Summary */}
             <div>
-              <div className="bg-white p-8 rounded-2xl border border-zinc-200 shadow-sm sticky top-28">
-                <h2 className="text-xl font-medium text-zinc-900 mb-6">Order Summary</h2>
+              <div className="bg-card p-8 rounded-2xl border border-border shadow-sm sticky top-28">
+                <h2 className="text-xl font-medium text-ink mb-6">Order Summary</h2>
                 <div className="space-y-4 mb-8">
                   {displayItems.map((item: any, i: number) => (
-                    <div key={item.id} className="relative flex gap-4 p-4 rounded-xl border border-zinc-100 bg-white shadow-sm group hover:border-zinc-300 transition-colors">
-                      <div className={`w-16 h-16 rounded-lg bg-zinc-100 flex-shrink-0 overflow-hidden relative border border-zinc-100 ${i % 3 === 0 ? 'bg-gradient-to-br from-blue-50 to-cyan-50' : 'bg-gradient-to-br from-purple-50 to-pink-50'}`}>
+                    <div key={item.id} className="relative flex gap-4 p-4 rounded-xl border border-border bg-cream-dark shadow-sm group hover:border-accent/30 transition-colors">
+                      <div className={`w-16 h-16 rounded-lg bg-cream flex-shrink-0 overflow-hidden relative border border-border ${i % 3 === 0 ? 'bg-gradient-to-br from-accent-light to-cream-dark' : 'bg-gradient-to-br from-teal/10 to-cream-dark'}`}>
                         {item.thumbnail && (
                           <Image src={item.thumbnail} alt={item.title} fill className="object-cover" />
                         )}
                       </div>
                       <div className="flex-1 flex flex-col justify-center pr-6">
-                        <div className="font-medium text-zinc-900 text-sm leading-tight line-clamp-2 mb-1">{item.title}</div>
-                        <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2">Course</div>
-                        <div className="font-mono text-zinc-900 text-sm font-medium">
+                        <div className="font-medium text-ink text-sm leading-tight line-clamp-2 mb-1">{item.title}</div>
+                        <div className="text-[10px] text-ink-muted uppercase tracking-wider mb-2">Course</div>
+                        <div className="font-mono text-ink text-sm font-medium">
                           {item.originalPrice > item.price && (
-                            <span className="text-zinc-400 line-through text-xs mr-2">₹{item.originalPrice}</span>
+                            <span className="text-ink-muted line-through text-xs mr-2">₹{item.originalPrice}</span>
                           )}
                           ₹{item.price}
                         </div>
                       </div>
                       <button
                         onClick={() => handleRemoveItem(item.id)}
-                        className="absolute top-3 right-3 p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                        className="absolute top-3 right-3 p-1.5 text-ink-muted hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                       >
                         <X size={16} />
                       </button>
@@ -442,8 +442,8 @@ const CheckoutContent = () => {
 
 
                 {/* Coupon Input */}
-                <div className="pt-6 border-t border-zinc-100">
-                  <label className="block text-xs font-medium text-zinc-700 uppercase mb-2">Coupon Code</label>
+                <div className="pt-6 border-t border-border">
+                  <label className="block text-xs font-medium text-ink-secondary uppercase mb-2">Coupon Code</label>
                   <div className="flex gap-2">
                     <input
                       type="text"
@@ -451,38 +451,38 @@ const CheckoutContent = () => {
                       onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                       disabled={!!appliedCoupon}
                       placeholder="ENTER CODE"
-                      className="flex-1 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 uppercase"
+                      className="flex-1 bg-cream-dark border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-accent uppercase"
                     />
                     {appliedCoupon ? (
                       <Button onClick={removeCoupon} variant="outline" size="sm" className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700">
                         Remove
                       </Button>
                     ) : (
-                      <Button onClick={handleApplyCoupon} disabled={!couponCode || isValidatingCoupon} size="sm" className="bg-zinc-900 text-white hover:bg-zinc-800">
+                      <Button onClick={handleApplyCoupon} disabled={!couponCode || isValidatingCoupon} size="sm" className="bg-ink text-cream hover:bg-ink/90">
                         {isValidatingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply"}
                       </Button>
                     )}
                   </div>
                   {couponError && <p className="text-red-500 text-xs mt-1">{couponError}</p>}
-                  {appliedCoupon && <p className="text-green-600 text-xs mt-1 flex items-center gap-1"><Tag size={12} /> Coupon applied successfully!</p>}
+                  {appliedCoupon && <p className="text-teal text-xs mt-1 flex items-center gap-1"><Tag size={12} /> Coupon applied successfully!</p>}
                 </div>
 
-                <div className="space-y-3 pt-6 border-t border-zinc-100 text-sm">
-                  <div className="flex justify-between text-zinc-500">
+                <div className="space-y-3 pt-6 border-t border-border text-sm">
+                  <div className="flex justify-between text-ink-muted">
                     <span>Subtotal</span>
                     <span>₹{subtotal.toFixed(2)}</span>
                   </div>
                   {appliedCoupon && (
-                    <div className="flex justify-between text-green-600 font-medium">
+                    <div className="flex justify-between text-teal font-medium">
                       <span>Discount ({appliedCoupon.code})</span>
                       <span>-₹{discount.toFixed(2)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-zinc-500">
+                  <div className="flex justify-between text-ink-muted">
                     <span>GST (18%)</span>
                     <span>₹{tax.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-lg font-medium text-zinc-900 pt-2 border-t border-zinc-100">
+                  <div className="flex justify-between text-lg font-medium text-ink pt-2 border-t border-border">
                     <span>Total</span>
                     <span>₹{total.toFixed(2)}</span>
                   </div>
@@ -500,7 +500,7 @@ const CheckoutContent = () => {
                     <>Pay ₹{total.toFixed(2)} <ArrowRight size={16} className="ml-2" /></>
                   )}
                 </Button>
-                <div className="mt-4 flex justify-center items-center gap-2 text-xs text-zinc-400">
+                <div className="mt-4 flex justify-center items-center gap-2 text-xs text-ink-muted">
                   <Lock size={12} /> 256-bit SSL Encrypted Payment
                 </div>
               </div>
@@ -516,8 +516,8 @@ const CheckoutContent = () => {
 export default function CheckoutPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50">
-        <Loader2 className="w-8 h-8 animate-spin text-zinc-400" />
+      <div className="min-h-screen flex items-center justify-center bg-cream">
+        <Loader2 className="w-8 h-8 animate-spin text-ink-muted" />
       </div>
     }>
       <CheckoutContent />

@@ -58,11 +58,11 @@ const Page = () => {
   };
 
   return (
-    <div className="pt-28 pb-32 px-6 min-h-screen bg-zinc-50 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-2xl border border-zinc-200 shadow-sm max-w-md w-full">
+    <div className="pt-28 pb-32 px-6 min-h-screen bg-cream flex items-center justify-center">
+      <div className="bg-card p-8 rounded-2xl border border-border shadow-sm max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-medium text-zinc-900">Welcome back</h1>
-          <p className="text-zinc-500 text-sm mt-2">
+          <h1 className="text-2xl font-medium font-serif text-ink">Welcome back</h1>
+          <p className="text-ink-muted text-sm mt-2">
             Sign in to your account to continue
           </p>
         </div>
@@ -70,7 +70,7 @@ const Page = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Email Field */}
           <div>
-            <label className="block text-xs font-medium text-zinc-700 uppercase mb-1">
+            <label className="block text-xs font-medium text-ink-secondary uppercase mb-1">
               Email
             </label>
             <input
@@ -78,10 +78,10 @@ const Page = () => {
               disabled={isPending}
               type="email"
               placeholder="you@example.com"
-              className={`w-full px-4 py-3 bg-zinc-50 border rounded-lg text-sm focus:outline-none focus:ring-1 transition-all ${
+              className={`w-full px-4 py-3 bg-cream-dark border rounded-lg text-sm focus:outline-none focus:ring-1 transition-all ${
                 errors.email
                   ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                  : "border-zinc-200 focus:border-blue-500 focus:ring-blue-500"
+                  : "border-border focus:border-accent focus:ring-accent"
               }`}
             />
             {errors.email && (
@@ -92,12 +92,12 @@ const Page = () => {
           {/* Password Field */}
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="block text-xs font-medium text-zinc-700 uppercase">
+              <label className="block text-xs font-medium text-ink-secondary uppercase">
                 Password
               </label>
               <a
                 href="/auth/reset"
-                className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                className="text-xs text-accent hover:text-accent/80 font-medium"
               >
                 Forgot?
               </a>
@@ -107,10 +107,10 @@ const Page = () => {
               disabled={isPending}
               type="password"
               placeholder="••••••••"
-              className={`w-full px-4 py-3 bg-zinc-50 border rounded-lg text-sm focus:outline-none focus:ring-1 transition-all ${
+              className={`w-full px-4 py-3 bg-cream-dark border rounded-lg text-sm focus:outline-none focus:ring-1 transition-all ${
                 errors.password
                   ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                  : "border-zinc-200 focus:border-blue-500 focus:ring-blue-500"
+                  : "border-border focus:border-accent focus:ring-accent"
               }`}
             />
             {errors.password && (
@@ -142,10 +142,10 @@ const Page = () => {
         {/* Divider */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-zinc-200" />
+            <span className="w-full border-t border-border" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-zinc-400">Or continue with</span>
+            <span className="bg-card px-2 text-ink-muted">Or continue with</span>
           </div>
         </div>
 
@@ -154,17 +154,17 @@ const Page = () => {
           <button
             type="button"
             onClick={handleGoogleLogin}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-zinc-200 rounded-lg text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-cream border border-border rounded-lg text-sm font-medium text-ink-secondary hover:bg-cream-dark transition-colors"
           >
             <Globe size={16} /> Google
           </button>
         </div>
 
-        <div className="mt-8 text-center text-sm text-zinc-500">
+        <div className="mt-8 text-center text-sm text-ink-muted">
           Don't have an account?{" "}
           <button
             onClick={() => router.push("/sign-up")}
-            className="text-zinc-900 font-medium hover:underline"
+            className="text-ink font-medium hover:underline"
           >
             Sign up
           </button>
