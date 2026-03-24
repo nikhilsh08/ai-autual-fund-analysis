@@ -143,13 +143,38 @@ export async function updateBundle(
       return { success: false, error: "Unauthorized" };
     }
 
+    // Build a safe update payload (ignore unknown/immutable fields from API body)
+    const updateData: {
+      name?: string;
+      slug?: string;
+      description?: string | null;
+      price?: number;
+      originalPrice?: number | null;
+      courseIds?: string[];
+      features?: string[];
+      membershipDuration?: number;
+      isPublished?: boolean;
+      isActive?: boolean;
+    } = {};
+
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.slug !== undefined) updateData.slug = data.slug;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.price !== undefined) updateData.price = data.price;
+    if (data.originalPrice !== undefined) updateData.originalPrice = data.originalPrice;
+    if (data.courseIds !== undefined) updateData.courseIds = data.courseIds;
+    if (data.features !== undefined) updateData.features = data.features;
+    if (data.membershipDuration !== undefined) updateData.membershipDuration = data.membershipDuration;
+    if (data.isPublished !== undefined) updateData.isPublished = data.isPublished;
+    if (data.isActive !== undefined) updateData.isActive = data.isActive;
+
     // If courseIds provided, validate they exist and are available
-    if (data.courseIds) {
+    if (updateData.courseIds) {
       const courses = await dataBasePrisma.course.findMany({
-        where: { id: { in: data.courseIds } },
+        where: { id: { in: updateData.courseIds } },
       });
 
-      if (courses.length !== data.courseIds.length) {
+      if (courses.length !== updateData.courseIds.length) {
         return { success: false, error: "Some courses not found" };
       }
 
@@ -161,14 +186,14 @@ export async function updateBundle(
       }
 
       // Recalculate original price if not explicitly provided
-      if (data.originalPrice === undefined) {
-        data.originalPrice = courses.reduce((sum, c) => sum + c.price, 0);
+      if (updateData.originalPrice === undefined) {
+        updateData.originalPrice = courses.reduce((sum, c) => sum + c.price, 0);
       }
     }
 
     const bundle = await dataBasePrisma.bundle.update({
       where: { id },
-      data,
+      data: updateData,
     });
 
     revalidatePath("/admin/bundles");

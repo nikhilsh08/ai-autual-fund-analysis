@@ -1,7 +1,8 @@
 export const dynamic = 'force-dynamic';
-import { CourseCatalog } from "@/components/CourseCatalog";
 import { Metadata } from "next";
-import { getCoursesAction } from "@/server/actions/get-courses";
+import { getHomePageCoursesAction } from "@/server/actions/home-courses";
+import { getActiveBundleForHomepage } from "@/server/actions/bundle.action";
+import CoursesSectionServer from "@/components/pages/home/CoursesSectionServer";
 
 export const metadata: Metadata = {
     title: "All Courses | CashFlowCrew",
@@ -9,15 +10,9 @@ export const metadata: Metadata = {
 };
 
 export default async function AllCoursesPage() {
-    const rawCourses = await getCoursesAction();
-    // Safely map complex category objects to string names for the CourseCatalog
-    const courses = rawCourses.map(c => ({
-        ...c,
-        category: typeof c.category === 'object' && c.category ? c.category.name : c.category
-    })) as any[];
-
-    // Extract unique categories
-    const categories = Array.from(new Set(courses.map(c => c.category).filter(Boolean)));
+    const courses = await getHomePageCoursesAction();
+    const bundleResult = await getActiveBundleForHomepage();
+    const bundle = bundleResult.success ? bundleResult.data : null;
 
     return (
         <>
@@ -29,7 +24,19 @@ export default async function AllCoursesPage() {
                     </p>
                 </div>
             </div>
-            <CourseCatalog courses={courses} categories={categories} />
+            <CoursesSectionServer 
+                courses={courses} 
+                bundle={bundle ? {
+                    fullPrice: bundle.originalPrice || 0,
+                    price: bundle.price,
+                    savings: (bundle.originalPrice || 0) - bundle.price,
+                    savingsPercent: bundle.originalPrice ? Math.round(((bundle.originalPrice - bundle.price) / bundle.originalPrice) * 100) : 0,
+                    features: bundle.features || [],
+                    id: bundle.id,
+                    name: bundle.name,
+                    courseIds: bundle.courseIds,
+                } : undefined}
+            />
         </>
     );
 }

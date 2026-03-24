@@ -80,9 +80,9 @@ export default async function OrderStatusPage({
                         </div>
 
                         <div className="pt-4 space-y-3">
-                            <Link href="/dashboard">
+                            <Link href="/">
                                 <Button className="w-full h-12 rounded-xl text-base" size="lg">
-                                    Go to Dashboard <ArrowRight className="ml-2 w-4 h-4" />
+                                    Go to Home Page <ArrowRight className="ml-2 w-4 h-4" />
                                 </Button>
                             </Link>
                             <Link href="/">
