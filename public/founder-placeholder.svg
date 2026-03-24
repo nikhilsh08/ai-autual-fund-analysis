@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="300" y2="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#EEEDFB"/>
+      <stop offset="1" stop-color="#F8F5EF"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="300" rx="150" fill="url(#bg)"/>
+  <circle cx="150" cy="150" r="144" stroke="#5B4FD6" stroke-opacity="0.35" stroke-width="4"/>
+  <text x="150" y="162" text-anchor="middle" font-family="serif" font-size="84" font-weight="700" fill="#1A1714">NS</text>
+</svg>

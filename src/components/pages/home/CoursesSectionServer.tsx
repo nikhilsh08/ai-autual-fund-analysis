@@ -21,6 +21,7 @@ interface Course {
   slug?: string;
   originalPrice?: number;
   description?: string;
+  staticRoute?: string | null;
 }
 
 interface Filter {
@@ -106,20 +107,22 @@ export default function CoursesSectionServer({
 
         {/* Filters */}
         <FadeIn>
-          <div className="flex gap-2 flex-wrap mb-6">
-            {filters.map(({ value, label }) => (
-              <button
-                key={value}
-                onClick={() => handleFilterChange(value)}
-                className={`px-4 py-[7px] rounded-pill text-xs font-sans cursor-pointer transition-colors border-[1.5px] ${
-                  activeFilter === value
-                    ? 'border-ink bg-ink text-cream'
-                    : 'border-border bg-transparent text-ink-secondary hover:border-ink-muted'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+          <div className="flex justify-center mb-6">
+            <div className="flex gap-2 flex-wrap justify-center items-center max-w-4xl">
+              {filters.map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => handleFilterChange(value)}
+                  className={`px-4 py-[7px] rounded-pill text-xs font-sans cursor-pointer transition-colors border-[1.5px] ${
+                    activeFilter === value
+                      ? 'border-ink bg-ink text-cream'
+                      : 'border-border bg-transparent text-ink-secondary hover:border-ink-muted'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
         </FadeIn>
 

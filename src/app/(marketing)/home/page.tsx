@@ -10,6 +10,7 @@ import { Metadata } from "next";
 import { HomeContent } from "@/components/pages/home/HomeContent";
 import { getHomePageCoursesAction } from "@/server/actions/home-courses";
 import { getHomePageBlogsAction } from "@/server/actions/home-blogs";
+import { getActiveBundleForHomepage } from "@/server/actions/bundle.action";
 
 /**
  * SEO Metadata - Optimized for search engines and social sharing
@@ -41,7 +42,7 @@ export const metadata: Metadata = {
     siteName: "CashFlowCrew",
     images: [
       {
-        url: "https://res.cloudinary.com/dkptctiev/image/upload/v1773317000/nikhil-sharma.jpg",
+        url: "https://res.cloudinary.com/dq1llsy7f/image/upload/v1738855885/c1gzyxcgfokizkisio3j.jpg",
         width: 1200,
         height: 630,
         alt: "CashFlowCrew - Master Your Money",
@@ -54,7 +55,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "CashFlowCrew | Master Personal Finance & Investing",
     description: "Build a wealth-generating portfolio with AI-assisted fund analysis. 12 courses, biweekly updates, live sessions.",
-    images: ["https://res.cloudinary.com/dkptctiev/image/upload/v1773317000/nikhil-sharma.jpg"],
+    images: ["https://res.cloudinary.com/dq1llsy7f/image/upload/v1738855885/c1gzyxcgfokizkisio3j.jpg"],
   },
   alternates: {
     canonical: "https://cashflowcrew.in/home",
@@ -78,6 +79,8 @@ export default async function HomePage() {
   // Fetch data server-side using Server Actions
   const courses = await getHomePageCoursesAction();
   const blogs = await getHomePageBlogsAction();
+  const bundleResult = await getActiveBundleForHomepage();
+  const bundle = bundleResult.success ? bundleResult.data : null;
 
   // Structured data for rich snippets
   const organizationSchema = {
@@ -86,12 +89,12 @@ export default async function HomePage() {
     name: 'CashFlowCrew',
     url: 'https://cashflowcrew.in',
     description: 'Personal finance education and AI-assisted investment analysis for Indian investors',
-    image: 'https://res.cloudinary.com/dkptctiev/image/upload/v1773317000/nikhil-sharma.jpg',
+    image: 'https://res.cloudinary.com/dq1llsy7f/image/upload/v1738855885/c1gzyxcgfokizkisio3j.jpg',
     founder: {
       '@type': 'Person',
       name: 'Nikhil Sharma',
       jobTitle: 'Risk Analyst, Financial Educator',
-      image: 'https://res.cloudinary.com/dkptctiev/image/upload/v1773317000/nikhil-sharma.jpg'
+      image: 'https://res.cloudinary.com/dq1llsy7f/image/upload/v1738855885/c1gzyxcgfokizkisio3j.jpg'
     },
     address: {
       '@type': 'PostalAddress',
@@ -132,6 +135,7 @@ export default async function HomePage() {
       <HomeContent
         courses={courses}
         blogs={blogs}
+        bundle={bundle}
       />
     </>
   );

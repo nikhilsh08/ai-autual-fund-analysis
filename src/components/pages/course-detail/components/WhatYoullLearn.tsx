@@ -20,7 +20,7 @@ export const WhatYoullLearn = ({ curriculum }: WhatYoullLearnProps) => {
     return (
         <section className="py-16 px-4 sm:px-6 bg-cream">
             <div className="max-w-3xl mx-auto">
-                <h2 className="text-2xl sm:text-3xl font-bold font-serif text-ink mb-8 text-center">
+                <h2 className="font-serif font-black text-ink tracking-tighter mb-2 text-center" style={{ fontSize: "clamp(26px,4vw,40px)" }}>
                     What you'll learn
                 </h2>
 

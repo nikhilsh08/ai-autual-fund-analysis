@@ -13,10 +13,10 @@ interface CoursePricingProps {
 
 const features = [
     "Full course access",
-    "Lifetime updates",
-    "Downloadable resources",
-    "Certificate of completion",
-    "Community access",
+    "AI prompts & analysis templates",
+    "Group doubt-clearing session",
+    "1 year of course updates",
+    "₹9,000 in bonus guides & templates",
 ];
 
 export const CoursePricing = ({ courseId, price, originalPrice, duration }: CoursePricingProps) => {
@@ -44,7 +44,7 @@ export const CoursePricing = ({ courseId, price, originalPrice, duration }: Cour
                     <p className="text-accent font-bold uppercase tracking-widest text-sm mb-2">
                         Pricing
                     </p>
-                    <h2 className="text-2xl sm:text-3xl font-bold font-serif text-ink mb-2">
+                    <h2 className="font-serif font-black text-ink tracking-tighter mb-2" style={{ fontSize: "clamp(26px,4vw,40px)" }}>
                         Invest in your financial future
                     </h2>
                     <p className="text-ink-secondary">

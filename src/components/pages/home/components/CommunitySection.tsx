@@ -20,8 +20,8 @@ export default function CommunitySection({ perks, bundlePrice }: CommunitySectio
         <FadeIn>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-14 items-center">
             {/* Left copy */}
-            <div>
-              <div className="text-[11px] tracking-[.14em] uppercase text-ink-muted flex items-center gap-2.5 mb-4">
+            <div className="text-center md:text-left">
+              <div className="text-[11px] tracking-[.14em] uppercase text-ink-muted flex items-center justify-center md:justify-start gap-2.5 mb-4">
                 <span className="w-[18px] h-px bg-ink-muted shrink-0" />
                 the ongoing edge
               </div>
@@ -42,7 +42,7 @@ export default function CommunitySection({ perks, bundlePrice }: CommunitySectio
 
             {/* Right card */}
             <div className="bg-cream-dark border border-border rounded-2xl p-6 px-[22px]">
-              <div className="flex items-center gap-2.5 mb-6 pb-4 border-b border-border">
+              <div className="flex items-center justify-center md:justify-start gap-2.5 mb-6 pb-4 border-b border-border text-center md:text-left">
                 <span className="text-[22px]">🔒</span>
                 <div>
                   <div className="font-serif font-bold text-sm text-ink">Bundle members only</div>
@@ -52,7 +52,7 @@ export default function CommunitySection({ perks, bundlePrice }: CommunitySectio
 
               <div className="space-y-3 mb-6">
                 {perks.map((perk) => (
-                  <div key={perk.text} className="flex gap-3 items-start">
+                  <div key={perk.text} className="flex gap-3 items-start justify-center md:justify-start text-left">
                     <span className="text-[18px] shrink-0">{perk.emoji}</span>
                     <p className="text-[13px] text-ink leading-[1.6]">{perk.text}</p>
                   </div>

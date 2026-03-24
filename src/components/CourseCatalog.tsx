@@ -16,7 +16,7 @@ export interface CourseData {
     title: string;
     slug: string;
     staticRoute?: string | null;
-    category: any; // Can be string (old) or object (db)
+    category: string | { name: string };
     price: number;
     status: string;
     oneLiner?: string | null;
@@ -52,6 +52,7 @@ export const CourseCatalog = ({ courses = [], categories = [] }: CourseCatalogPr
             id: course.id,
             title: course.title,
             price: course.price,
+            type: 'course',
         }, isLoggedIn);
     };
 

@@ -54,7 +54,8 @@ const Coursecard = ({ course, className = "" }: any) => {
         id: course.id,
         title: course.title,
         price: course.price,
-        thumbnail: course.thumbnail || ""
+        thumbnail: course.thumbnail || "",
+        type: 'course'
       };
       addItem(itemToAdd, isLoggedIn);
       toast.success("Added to cart");

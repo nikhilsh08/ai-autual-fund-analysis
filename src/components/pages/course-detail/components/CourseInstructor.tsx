@@ -38,7 +38,7 @@ export const CourseInstructor = () => {
         <section className="py-16 px-4 sm:px-6 bg-cream-dark">
             <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-10">
-                    <h2 className="text-2xl sm:text-3xl font-bold font-serif text-ink mb-2">
+                    <h2 className="font-serif font-black text-ink tracking-tighter mb-2 text-center" style={{ fontSize: "clamp(26px,4vw,40px)" }}>
                         Meet your instructor
                     </h2>
                     <p className="text-ink-secondary">
@@ -62,7 +62,7 @@ export const CourseInstructor = () => {
 
                         {/* Content */}
                         <div className="flex-1 text-center lg:text-left">
-                            <h3 className="text-2xl font-bold font-serif text-ink mb-1">
+                            <h3 className="font-serif font-black text-ink tracking-tighter mb-2 text-3xl" >
                                 Nikhil Sharma
                             </h3>
                             <p className="text-ink-secondary mb-4">

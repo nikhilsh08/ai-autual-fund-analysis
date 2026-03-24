@@ -35,9 +35,9 @@ export default function FAQSection({ faqs }: FAQSectionProps) {
                 <div className="flex items-center justify-between gap-4">
                   <h3 className="font-serif font-bold text-ink leading-[1.3]">{faq[0]}</h3>
                   <span className="font-serif text-[22px] text-accent shrink-0 transition-transform" style={{
-                    transform: openIndex === i ? 'rotate(180deg)' : 'rotate(0deg)'
+                    transform: openIndex === i ? 'rotate(45deg)' : 'rotate(0deg)'
                   }}>
-                    ↓
+                    +
                   </span>
                 </div>
                 {openIndex === i && (

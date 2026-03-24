@@ -105,6 +105,11 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
             course: true
           }
         },
+        bundleItems: {
+          include: {
+            bundle: true
+          }
+        },
         lead: true
       }
     });
@@ -143,6 +148,7 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
           data: { userId: user.id }
         });
 
+        // Process individual course items
         for (const item of localOrder.items) {
           await tx.purchase.upsert({
             where: { userId_courseId: { userId: user.id, courseId: item.courseId } },
@@ -163,6 +169,44 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
             } catch (err) {
               console.error(`Failed to enroll in TC for course ${item.course.title}`, err);
               // We do not throw here to avoid rolling back the payment validation
+            }
+          }
+        }
+
+        // Process bundle items - enroll in all bundle courses
+        if (localOrder.bundleItems && localOrder.bundleItems.length > 0) {
+          for (const bundleItem of localOrder.bundleItems) {
+            const bundle = bundleItem.bundle;
+            if (!bundle || !bundle.courseIds || bundle.courseIds.length === 0) continue;
+
+            // Fetch all courses in the bundle
+            const bundleCourses = await tx.course.findMany({
+              where: { id: { in: bundle.courseIds } }
+            });
+
+            for (const course of bundleCourses) {
+              // Create purchase record for each bundle course
+              await tx.purchase.upsert({
+                where: { userId_courseId: { userId: user.id, courseId: course.id } },
+                update: {},
+                create: { userId: user.id, courseId: course.id }
+              });
+
+              // Enroll in Trainer Central if ID exists
+              if (course.tcCourseId) {
+                try {
+                  console.log(`Attempting TC enrollment (from bundle) for ${user.email} -> ${course.tcCourseId} (${course.type})`);
+                  await enrollUserInTrainerCentral(
+                    course.type,
+                    user.email,
+                    user.name || "Student",
+                    course.tcCourseId
+                  );
+                } catch (err) {
+                  console.error(`Failed to enroll in TC for course ${course.title} (bundle)`, err);
+                  // We do not throw here to avoid rolling back the payment validation
+                }
+              }
             }
           }
         }

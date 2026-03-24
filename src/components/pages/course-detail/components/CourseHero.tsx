@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Users, Clock, BookOpen, Award } from "lucide-react";
+import { Users, Clock, Type, Award,Rocket } from "lucide-react";
 import Image from "next/image";
 
 interface CourseHeroProps {
@@ -12,15 +12,45 @@ interface CourseHeroProps {
 export const CourseHero = ({ course }: CourseHeroProps) => {
     const router = useRouter();
 
+    const instructor = course?.instructor ?? {};
+    const instructorName =
+        instructor?.name ||
+        course?.instructorName ||
+        course?.trainerName ||
+        "Nikhil Sharma";
+    const instructorImage =
+        instructor?.image ||
+        instructor?.avatar ||
+        course?.instructorImage ||
+        "https://res.cloudinary.com/dq1llsy7f/image/upload/v1738855885/c1gzyxcgfokizkisio3j.jpg";
+    const instructorHeadline =
+        instructor?.headline ||
+        instructor?.role ||
+        course?.instructorRole ||
+        "ex-Goldman Sachs";
+    const instructorExperience =
+        instructor?.experience ||
+        course?.instructorExperience ||
+        "Risk Analyst · 5 yrs · ₹60,000 Cr+";
+    const instructorAum =
+        instructor?.aum ||
+        course?.instructorAum;
+
+    const instructorMeta = [
+        instructorHeadline,
+        instructorExperience,
+        instructorAum,
+    ].filter(Boolean).join(" · ");
+
     const handleEnroll = () => {
         router.push(`/checkout?courseId=${course.id}`);
     };
 
     const stats = [
         { icon: Users, label: "100+ students", value: "100+" },
-        { icon: Clock, label: course.duration || "~90min", value: course.duration || "~90min" },
-        { icon: BookOpen, label: `${course.curriculum?.length || 5} lessons`, value: `${course.curriculum?.length || 5}` },
-        { icon: Award, label: "Certificate", value: "Certificate" },
+        {icon: Type, label: `${course.type.charAt(0) + course.type.slice(1).toLowerCase()} lessons`, value: `${course.type} lessons` },
+        { icon: Award, label: " AI tools included", value: "AI tools included" },
+        { icon: Rocket, label: "Fast-track learning", value: "Fast-track learning" },
     ];
 
     return (
@@ -38,7 +68,7 @@ export const CourseHero = ({ course }: CourseHeroProps) => {
 
                     {/* Subtitle / One-liner */}
                     <p className="text-lg sm:text-xl text-ink-secondary mb-8 max-w-2xl mx-auto">
-                        {course.oneLiner || "Smart goals, Safety nets, simple starts"}
+                        {course.subtitle || "Smart goals, Safety nets, simple starts"}
                     </p>
 
                     {/* Stats Row */}
@@ -55,18 +85,26 @@ export const CourseHero = ({ course }: CourseHeroProps) => {
                     </div>
 
                     {/* Instructor Mini Badge */}
-                    <div className="flex items-center justify-center gap-2 mb-8">
-                        <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow-sm">
-                            <Image
-                                src="https://res.cloudinary.com/dq1llsy7f/image/upload/v1738855885/c1gzyxcgfokizkisio3j.jpg"
-                                alt="Nikhil Sharma"
-                                fill
-                                className="object-cover"
-                            />
+                    <div className="mb-8 flex justify-center">
+                        <div className="relative w-full max-w-135 rounded-2xl border border-border bg-cream-dark/60 py-4 pl-20 pr-5 sm:pl-24 text-left overflow-hidden">
+                            <div className="absolute left-4 top-1/2 h-14 w-14 -translate-y-1/2 overflow-hidden rounded-full border-2 border-indigo-100 bg-white">
+                                <Image
+                                    src={instructorImage}
+                                    alt={instructorName}
+                                    fill
+                                    className="object-cover"
+                                />
+                            </div>
+
+                            <p className="font-serif font-black text-ink tracking-tighter mb-2" style={{ fontSize: "clamp(26px,4vw,40px)" }}>
+                                {instructorName}
+                            </p>
+                            {instructorMeta && (
+                                <p className="mt-1 text-sm text-ink-muted whitespace-normal wrap-break-word leading-relaxed">
+                                    {instructorMeta}
+                                </p>
+                            )}
                         </div>
-                        <span className="text-sm text-ink-secondary">
-                            with <span className="font-semibold text-ink">Nikhil</span>
-                        </span>
                     </div>
 
                     {/* CTA Button */}

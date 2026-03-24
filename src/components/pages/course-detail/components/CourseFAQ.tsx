@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Plus, Minus } from "lucide-react";
 
 interface FAQItem {
@@ -8,7 +8,12 @@ interface FAQItem {
     answer: string;
 }
 
-const faqs: FAQItem[] = [
+interface CourseFAQProps {
+    faqsItems: string[] | { key: string; value: string[] | null }[];
+}
+
+// Default fallback FAQs
+const defaultFaqs: FAQItem[] = [
     {
         question: "Is this course suitable for complete beginners?",
         answer: "Absolutely! This course is designed specifically for beginners. We start from the basics and build up your knowledge step by step. No prior financial knowledge is required."
@@ -35,8 +40,31 @@ const faqs: FAQItem[] = [
     },
 ];
 
-export const CourseFAQ = () => {
+export const CourseFAQ = ({ faqsItems }: CourseFAQProps) => {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+    // Transform faqsItems into FAQItem[] format
+    const faqs = useMemo(() => {
+        if (!faqsItems || faqsItems.length === 0) {
+            return defaultFaqs;
+        }
+
+        // Check if it's a string array
+        if (typeof faqsItems[0] === "string") {
+            return (faqsItems as string[]).map((item) => ({
+                question: item,
+                answer: item, // If only strings provided, use as both Q&A
+            }));
+        }
+
+        // Handle { key: string; value: string[] | null }[] format
+        return (faqsItems as { key: string; value: string[] | null }[])
+            .map((item) => ({
+                question: item.key,
+                answer: item.value ? item.value.join(" ") : "",
+            }))
+            .filter((faq) => faq.answer); // Remove empty FAQs
+    }, [faqsItems]);
 
     return (
         <section className="py-16 px-4 sm:px-6 bg-cream">

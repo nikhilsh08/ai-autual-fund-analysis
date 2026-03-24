@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════════════ */
 
 export const PHOTO_URL =
-  "https://res.cloudinary.com/dkptctiev/image/upload/v1773317000/nikhil-sharma.jpg";
+  "https://res.cloudinary.com/dq1llsy7f/image/upload/v1738855885/c1gzyxcgfokizkisio3j.jpg";
 
 export const NAV_LINKS = ["courses", "founder", "blog"];
 

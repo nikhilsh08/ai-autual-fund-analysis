@@ -99,13 +99,14 @@ export async function toggleCouponStatus(id: string, isEnabled: boolean) {
 export async function validateCoupon(
     code: string,
     courseIds: string[],
-    orderTotal: number
+    orderTotal: number,
+    bundleIds: string[] = []
 ) {
     try {
         const coupon = await dataBasePrisma.coupon.findFirst({
-            where: { 
-                code: { equals: code, mode: "insensitive" }, 
-                isEnabled: true 
+            where: {
+                code: { equals: code, mode: "insensitive" },
+                isEnabled: true
             },
         });
 
@@ -131,15 +132,22 @@ export async function validateCoupon(
             };
         }
 
-        // 4. Check Applicable Courses (if restricted)
-        if (coupon.applicableCourseIds && coupon.applicableCourseIds.length > 0) {
+        // 4. Check Applicable Courses/Bundles (if restricted)
+        const hasRestrictedCourses = coupon.applicableCourseIds && coupon.applicableCourseIds.length > 0;
+        const hasRestrictedBundles = coupon.applicableBundleIds && coupon.applicableBundleIds.length > 0;
+
+        if (hasRestrictedCourses || hasRestrictedBundles) {
             const hasApplicableCourse = courseIds.some((id) =>
-                coupon.applicableCourseIds.includes(id)
+                coupon.applicableCourseIds?.includes(id)
             );
-            if (!hasApplicableCourse) {
+            const hasApplicableBundle = bundleIds.some((id) =>
+                coupon.applicableBundleIds?.includes(id)
+            );
+
+            if (!hasApplicableCourse && !hasApplicableBundle) {
                 return {
                     success: false,
-                    error: "Coupon not applicable to the selected courses",
+                    error: "Coupon not applicable to the selected items",
                 };
             }
         }

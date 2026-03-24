@@ -1,19 +1,58 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { useCartStore } from '@/store/cart-store';
 import FadeIn from './FadeIn';
 
 export interface BundleCardProps {
   bundle: {
+    id?: string;
+    name?: string;
     fullPrice: number;
     price: number;
     savings: number;
     savingsPercent: number;
     features: string[];
+    courseIds?: string[];
   };
 }
 
 export default function BundleCard({ bundle }: BundleCardProps) {
-  const { fullPrice, price, savings, savingsPercent, features } = bundle;
+  const { fullPrice, price, savings, savingsPercent, features, id, name, courseIds } = bundle;
+  const router = useRouter();
+  const { data: session } = useSession();
+  const { addBundle, hasConflictingCourses } = useCartStore();
+
+  const handleBuyBundle = async () => {
+    // If we have bundle data from database
+    if (id && courseIds) {
+      const hasConflicts = hasConflictingCourses(courseIds);
+
+      if (hasConflicts) {
+        const confirmed = window.confirm(
+          "Some courses in your cart are included in this bundle. Adding the bundle will replace them with better savings. Continue?"
+        );
+        if (!confirmed) return;
+      }
+
+      await addBundle(
+        {
+          id,
+          title: name || 'Complete Finance Masterclass',
+          price,
+          type: 'bundle',
+          courseIds,
+        },
+        !!session
+      );
+
+      router.push('/checkout');
+    } else {
+      // Fallback: Navigate to checkout with a flag (for static bundle)
+      router.push('/checkout?bundle=complete');
+    }
+  };
 
   return (
     <FadeIn>
@@ -68,13 +107,13 @@ export default function BundleCard({ bundle }: BundleCardProps) {
             <div className="inline-flex bg-success/[.15] border border-success/25 rounded-pill px-3 py-[3px] text-[11px] font-semibold text-green-400 mb-5">
               you save ₹{savings.toLocaleString('en-IN')} ({savingsPercent}% off)
             </div>
-            <a
-              href="#"
-              className="flex items-center justify-center w-full px-7 py-[15px] rounded-pill text-[15px] font-medium text-white mb-2.5 hover:-translate-y-px transition-transform"
+            <button
+              onClick={handleBuyBundle}
+              className="flex items-center justify-center w-full px-7 py-[15px] rounded-pill text-[15px] font-medium text-white mb-2.5 hover:-translate-y-px transition-transform cursor-pointer"
               style={{ background: 'linear-gradient(135deg,#5B4FD6,#1E8FE1)' }}
             >
               get everything — ₹{price.toLocaleString('en-IN')} →
-            </a>
+            </button>
             <p className="text-[11px] text-cream/30">100% money-back guarantee on your first course</p>
           </div>
         </div>

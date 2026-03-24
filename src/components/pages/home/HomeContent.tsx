@@ -36,12 +36,19 @@ import ArticleModal from "./components/ArticleModal";
 interface HomeContentProps {
   courses: any[];
   blogs: any[];
+  bundle?: any;
 }
 type FAQItem = [string, string];
-export function HomeContent({ courses, blogs }: HomeContentProps) {
+export function HomeContent({ courses, blogs, bundle }: HomeContentProps) {
   const [activeFilter, setActiveFilter] = useState("all");
   const [navScrolled, setNavScrolled] = useState(false);
   const [modalArticle, setModalArticle] = useState<any>(null);
+
+  // Transform database bundle to BundleCard format
+  const displayBundle = bundle ? {
+    ...bundle,
+    fullPrice: bundle.originalPrice || bundle.fullPrice,
+  } : null;
 
   // Scroll listener for nav shrink (client-side only)
   useEffect(() => {
@@ -76,7 +83,7 @@ export function HomeContent({ courses, blogs }: HomeContentProps) {
         filters={CATEGORY_FILTERS}
         activeFilter={activeFilter}
         onFilterChange={setActiveFilter}
-        bundle={BUNDLE}
+        bundle={displayBundle || BUNDLE}
       />
 
       {/* ── Blog / articles (Server-rendered, dynamic data) ── */}

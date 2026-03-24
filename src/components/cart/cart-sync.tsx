@@ -16,7 +16,12 @@ export function CartSync() {
       const sync = async () => {
         const serverItems = await getCartAction();
         if (serverItems && serverItems.length > 0) {
-          setItems(serverItems);
+          // Add type field to server items (default to 'course' for backward compatibility)
+          const itemsWithType = serverItems.map((item: any) => ({
+            ...item,
+            type: item.type || 'course',
+          }));
+          setItems(itemsWithType);
         }
         isSynced.current = true;
       };

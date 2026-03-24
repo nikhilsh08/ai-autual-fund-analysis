@@ -29,7 +29,7 @@ export const CourseTestimonials = () => {
     return (
         <section className="py-16 bg-cream-dark overflow-hidden">
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
-                <h2 className="text-2xl sm:text-3xl font-bold font-serif text-ink mb-8 text-center">
+                <h2 className="font-serif font-black text-ink tracking-tighter mb-2 text-center" style={{ fontSize: "clamp(26px,4vw,40px)" }}>
                     What students are saying
                 </h2>
 

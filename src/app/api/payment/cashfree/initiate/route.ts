@@ -10,30 +10,72 @@ const TAX_RATE = 0.18;
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { name, email, phone, courseIds, couponCode } = body;
+        const { name, email, phone, courseIds, bundleIds, couponCode } = body;
         const authenticatedUser = await currentUser();
 
-        if (!name || !email || !phone || !courseIds) {
+        if (!name || !email || !phone) {
             return NextResponse.json({ success: false, error: 'Missing fields' }, { status: 400 });
         }
 
-        const courseIdArray = Array.isArray(courseIds) ? courseIds : [courseIds];
-
-        // 1. Fetch and Validate Courses
-        const courses = await dataBasePrisma.course.findMany({
-            where: { id: { in: courseIdArray }, isPublished: true },
-        });
-
-        if (courses.length !== courseIdArray.length) {
-            return NextResponse.json({ success: false, error: 'Courses unavailable' }, { status: 404 });
+        // Must have either courseIds or bundleIds
+        if ((!courseIds || courseIds.length === 0) && (!bundleIds || bundleIds.length === 0)) {
+            return NextResponse.json({ success: false, error: 'No items to purchase' }, { status: 400 });
         }
 
-        // 2. Calculate Totals (Pre-discount)
-        const subtotal = courses.reduce((sum, course) => sum + course.price, 0);
+        const courseIdArray = Array.isArray(courseIds) ? courseIds : courseIds ? [courseIds] : [];
+        const bundleIdArray = Array.isArray(bundleIds) ? bundleIds : bundleIds ? [bundleIds] : [];
+
+        // Track all course IDs for enrollment (including bundle courses)
+        let allCourseIdsForEnrollment: string[] = [...courseIdArray];
+        let bundleItemsData: { bundleId: string; price: number }[] = [];
+        let bundleTotal = 0;
+
+        // 1. Fetch and Validate Bundles
+        if (bundleIdArray.length > 0) {
+            const bundles = await dataBasePrisma.bundle.findMany({
+                where: { id: { in: bundleIdArray }, isActive: true, isPublished: true },
+            });
+
+            if (bundles.length !== bundleIdArray.length) {
+                return NextResponse.json({ success: false, error: 'Some bundles are unavailable' }, { status: 404 });
+            }
+
+            // Expand bundle courses and calculate bundle total
+            for (const bundle of bundles) {
+                allCourseIdsForEnrollment = [...allCourseIdsForEnrollment, ...bundle.courseIds];
+                bundleItemsData.push({
+                    bundleId: bundle.id,
+                    price: bundle.price
+                });
+                bundleTotal += bundle.price;
+            }
+
+            // Remove duplicates
+            allCourseIdsForEnrollment = [...new Set(allCourseIdsForEnrollment)];
+        }
+
+        // 2. Fetch and Validate Individual Courses (only ones not from bundles)
+        let individualCourseTotal = 0;
+        let courses: any[] = [];
+
+        if (courseIdArray.length > 0) {
+            courses = await dataBasePrisma.course.findMany({
+                where: { id: { in: courseIdArray }, isPublished: true },
+            });
+
+            if (courses.length !== courseIdArray.length) {
+                return NextResponse.json({ success: false, error: 'Some courses are unavailable' }, { status: 404 });
+            }
+
+            individualCourseTotal = courses.reduce((sum, course) => sum + course.price, 0);
+        }
+
+        // 3. Calculate Totals (Pre-discount)
+        const subtotal = bundleTotal + individualCourseTotal;
         let discountAmount = 0;
         let couponId = null;
 
-        // 3. Apply Coupon if provided
+        // 4. Apply Coupon if provided
         if (couponCode) {
             const coupon = await dataBasePrisma.coupon.findUnique({
                 where: { code: couponCode, isEnabled: true },
@@ -51,6 +93,27 @@ export async function POST(req: Request) {
                 // Validate min amount
                 if (subtotal < coupon.minAmount) {
                     return NextResponse.json({ success: false, error: `Minimum order amount of ₹${coupon.minAmount} required` }, { status: 400 });
+                }
+
+                // Check if coupon applies to selected items
+                const hasRestrictedItems =
+                    (coupon.applicableCourseIds?.length > 0) ||
+                    (coupon.applicableBundleIds?.length > 0);
+
+                if (hasRestrictedItems) {
+                    const hasApplicableCourse = courseIdArray.some((id: string) =>
+                        coupon.applicableCourseIds?.includes(id)
+                    );
+                    const hasApplicableBundle = bundleIdArray.some((id: string) =>
+                        coupon.applicableBundleIds?.includes(id)
+                    );
+
+                    if (!hasApplicableCourse && !hasApplicableBundle) {
+                        return NextResponse.json({
+                            success: false,
+                            error: 'Coupon not applicable to selected items'
+                        }, { status: 400 });
+                    }
                 }
 
                 // Calculate discount
@@ -79,7 +142,7 @@ export async function POST(req: Request) {
         const taxAmount = taxableAmount * TAX_RATE;
         const finalAmount = Math.round((taxableAmount + taxAmount) * 100) / 100;
 
-        // 4. User Identity Resolution
+        // 5. User Identity Resolution
         let targetUserId: string | null = authenticatedUser?.id || null;
         let targetLeadId: string | null = null;
 
@@ -93,8 +156,8 @@ export async function POST(req: Request) {
                 // New Guest: Create/Update Lead
                 const lead = await dataBasePrisma.lead.upsert({
                     where: { email },
-                    update: { name, phone, courseIds: courseIdArray },
-                    create: { email, name, phone, courseIds: courseIdArray, source: 'checkout' }
+                    update: { name, phone, courseIds: allCourseIdsForEnrollment },
+                    create: { email, name, phone, courseIds: allCourseIdsForEnrollment, source: 'checkout' }
                 });
                 targetLeadId = lead.id;
             }
@@ -102,7 +165,7 @@ export async function POST(req: Request) {
 
         const orderId = `ORDER_CF_${uuidv4()}`;
 
-        // 5. Create Pending Order
+        // 6. Create Pending Order with both course items and bundle items
         await dataBasePrisma.order.create({
             data: {
                 orderId,
@@ -111,21 +174,25 @@ export async function POST(req: Request) {
                 guestEmail: email,
                 guestPhone: phone,
                 totalAmount: finalAmount,
-                discountAmount: discountAmount, // Store discount
-                couponId: couponId,             // Store coupon ID
+                discountAmount: discountAmount,
+                couponId: couponId,
                 status: 'PENDING',
-                items: {
+                // Individual course items
+                items: courseIdArray.length > 0 ? {
                     create: courses.map((c) => ({
                         courseId: c.id,
                         price: c.price
                     }))
-                }
+                } : undefined,
+                // Bundle items
+                bundleItems: bundleItemsData.length > 0 ? {
+                    create: bundleItemsData
+                } : undefined
             }
         });
 
-        // 6. Cashfree Initiation
+        // 7. Cashfree Initiation
         const cashfreeRes = await createCashfreeOrder(orderId, finalAmount, { name, email, phone });
-        console.log("Courses:");
 
         if (!cashfreeRes.success) throw new Error(cashfreeRes.error);
 

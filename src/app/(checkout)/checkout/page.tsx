@@ -130,6 +130,12 @@ const CheckoutContent = () => {
   const displayItems = buyNowItem ? [buyNowItem] : items;
   const isEmpty = displayItems.length === 0;
 
+  // Separate course and bundle items
+  const courseItems = displayItems.filter((item: any) => item.type !== 'bundle');
+  const bundleItems = displayItems.filter((item: any) => item.type === 'bundle');
+  const courseIds = courseItems.map((item: any) => item.id);
+  const bundleIds = bundleItems.map((item: any) => item.id);
+
   const isUpsellInCart = upsellItem
     ? (buyNowItem
       ? buyNowItem.id === upsellItem.id
@@ -152,7 +158,7 @@ const CheckoutContent = () => {
   // Re-validate coupon when items change
   useEffect(() => {
     if (appliedCoupon) {
-      validateCoupon(appliedCoupon.code, displayItems.map(i => i.id), itemsTotal)
+      validateCoupon(appliedCoupon.code, courseIds, itemsTotal, bundleIds)
         .then(res => {
           if (!res.success) {
             setAppliedCoupon(null);
@@ -187,8 +193,7 @@ const CheckoutContent = () => {
     setCouponError("");
 
     try {
-      const courseIds = displayItems.map((item: any) => item.id);
-      const res = await validateCoupon(couponCode, courseIds, itemsTotal);
+      const res = await validateCoupon(couponCode, courseIds, itemsTotal, bundleIds);
 
       if (res.success && res.data) {
         setAppliedCoupon(res.data as { code: string; discountAmount: number; couponId: string });
@@ -255,7 +260,8 @@ const CheckoutContent = () => {
           name: data.name,
           email: data.email,
           phone: data.phone,
-          courseIds: displayItems.map((item: any) => item.id),
+          courseIds: courseIds.length > 0 ? courseIds : undefined,
+          bundleIds: bundleIds.length > 0 ? bundleIds : undefined,
           couponCode: appliedCoupon?.code,
           // Capture UTMs
           utmParams: {
@@ -414,14 +420,19 @@ const CheckoutContent = () => {
                 <div className="space-y-4 mb-8">
                   {displayItems.map((item: any, i: number) => (
                     <div key={item.id} className="relative flex gap-4 p-4 rounded-xl border border-border bg-cream-dark shadow-sm group hover:border-accent/30 transition-colors">
-                      <div className={`w-16 h-16 rounded-lg bg-cream flex-shrink-0 overflow-hidden relative border border-border ${i % 3 === 0 ? 'bg-gradient-to-br from-accent-light to-cream-dark' : 'bg-gradient-to-br from-teal/10 to-cream-dark'}`}>
+                      <div className={`w-16 h-16 rounded-lg bg-cream flex-shrink-0 overflow-hidden relative border border-border ${item.type === 'bundle' ? 'bg-gradient-to-br from-gold/20 to-cream-dark' : i % 3 === 0 ? 'bg-gradient-to-br from-accent-light to-cream-dark' : 'bg-gradient-to-br from-teal/10 to-cream-dark'}`}>
                         {item.thumbnail && (
                           <Image src={item.thumbnail} alt={item.title} fill className="object-cover" />
+                        )}
+                        {item.type === 'bundle' && !item.thumbnail && (
+                          <div className="w-full h-full flex items-center justify-center text-gold text-2xl">★</div>
                         )}
                       </div>
                       <div className="flex-1 flex flex-col justify-center pr-6">
                         <div className="font-medium text-ink text-sm leading-tight line-clamp-2 mb-1">{item.title}</div>
-                        <div className="text-[10px] text-ink-muted uppercase tracking-wider mb-2">Course</div>
+                        <div className={`text-[10px] uppercase tracking-wider mb-2 ${item.type === 'bundle' ? 'text-gold font-medium' : 'text-ink-muted'}`}>
+                          {item.type === 'bundle' ? 'Bundle (All Courses)' : 'Course'}
+                        </div>
                         <div className="font-mono text-ink text-sm font-medium">
                           {item.originalPrice > item.price && (
                             <span className="text-ink-muted line-through text-xs mr-2">₹{item.originalPrice}</span>

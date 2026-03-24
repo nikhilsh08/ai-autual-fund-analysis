@@ -179,7 +179,7 @@ model Order {
   // Snapshot Data (Safety backup)
   guestEmail String?
   guestPhone String? // Added for snapshot
-  
+
   // Analytics / UTM Tracking
   utmSource   String?
   utmMedium   String?
@@ -188,10 +188,11 @@ model Order {
   utmContent  String?
 
   items       OrderItem[]
+  bundleItems BundleOrderItem[]
   totalAmount Float
   discountAmount Float @default(0)
   couponId    String?  @db.ObjectId
-  
+
   status      OrderStatus @default(PENDING)
 
   orderId   String? @unique
@@ -251,10 +252,12 @@ model Coupon {
   maxDiscount Float?   // For percentage
   description String?
   isEnabled   Boolean  @default(true)
-  
+
   // Relation to courses (optional, if empty applies to all)
   applicableCourseIds String[] @db.ObjectId
-  
+  // Relation to bundles (optional, if empty applies to all)
+  applicableBundleIds String[] @db.ObjectId
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -292,8 +295,38 @@ model Blog {
   seoTitle    String?
   seoDesc     String?
   tags        String[]
-  
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// Bundle model for course bundles (e.g., "Complete Finance Masterclass")
+model Bundle {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  name               String   @unique
+  slug               String   @unique
+  description        String?
+  price              Float
+  originalPrice      Float?
+  courseIds          String[] @db.ObjectId
+  features           String[]
+  membershipDuration Int      @default(365)
+  isPublished        Boolean  @default(true)
+  isActive           Boolean  @default(true)
+
+  orderItems         BundleOrderItem[]
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+// Link table for bundles in orders
+model BundleOrderItem {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String @db.ObjectId
+  order     Order  @relation(fields: [orderId], references: [id])
+  bundleId  String @db.ObjectId
+  bundle    Bundle @relation(fields: [bundleId], references: [id])
+  price     Float
 }
 

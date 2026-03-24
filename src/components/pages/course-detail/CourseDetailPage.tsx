@@ -5,23 +5,32 @@ import { CourseHero } from "./components/CourseHero";
 import { WhatYoullLearn } from "./components/WhatYoullLearn";
 import { CourseTestimonials } from "./components/CourseTestimonials";
 import { CourseCurriculum } from "./components/CourseCurriculum";
-import { WhatYouWalkAway } from "./components/WhatYouWalkAway";
 import { CourseInstructor } from "./components/CourseInstructor";
 import { CoursePricing } from "./components/CoursePricing";
 import { RelatedCourses } from "./components/RelatedCourses";
 import { CourseGuarantee } from "./components/CourseGuarantee";
-import { CourseAndMore } from "./components/CourseAndMore";
 import { CourseFAQ } from "./components/CourseFAQ";
 import { CourseReadyCTA } from "./components/CourseReadyCTA";
+import { CourseHelpSection } from "./components/CourseHelpSection";
+import { CourseFooter } from "./components/CourseFooter";
 
 interface CourseDetailPageProps {
     course: any;
     relatedCourses: any[];
+    bentoStyleList: string[] | { key: string; value: string[] | null }[];
+    courseModules: string[] | { key: string; value: string[] | null }[];
+    faqItems: string[] | { key: string; value: string[] | null }[];
 }
 
-export const CourseDetailPage = ({ course, relatedCourses }: CourseDetailPageProps) => {
+export const CourseDetailPage = ({
+    course,
+    relatedCourses,
+    bentoStyleList,
+    courseModules,
+    faqItems
+}: CourseDetailPageProps) => {
     return (
-        <div className="min-h-screen bg-cream">
+        <div className="min-h-screen bg-cream font-sans [text-rendering:optimizeLegibility] [&_h1]:font-serif [&_h2]:font-serif [&_h3]:font-serif [&_h1]:tracking-tight [&_h2]:tracking-tight [&_h3]:tracking-tight">
             {/* Sticky Navigation */}
             <CourseNavigation courseId={course.id} price={course.price} />
 
@@ -31,7 +40,7 @@ export const CourseDetailPage = ({ course, relatedCourses }: CourseDetailPagePro
             </section>
 
             {/* What You'll Learn */}
-            <WhatYoullLearn curriculum={course.curriculum} />
+            <WhatYoullLearn curriculum={bentoStyleList as string[]} />
 
             {/* Testimonials */}
             <CourseTestimonials />
@@ -39,13 +48,11 @@ export const CourseDetailPage = ({ course, relatedCourses }: CourseDetailPagePro
             {/* Curriculum / Modules */}
             <section id="modules">
                 <CourseCurriculum
-                    curriculum={course.curriculum}
+                    curriculum={courseModules as { key: string; value: string[] | null }[]}
                     duration={course.duration}
                 />
             </section>
 
-            {/* What You Walk Away With */}
-            <WhatYouWalkAway />
 
             {/* Instructor Section */}
             <CourseInstructor />
@@ -68,19 +75,27 @@ export const CourseDetailPage = ({ course, relatedCourses }: CourseDetailPagePro
             {/* Money-Back Guarantee */}
             <CourseGuarantee />
 
-            {/* And Much More */}
-            <CourseAndMore />
+            {/* Need Help Section */}
+            <CourseHelpSection />
 
-            {/* FAQ Section */}
-            <section id="faqs">
-                <CourseFAQ />
-            </section>
+            {/* And Much More */}
+
 
             {/* Ready CTA */}
             <CourseReadyCTA
                 courseId={course.id}
                 price={course.price}
             />
+
+
+            {/* FAQ Section */}
+            <section id="faqs">
+                <CourseFAQ faqsItems={faqItems} />
+            </section>
+
+            {/* Footer with Disclaimer */}
+            <CourseFooter />
+
         </div>
     );
 };

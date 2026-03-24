@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { siteConfig } from "@/config/seo";
 import { CourseDetailPage } from "@/components/pages/course-detail/CourseDetailPage";
+import { convertTiptapListToJsonServer } from "@/lib/serverUtils";
 
 interface Props {
     params: Promise<{
@@ -65,10 +66,18 @@ export default async function CoursePage({ params }: Props) {
         .filter(c => c.id !== course.id)
         .slice(0, 2);
 
+    // Parse Tiptap content on the server to avoid hydration issues
+    const bentoStyleList = convertTiptapListToJsonServer(course.content, "Bento-style-list");
+    const courseModules = convertTiptapListToJsonServer(course.content, "course-module");
+    const faqItems = convertTiptapListToJsonServer(course.content, "tip-tap-faq");
+
     return (
         <CourseDetailPage
             course={course}
             relatedCourses={relatedCourses}
+            bentoStyleList={bentoStyleList}
+            courseModules={courseModules}
+            faqItems={faqItems}
         />
     );
 }

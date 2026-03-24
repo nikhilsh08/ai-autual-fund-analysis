@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import FadeIn from './FadeIn';
 
 interface FounderLetterProps {
@@ -7,6 +8,10 @@ interface FounderLetterProps {
 }
 
 export default function FounderLetter({ photoUrl }: FounderLetterProps) {
+  const fallbackPhoto = '/founder-placeholder.svg';
+  const initialPhoto = useMemo(() => photoUrl || fallbackPhoto, [photoUrl]);
+  const [imageSrc, setImageSrc] = useState(initialPhoto);
+
   return (
     <section
       id="founder"
@@ -18,7 +23,12 @@ export default function FounderLetter({ photoUrl }: FounderLetterProps) {
         <FadeIn>
           <div className="flex items-center gap-6 mb-10 flex-wrap">
             <div className="w-[100px] h-[100px] rounded-full overflow-hidden border-[3px] border-accent-light shadow-[0_0_0_1px_#5B4FD6] shrink-0">
-              <img src={photoUrl} alt="Nikhil Sharma" className="w-full h-full object-cover" />
+              <img
+                src={imageSrc}
+                alt="Nikhil Sharma"
+                className="w-full h-full object-cover"
+                onError={() => setImageSrc(fallbackPhoto)}
+              />
             </div>
             <div className="flex-1 min-w-[200px]">
               <div className="font-serif text-[22px] font-bold text-ink mb-[3px]">Nikhil Sharma</div>

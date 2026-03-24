@@ -21,6 +21,8 @@ export type BlogWithAuthor = Blog & {
 
 /**
  * Frontend Course interface (used by CoursesSection component)
+ * Note: Database 'status' field (e.g., "Coming Soon") is mapped to 'tag' field
+ * If status is "Available", tag will be undefined
  */
 export interface FrontendCourse {
   id: string | number;
@@ -29,13 +31,14 @@ export interface FrontendCourse {
   price: number;
   tagline: string;
   level: string;
-  tag?: string;
+  tag?: string; // Contains status if not "Available" (e.g., "Coming Soon", "bestseller")
   icon: string;
   thumbnail?: string;
   slug?: string;
   originalPrice?: number;
   description?: string;
   startDate?: Date | null;
+  staticRoute?: string | null;
 }
 
 /**
@@ -91,6 +94,7 @@ export const mapCourseToFrontend = (
     originalPrice: course.originalPrice || undefined,
     description: course.description,
     startDate: course.startDate,
+    staticRoute: course.staticRoute || undefined,
   };
 };
 

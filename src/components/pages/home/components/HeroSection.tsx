@@ -13,11 +13,11 @@ interface HeroSectionProps {
 
 export default function HeroSection({ proofStats }: HeroSectionProps) {
   return (
-    <section className="relative overflow-hidden py-[clamp(80px,12vw,140px)] pb-[clamp(48px,6vw,72px)]">
+    <section className="relative overflow-hidden py-[clamp(80px,12vw,140px)] pb-[clamp(48px,6vw,72px)] [&_h1]:font-serif [&_h2]:font-serif [&_h3]:font-serif [&_h1]:tracking-tight [&_h2]:tracking-tight [&_h3]:tracking-tight">
       <div className="max-w-[1080px] mx-auto px-5 md:px-7 relative z-[1]">
         {/* Headline */}
         <FadeIn>
-          <h1 className="font-serif font-black tracking-tightest leading-[1.02] text-ink max-w-[800px] mb-8 text-[clamp(38px,7.5vw,82px)]">
+          <h1 className="font-serif font-black tracking-tightest leading-[1.04] text-ink max-w-[760px] mx-auto md:mx-0 text-center md:text-left mb-7 text-[clamp(34px,6.2vw,62px)]">
             you will make mistakes<br />
             with money.<br />
             <em className="font-light italic">the question is whether<br />you survive them.</em>
@@ -26,7 +26,7 @@ export default function HeroSection({ proofStats }: HeroSectionProps) {
 
         {/* Sub-copy */}
         <FadeIn delay={0.1}>
-          <div className="max-w-[580px] text-[clamp(16px,1.8vw,18px)] text-ink-secondary leading-[1.85] font-light mb-9">
+          <div className="max-w-[580px] mx-auto md:mx-0 text-[clamp(16px,1.8vw,18px)] text-ink-secondary leading-[1.85] font-light text-center md:text-left mb-9">
             <p className="mb-[18px]">Here's something nobody in the personal finance space will say out loud.</p>
             <p className="mb-[18px]">The difference between people who build wealth and people who don't isn't intelligence. It isn't access. It isn't even income.</p>
             <p className="mb-[18px]"><strong className="font-medium text-ink">It's risk management.</strong></p>
@@ -37,7 +37,7 @@ export default function HeroSection({ proofStats }: HeroSectionProps) {
 
         {/* Proof strip */}
         <FadeIn delay={0.2}>
-          <p className="text-[13px] text-ink-muted mb-4">
+          <p className="text-[13px] text-ink-muted text-center md:text-left mb-4">
             built by a risk analyst. 5 years in institutional finance. ₹60,000 Cr+ managed.
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-0 pt-7 border-t border-border text-center mb-8">
@@ -55,7 +55,7 @@ export default function HeroSection({ proofStats }: HeroSectionProps) {
 
         {/* CTA buttons */}
         <FadeIn delay={0.25}>
-          <div className="flex flex-col md:flex-row gap-2.5 flex-wrap mb-10">
+          <div className="flex flex-col md:flex-row gap-2.5 flex-wrap justify-center md:justify-start mb-10">
             <a
               href="#courses"
               className="inline-flex items-center justify-center md:justify-start gap-2 px-7 py-3.5 rounded-pill text-[15px] font-medium bg-ink text-cream hover:-translate-y-px transition-transform"
