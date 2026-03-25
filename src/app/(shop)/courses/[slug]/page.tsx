@@ -6,6 +6,7 @@ import { Metadata } from "next";
 import { siteConfig } from "@/config/seo";
 import { CourseDetailPage } from "@/components/pages/course-detail/CourseDetailPage";
 import { convertTiptapListToJsonServer } from "@/lib/serverUtils";
+import { getActiveBundleForHomepage } from "@/server/actions/bundle.action";
 
 interface Props {
     params: Promise<{
@@ -16,6 +17,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
     const course = await getCourseBySlugAction(slug) as any;
+
 
     if (!course) {
         return {
@@ -55,6 +57,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CoursePage({ params }: Props) {
     const { slug } = await params;
     const course = await getCourseBySlugAction(slug) as any;
+    const bundleResult = await getActiveBundleForHomepage();
+    const bundle = bundleResult.success ? bundleResult.data : null;
+    
 
     if (!course) {
         notFound();
@@ -78,6 +83,7 @@ export default async function CoursePage({ params }: Props) {
             bentoStyleList={bentoStyleList}
             courseModules={courseModules}
             faqItems={faqItems}
+            bundle={bundle}
         />
     );
 }

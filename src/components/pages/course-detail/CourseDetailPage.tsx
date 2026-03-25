@@ -11,8 +11,8 @@ import { RelatedCourses } from "./components/RelatedCourses";
 import { CourseGuarantee } from "./components/CourseGuarantee";
 import { CourseFAQ } from "./components/CourseFAQ";
 import { CourseReadyCTA } from "./components/CourseReadyCTA";
-import { CourseHelpSection } from "./components/CourseHelpSection";
 import { CourseFooter } from "./components/CourseFooter";
+import PersonalisedHelp from "../home/components/PersonalisedHelp";
 
 interface CourseDetailPageProps {
     course: any;
@@ -20,6 +20,7 @@ interface CourseDetailPageProps {
     bentoStyleList: string[] | { key: string; value: string[] | null }[];
     courseModules: string[] | { key: string; value: string[] | null }[];
     faqItems: string[] | { key: string; value: string[] | null }[];
+    bundle: any;
 }
 
 export const CourseDetailPage = ({
@@ -27,7 +28,8 @@ export const CourseDetailPage = ({
     relatedCourses,
     bentoStyleList,
     courseModules,
-    faqItems
+    faqItems,
+    bundle
 }: CourseDetailPageProps) => {
     return (
         <div className="min-h-screen bg-cream font-sans [text-rendering:optimizeLegibility] [&_h1]:font-serif [&_h2]:font-serif [&_h3]:font-serif [&_h1]:tracking-tight [&_h2]:tracking-tight [&_h3]:tracking-tight">
@@ -64,6 +66,7 @@ export const CourseDetailPage = ({
                     price={course.price}
                     originalPrice={course.originalPrice}
                     duration={course.duration}
+                    bundle={bundle}
                 />
             </section>
 
@@ -76,7 +79,7 @@ export const CourseDetailPage = ({
             <CourseGuarantee />
 
             {/* Need Help Section */}
-            <CourseHelpSection />
+            <PersonalisedHelp />
 
             {/* And Much More */}
 

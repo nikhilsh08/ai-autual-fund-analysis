@@ -60,7 +60,7 @@ export function HomeContent({ courses, blogs, bundle }: HomeContentProps) {
   return (
     <div className="font-sans bg-cream text-ink-body leading-[1.65] antialiased">
       {/* ── Navigation ── */}
-      <Navbar links={NAV_LINKS} scrolled={navScrolled} />
+      {/* <Navbar links={NAV_LINKS} scrolled={navScrolled} /> */}
 
       {/* ── A — ATTENTION: Hero ── */}
       <HeroSection proofStats={PROOF_STATS} />
@@ -111,7 +111,7 @@ export function HomeContent({ courses, blogs, bundle }: HomeContentProps) {
       <StickyBar />
 
       {/* ── Footer ── */}
-      <Footer columns={FOOTER_COLUMNS} />
+      {/* <Footer columns={FOOTER_COLUMNS} /> */}
 
       {/* ── Article modal ── */}
       {modalArticle && (

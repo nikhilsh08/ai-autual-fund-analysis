@@ -34,7 +34,8 @@ export default function PersonalisedHelp() {
               </p>
               <div className="font-serif text-[26px] font-black text-ink mb-3">₹1,999</div>
               <a
-                href="#"
+                href="https://calendly.com/nikhilsh1/60min"
+                target="_blank"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-pill text-[13px] font-medium bg-ink text-cream max-w-[200px] mx-auto hover:-translate-y-px transition-transform"
               >
                 book a session →

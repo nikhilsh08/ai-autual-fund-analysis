@@ -11,7 +11,7 @@ type Props = {
 
 const Layout = ({ children }: Props) => {
   const pathname = usePathname()
-  const isHomePage = pathname === '/home'
+  const isHomePage = pathname === '/courses'
 
   return (
     <div className="flex flex-col w-full h-full font-sans bg-cream text-ink-body leading-[1.65] antialiased">

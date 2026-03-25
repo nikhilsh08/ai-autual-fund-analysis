@@ -96,7 +96,7 @@ export const CourseHero = ({ course }: CourseHeroProps) => {
                                 />
                             </div>
 
-                            <p className="font-serif font-black text-ink tracking-tighter mb-2" style={{ fontSize: "clamp(26px,4vw,40px)" }}>
+                            <p className="font-serif font-black text-ink tracking-tighter mb-2 text-2xl" >
                                 {instructorName}
                             </p>
                             {instructorMeta && (
@@ -117,9 +117,9 @@ export const CourseHero = ({ course }: CourseHeroProps) => {
                     </Button>
 
                     {/* Trust Badge */}
-                    <p className="mt-4 text-sm text-ink-muted">
-                        7-day money-back guarantee
-                    </p>
+                     <span className="text-xs text-ink-muted block my-4">
+                    or <a href="#get-started" className="text-accent font-semibold">free in the complete bundle (₹3,999)</a>
+                    </span>
                 </div>
             </div>
         </section>

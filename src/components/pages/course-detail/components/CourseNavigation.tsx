@@ -13,7 +13,6 @@ const navItems = [
     { label: "Summary", href: "#summary" },
     { label: "Modules", href: "#modules" },
     { label: "FAQs", href: "#faqs" },
-    { label: "How it works", href: "#how-it-works" },
     { label: "Get Started", href: "#get-started" },
 ];
 
