@@ -149,7 +149,7 @@ const CheckoutContent = () => {
   const grossTotal = itemsTotal;
   const discount = appliedCoupon ? appliedCoupon.discountAmount : 0;
   const total = Math.max(0, grossTotal - discount);
-  const tax = total * taxRate; // 18% of the final price (as per user example)
+  const tax = (total * taxRate) / (1 + taxRate); // Extract GST portion from GST-inclusive total
   const subtotal = total - tax;
 
   // Create a stable string of item IDs for dependency tracking

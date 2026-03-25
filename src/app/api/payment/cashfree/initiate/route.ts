@@ -5,8 +5,6 @@ import { createCashfreeOrder } from '@/server/actions/payment.action';
 import { currentUser } from '@/lib/authDetails';
 import { dataBasePrisma } from '@/lib/dbPrisma';
 
-const TAX_RATE = 0.18;
-
 export async function POST(req: Request) {
     try {
         const body = await req.json();
@@ -138,9 +136,7 @@ export async function POST(req: Request) {
             }
         }
 
-        const taxableAmount = subtotal - discountAmount;
-        const taxAmount = taxableAmount * TAX_RATE;
-        const finalAmount = Math.round((taxableAmount + taxAmount) * 100) / 100;
+        const finalAmount = Math.max(0, Math.round((subtotal - discountAmount) * 100) / 100);
 
         // 5. User Identity Resolution
         let targetUserId: string | null = authenticatedUser?.id || null;

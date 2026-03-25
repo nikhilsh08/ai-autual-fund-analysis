@@ -21,11 +21,26 @@ export async function GET(request: Request) {
                         email: true,
                     },
                 },
+                lead: {
+                    select: {
+                        name: true,
+                        email: true,
+                    },
+                },
                 items: {
                     include: {
                         course: {
                             select: {
                                 title: true,
+                            },
+                        },
+                    },
+                },
+                bundleItems: {
+                    include: {
+                        bundle: {
+                            select: {
+                                name: true,
                             },
                         },
                     },

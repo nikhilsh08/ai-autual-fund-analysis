@@ -60,9 +60,9 @@ const CartPage = () => {
 
   const { items, removeItem, clearCart, addItem, getCartTotal } = cartStore;
   const cartTotal = getCartTotal();
-  const tax = cartTotal * 0.18;
-  const subtotal = cartTotal - tax;
-  const total = (cartTotal - tax) + tax;
+  const total = cartTotal;
+  const tax = (total * 0.18) / 1.18;
+  const subtotal = total - tax;
 
   const handleCheckout = () => {
     router.push("/checkout");
