@@ -70,7 +70,6 @@ export const CoursePricing = ({ courseId, price, originalPrice, duration, bundle
         { icon: Users, label: "100+ enrolled", value: "100+" },
         { icon: Clock, label: duration || "~90 min", value: duration || "~90 min" },
         { icon: BookOpen, label: "5 modules", value: "5" },
-        { icon: Infinity, label: "Lifetime", value: "Forever" },
     ];
 
     const discount = originalPrice && originalPrice > price

@@ -149,7 +149,7 @@ export default function CoursesSectionServer({
               </p>
             </div>
             <a
-              href="#"
+              href="#bundle"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-pill text-[13px] font-medium text-white shrink-0 hover:-translate-y-px transition-transform"
               style={{ background: 'linear-gradient(135deg,#5B4FD6,#1E8FE1)' }}
             >

@@ -1,15 +1,27 @@
 import axios from "axios";
 
 const AUTH_URL = "https://accounts.zoho.in/oauth/v2/token";
-// Note: We use the generic domain, the token handles the routing
 const API_BASE_URL = "https://trainercentral.zoho.in";
+
+// --- THE FIX: IN-MEMORY TOKEN CACHE ---
+let cachedToken: string | null = null;
+let tokenExpiryTime: number = 0;
 
 async function getAccessToken() {
     if (!process.env.TC_REFRESH_TOKEN) {
         throw new Error("MISSING CREDENTIALS: .env file not loaded.");
     }
 
+    // 1. Check if we already have a valid token saved in memory
+    // (We leave a 5-minute buffer before it expires)
+    if (cachedToken && Date.now() < tokenExpiryTime) {
+        console.log("Using cached Zoho token for this request...");
+        return cachedToken;
+    }
+
+    // 2. If no valid token, ask Zoho for a new one
     try {
+        console.log("Generating NEW Zoho token...");
         const params = new URLSearchParams();
         params.append("refresh_token", process.env.TC_REFRESH_TOKEN);
         params.append("client_id", process.env.TC_CLIENT_ID!);
@@ -17,13 +29,21 @@ async function getAccessToken() {
         params.append("grant_type", "refresh_token");
 
         const response = await axios.post(AUTH_URL, params);
-        return response.data.access_token;
+        
+        // Save the new token to our cache
+        cachedToken = response.data.access_token;
+        
+        // Set expiry time for 55 minutes from now (Tokens last 60 mins)
+        tokenExpiryTime = Date.now() + (55 * 60 * 1000); 
+
+        return cachedToken;
     } catch (error: any) {
         console.error("TOKEN ERROR:", error.response?.data || error.message);
         throw new Error("Could not get Access Token");
     }
 }
 
+// --- ENROLLMENT FUNCTION ---
 export async function enrollUserInTrainerCentral(
     type: string,
     email: string,
@@ -36,21 +56,19 @@ export async function enrollUserInTrainerCentral(
 
         console.log(`Enrolling ${email} into Course ${tcCourseId} (Org: ${orgId})...`);
 
-        // Split name into First and Last (Required by v4 API)
+        // Split name into First and Last
         const nameParts = fullName.split(" ");
         const firstName = nameParts[0];
-        const lastName = nameParts.slice(1).join(" ") || firstName; // Fallback to firstName if no last name
+        const lastName = nameParts.slice(1).join(" ") || firstName; 
 
-        // CORRECT API V4 ENDPOINT
         const url = `${API_BASE_URL}/api/v4/${orgId}/addCourseAttendee.json`;
 
-        // CORRECT JSON BODY
         const body = {
             courseAttendee: {
                 email: email,
                 firstName: firstName,
                 lastName: lastName,
-                courseId: tcCourseId // Course ID goes inside the body now
+                courseId: tcCourseId 
             }
         };
 
@@ -68,13 +86,11 @@ export async function enrollUserInTrainerCentral(
         const errorData = error.response?.data;
         const errorMessage = JSON.stringify(errorData || error.message).toLowerCase();
 
-        // Check for "already enrolled" indicators
         if (errorMessage.includes("already") || errorMessage.includes("exists") || errorMessage.includes("duplicate")) {
             console.log(`INFO: User ${email} is already enrolled in course ${tcCourseId}. Skipping.`);
             return { status: "already_enrolled" };
         }
 
-        // Log the detailed error from Zoho to understand what failed
         console.error(
             "ENROLLMENT FAILED:",
             JSON.stringify(error.response?.data, null, 2) || error.message

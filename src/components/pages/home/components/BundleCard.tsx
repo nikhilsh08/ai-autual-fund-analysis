@@ -56,7 +56,7 @@ export default function BundleCard({ bundle }: BundleCardProps) {
 
   return (
     <FadeIn>
-      <div className="bg-ink rounded-[20px] relative overflow-hidden text-center mb-8" style={{ padding: 'clamp(28px,4vw,44px)' }}>
+      <div id='bundle' className="bg-ink rounded-[20px] relative overflow-hidden text-center mb-8" style={{ padding: 'clamp(28px,4vw,44px)' }}>
         {/* Decorative glow */}
         <div className="absolute -top-[60px] -right-[60px] w-[220px] h-[220px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle,rgba(91,79,214,.3),transparent 70%)' }} />
 

@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import Link from "next/dist/client/link";
+import HeaderLogo from "public/HeaderLogo";
 
 interface CourseNavigationProps {
     courseId: string;
@@ -87,9 +89,23 @@ export const CourseNavigation = ({ courseId, price }: CourseNavigationProps) => 
 
                     {/* Mobile Title */}
                     <div className="md:hidden">
-                        <span className={`font-semibold text-sm ${isScrolled ? "text-ink" : "text-ink"}`}>
-                            CashFlowCrew
-                        </span>
+                                <Link
+                                href={"/"}
+                                className="flex items-center gap-2 cursor-pointer"
+                                >
+                                <div className="flex cursor-pointer items-center gap-3">
+                                    <HeaderLogo />
+
+                                    <div className="flex flex-col">
+                                    {/* Logo row */}
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xl font-bold  text-ink">
+                                        CashFlow<span className="text-accent">Crew</span>
+                                        </span>
+                                    </div>
+                                    </div>
+                                </div>
+                                </Link>
                     </div>
 
                     {/* CTA Button */}

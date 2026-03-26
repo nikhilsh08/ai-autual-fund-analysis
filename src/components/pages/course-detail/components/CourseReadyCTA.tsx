@@ -41,7 +41,7 @@ export const CourseReadyCTA = ({ courseId, price }: CourseReadyCTAProps) => {
                 </Button>
 
                 <p className="mt-6 text-white/60 text-sm">
-                    7-day money-back guarantee • Lifetime access • Certificate included
+                    7-day money-back guarantee
                 </p>
             </div>
         </section>
