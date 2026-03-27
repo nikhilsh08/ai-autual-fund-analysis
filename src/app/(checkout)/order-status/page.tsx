@@ -1,9 +1,10 @@
 import { verifyCashfreePayment } from '@/server/actions/payment.action';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { CheckCircle2, XCircle, AlertCircle, ShoppingBag, ArrowRight } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertCircle, ShoppingBag, ArrowRight, BookOpen } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import PurchaseEvent from '@/components/analytics/PurchaseEvent';
+import RedirectHandler from '@/components/checkout/RedirectHandler';
 
 export default async function OrderStatusPage({
     searchParams,
@@ -80,16 +81,17 @@ export default async function OrderStatusPage({
                         </div>
 
                         <div className="pt-4 space-y-3">
-                            <Link href="/">
-                                <Button className="w-full h-12 rounded-xl text-base" size="lg">
-                                    Go to Home Page <ArrowRight className="ml-2 w-4 h-4" />
+                            <Link href="/portal-access-guide">
+                                <Button className="w-full h-12 rounded-xl text-base bg-ink text-cream hover:bg-ink/90" size="lg">
+                                    <BookOpen className="mr-2 w-4 h-4" /> What Next? (Portal Guide)
                                 </Button>
                             </Link>
                             <Link href="/">
                                 <Button variant="outline" className="w-full h-12 rounded-xl text-base" size="lg">
-                                    Continue Shopping
+                                    Go to Home Page
                                 </Button>
                             </Link>
+                            <RedirectHandler status="SUCCESS" delaySeconds={10} redirectTo="/portal-access-guide" />
                         </div>
                     </div>
                 ) : isPending ? (
@@ -164,6 +166,7 @@ export default async function OrderStatusPage({
                                     Back to Home
                                 </Button>
                             </Link>
+                            <RedirectHandler status="FAILED" delaySeconds={3} redirectTo="/" />
                         </div>
                     </div>
                 )}

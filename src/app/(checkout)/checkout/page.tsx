@@ -48,6 +48,7 @@ const CheckoutContent = () => {
   let zwitchPayment = false;
 
   const [upsellItem, setUpsellItem] = useState<any>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // Coupon State
   const [couponCode, setCouponCode] = useState("");
@@ -151,6 +152,8 @@ const CheckoutContent = () => {
   const total = Math.max(0, grossTotal - discount);
   const tax = (total * taxRate) / (1 + taxRate); // Extract GST portion from GST-inclusive total
   const subtotal = total - tax;
+  // console all total  
+  console.log({ grossTotal, discount, total, tax, subtotal });
 
   // Create a stable string of item IDs for dependency tracking
   const itemIdsString = displayItems.map(i => i.id).sort().join(',');
@@ -181,6 +184,20 @@ const CheckoutContent = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-cream">
         <Loader2 className="w-8 h-8 animate-spin text-ink-muted" />
+      </div>
+    );
+  }
+
+  if (isRedirecting) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-cream">
+        <div className="w-20 h-20 bg-teal/10 rounded-full flex items-center justify-center mb-6">
+          <Loader2 className="w-10 h-10 animate-spin text-teal" />
+        </div>
+        <h2 className="text-2xl font-semibold text-ink mb-2">Payment Successful!</h2>
+        <p className="text-ink-secondary text-center max-w-sm">
+          Please wait while we redirect you to your order status...
+        </p>
       </div>
     );
   }
@@ -296,6 +313,7 @@ const CheckoutContent = () => {
               .then((response: any) => {
                 console.log("Cashfree Checkout Success Response:", response);
                 toast.success("Payment Successful! Redirecting...");
+                setIsRedirecting(true);
                 // Redirect to order confirmation or dashboard after successful payment
                 router.push(`/order-status?order_id=${orderId}`);
               })
