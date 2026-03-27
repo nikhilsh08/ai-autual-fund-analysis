@@ -26,10 +26,10 @@ interface StatCardProps {
 function StatCard({ pct, stat, sub, src, href, color, iconType }: StatCardProps) {
   return (
     <div
-      className="bg-cream/[.04] border border-cream/[.08] rounded-[18px] backdrop-blur-sm h-full flex flex-col"
+      className="bg-cream/[.04] border border-cream/[.08] rounded-[18px] backdrop-blur-sm h-full flex flex-col text-center"
       style={{ padding: "clamp(20px,3vw,28px)" }}
     >
-      <div className="flex items-center gap-3 mb-3.5">
+      <div className="flex justify-center items-center gap-3 mb-3.5">
         <div
           className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0"
           style={{ background: `${color}12` }}
@@ -54,7 +54,7 @@ function StatCard({ pct, stat, sub, src, href, color, iconType }: StatCardProps)
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-[11px] text-cream/30 border-t border-cream/[.06] pt-2.5 inline-flex items-center gap-1"
+        className="text-[11px] text-cream/30 border-t border-cream/[.06] pt-2.5 flex justify-center items-center gap-1"
       >
         Source:{" "}
         <span className="underline underline-offset-2 text-cream/[.45]">{src}</span>

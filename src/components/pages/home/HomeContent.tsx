@@ -99,7 +99,7 @@ export function HomeContent({ courses, blogs, bundle }: HomeContentProps) {
       <Testimonials testimonials={TESTIMONIALS} />
 
       {/* ── Personalised help ── */}
-      <PersonalisedHelp />
+      {/* <PersonalisedHelp /> */}
 
       {/* ── FAQ ── */}
       <FAQSection faqs={FAQS as FAQItem[]} />
