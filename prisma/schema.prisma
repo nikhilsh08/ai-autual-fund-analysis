@@ -1,0 +1,332 @@
+// This is your Prisma schema file
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum CourseType {
+  RECORDED
+  LIVE
+  HYBRID
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+model Lead {
+  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  email  String  @unique
+  name   String?
+  phone  String?
+  source String?
+
+  orders    Order[]
+  courseIds String[] @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 2. USER MODEL (For Real Accounts)
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  password      String?
+  phone         String?
+  image         String?
+  role          Role      @default(USER)
+
+  accounts  Account[]
+  sessions  Session[]
+  cart      Cart?
+  orders    Order[]
+  purchases Purchase[]
+  blogs     Blog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.String
+  access_token      String? @db.String
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.String
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Course {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  subHeading  String?
+  description String
+  status      String   @default("Coming Soon") // Options: "Available", "Coming Soon"
+  content     String?
+  thumbnail   String?
+  price       Float
+  originalPrice Float? // NEW: For "Compare at" price
+  isPublished Boolean    @default(true)
+  type        CourseType @default(RECORDED)
+
+  // The "Different UI" Field
+  theme String @default("standard")
+
+  slug        String   @unique
+  staticRoute String? 
+  visibility  String   @default("show")
+  
+
+  // TrainerCentral Links
+  tcCourseId  String  @unique
+  tcCourseUrl String?
+
+  // Live Metadata
+  startDate DateTime?
+  duration  String?
+  maxSeats  Int?
+  seatsSold Int       @default(0)
+
+  categoryId String   @db.ObjectId
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+  purchases  Purchase[]
+
+  createdAt DateTime @default(now())
+}
+
+model Category {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  name    String   @unique
+  courses Course[]
+}
+
+model Cart {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String     @unique @db.ObjectId
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  cartId   String @db.ObjectId
+  cart     Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  courseId String @db.ObjectId
+  course   Course @relation(fields: [courseId], references: [id])
+}
+
+model Order {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // DUAL LINKING: Supports both Guests (Leads) and Users
+  userId String? @db.ObjectId
+  user   User?   @relation(fields: [userId], references: [id])
+
+  leadId String? @db.ObjectId
+  lead   Lead?   @relation(fields: [leadId], references: [id])
+
+  // Snapshot Data (Safety backup)
+  guestEmail String?
+  guestPhone String? // Added for snapshot
+
+  // Analytics / UTM Tracking
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmTerm     String?
+  utmContent  String?
+
+  items       OrderItem[]
+  bundleItems BundleOrderItem[]
+  totalAmount Float
+  discountAmount Float @default(0)
+  couponId    String?  @db.ObjectId
+
+  status      OrderStatus @default(PENDING)
+
+  orderId   String? @unique
+  paymentId String?
+  paymentTransaction PaymentTransaction?
+
+  createdAt DateTime @default(now())
+}
+
+model PaymentTransaction {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  
+  orderId String @unique @db.ObjectId
+  order Order @relation(fields: [orderId], references: [id])
+  
+  paymentGateway String @default("CASHFREE")
+  paymentId String // Cashfree Payment ID
+  amount Float
+  currency String @default("INR")
+  status String // SUCCESS, FAILED, PENDING, USER_DROPPED
+  
+  paymentMethod String? // UPI, CARD, NET_BANKING
+  rawResponse Json? // Full response from PG
+  
+  createdAt DateTime @default(now())
+}
+
+model OrderItem {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  orderId  String @db.ObjectId
+  order    Order  @relation(fields: [orderId], references: [id])
+  courseId String @db.ObjectId
+  course   Course @relation(fields: [courseId], references: [id])
+  price    Float
+}
+
+model Purchase {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String   @db.ObjectId
+  course    Course   @relation(fields: [courseId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, courseId])
+}
+
+model Coupon {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  code        String   @unique
+  discount    Float
+  discountType String  // "PERCENTAGE" or "FIXED"
+  expiryDate  DateTime
+  usageLimit  Int?
+  usedCount   Int      @default(0)
+  minAmount   Float    @default(0)
+  maxDiscount Float?   // For percentage
+  description String?
+  isEnabled   Boolean  @default(true)
+
+  // Relation to courses (optional, if empty applies to all)
+  applicableCourseIds String[] @db.ObjectId
+  // Relation to bundles (optional, if empty applies to all)
+  applicableBundleIds String[] @db.ObjectId
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model NotificationRequest {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String
+  courseId  String   @db.ObjectId
+  status    String   @default("PENDING") // PENDING, NOTIFIED
+  createdAt DateTime @default(now())
+  
+  // A user can only request notification for a specific course once
+  @@unique([email, courseId])
+}
+
+model Image {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  url       String
+  key       String   @unique
+  name      String?
+  provider  String   @default("UPLOADTHING")
+  createdAt DateTime @default(now())
+}
+
+model Blog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  slug        String   @unique
+  content     String
+  excerpt     String?
+  thumbnail   String?
+  authorId    String   @db.ObjectId
+  author      User     @relation(fields: [authorId], references: [id])
+  isPublished Boolean  @default(true)
+  seoTitle    String?
+  seoDesc     String?
+  tags        String[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Bundle model for course bundles (e.g., "Complete Finance Masterclass")
+model Bundle {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  name               String   @unique
+  slug               String   @unique
+  description        String?
+  price              Float
+  originalPrice      Float?
+  courseIds          String[] @db.ObjectId
+  features           String[]
+  membershipDuration Int      @default(365)
+  isPublished        Boolean  @default(true)
+  isActive           Boolean  @default(true)
+
+  orderItems         BundleOrderItem[]
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+// Link table for bundles in orders
+model BundleOrderItem {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String @db.ObjectId
+  order     Order  @relation(fields: [orderId], references: [id])
+  bundleId  String @db.ObjectId
+  bundle    Bundle @relation(fields: [bundleId], references: [id])
+  price     Float
+}
+

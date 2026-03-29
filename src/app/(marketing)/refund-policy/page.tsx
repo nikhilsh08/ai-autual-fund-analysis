@@ -1,0 +1,94 @@
+import React from 'react';
+import Link from 'next/link';
+import { ArrowLeft, CheckCircle } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Refund Policy",
+    description: "Read the Refund Policy of CashFlowCrew's workshops and courses.",
+};
+
+export default function RefundPolicyPage() {
+    return (
+        <div className="min-h-screen bg-cream py-12 px-4 sm:px-6 lg:px-8 font-sans text-ink">
+            <div className="max-w-3xl mx-auto">
+
+                {/* Back Link */}
+                <div className="mb-8">
+                    <Link href="/" className="inline-flex items-center text-sm text-ink-muted hover:text-accent transition-colors">
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Back to Home
+                    </Link>
+                </div>
+
+                {/* Title */}
+                <h1 className="text-3xl font-bold font-serif mb-8 text-ink">Refund Policy</h1>
+
+                <div className="bg-card rounded-2xl shadow-sm border border-border p-8 md:p-10 space-y-10">
+
+                    {/* Section 1: Guarantee */}
+                    <section>
+                        <h2 className="text-xl font-semibold text-ink mb-4">7-Day Money-Back Guarantee</h2>
+                        <p className="text-sm text-ink-secondary mb-6 leading-relaxed">
+                            We offer a 7-day, no-questions-asked money-back guarantee on our Mutual Fund Mastery Workshop.
+                        </p>
+
+                        <div className="bg-teal/10 border border-teal/20 rounded-xl p-5 flex items-start gap-4">
+                            <CheckCircle className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
+                            <div>
+                                <h4 className="text-sm font-bold text-ink mb-1">100% Money-Back Guarantee</h4>
+                                <p className="text-xs text-ink-secondary">
+                                    If you're not satisfied with the workshop content within 7 days of purchase, we'll provide a full refund.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Section 2: Eligibility */}
+                    <section>
+                        <h2 className="text-xl font-semibold text-ink mb-4">Refund Eligibility</h2>
+                        <p className="text-sm text-ink-secondary mb-4">To be eligible for a refund:</p>
+                        <ul className="list-disc pl-5 space-y-2 text-sm text-ink-secondary">
+                            <li>Request must be made within 7 days of purchase</li>
+                            <li>Workshop completion should not exceed 30%</li>
+                            <li>Bonus materials should not be downloaded</li>
+                            <li>Request must be submitted through official channels</li>
+                        </ul>
+                    </section>
+
+                    {/* Section 3: Process */}
+                    <section>
+                        <h2 className="text-xl font-semibold text-ink mb-4">Refund Process</h2>
+                        <p className="text-sm text-ink-secondary mb-4">To request a refund:</p>
+                        <ol className="list-decimal pl-5 space-y-2 text-sm text-ink-secondary">
+                            <li>Email <a href="mailto:support@cashflowcrew.in" className="text-accent hover:underline">support@cashflowcrew.in</a> with your purchase details</li>
+                            <li>Include refund request name should be mentioned in the subject line</li>
+                            <li>Provide your order number and reason for refund</li>
+                            <li>Refunds will be credited to the original payment method within 5-7 business days</li>
+                        </ol>
+                    </section>
+
+                    {/* Section 4: Non-Refundable */}
+                    <section>
+                        <h2 className="text-xl font-semibold text-ink mb-4">Non-Refundable Items</h2>
+                        <p className="text-sm text-ink-secondary mb-4">The following are not eligible for refund:</p>
+                        <ul className="list-disc pl-5 space-y-2 text-sm text-ink-secondary">
+                            <li>Workshop access after 7 days of purchase</li>
+                            <li>Downloaded bonus materials</li>
+                            <li>Special promotional offers marked as non-refundable</li>
+                        </ul>
+                    </section>
+
+                    {/* Section 5: Contact */}
+                    <section className="pt-8 border-t border-border">
+                        <h2 className="text-lg font-semibold text-ink mb-2">Contact Us</h2>
+                        <p className="text-sm text-ink-muted mb-1">For refund-related queries, contact us at:</p>
+                        <p className="text-sm text-ink font-medium">Email: support@cashflowcrew.in</p>
+                        <p className="text-sm text-ink-muted">Response Time: Within 24 hours</p>
+                    </section>
+
+                </div>
+            </div>
+        </div>
+    );
+}

@@ -1,0 +1,106 @@
+"use client";
+import React, { useState } from 'react';
+import { Mail, MapPin } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+
+export default function ContactForm() {
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        message: ''
+    });
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        const { firstName, lastName, email, message } = formData;
+        const name = `${firstName} ${lastName}`.trim();
+        const subject = `Contact Form Inquiry from ${name}`;
+
+        const mailtoLink = `mailto:support@cashflowcrew.in?subject=${encodeURIComponent(
+            subject
+        )}&body=${encodeURIComponent(
+            `Name: ${name}\nEmail: ${email}\n\n${message}`
+        )}`;
+
+        window.location.href = mailtoLink;
+
+        setTimeout(() => setIsSubmitting(false), 500);
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { id, value } = e.target;
+        // Map hyphens to camelCase for the state
+        const fieldMap: Record<string, string> = {
+            'first-name': 'firstName',
+            'last-name': 'lastName',
+            'email': 'email',
+            'message': 'message'
+        };
+        const fieldName = fieldMap[id] || id;
+
+        setFormData(prev => ({
+            ...prev,
+            [fieldName]: value
+        }));
+    };
+
+    return (
+        <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
+                <div className="bg-zinc-50 rounded-xl p-6 flex flex-col items-center text-center">
+                    <div className="w-10 h-10 bg-white border border-zinc-200 rounded-lg flex items-center justify-center text-zinc-900 mb-3 shadow-sm">
+                        <Mail className="w-5 h-5" />
+                    </div>
+                    <h3 className="font-semibold text-zinc-900 text-sm mb-1">Email</h3>
+                    <a href="mailto:support@cashflowcrew.in" className="text-zinc-600 hover:text-black text-sm">
+                        support@cashflowcrew.in
+                    </a>
+                </div>
+
+                <div className="bg-zinc-50 rounded-xl p-6 flex flex-col items-center text-center">
+                    <div className="w-10 h-10 bg-white border border-zinc-200 rounded-lg flex items-center justify-center text-zinc-900 mb-3 shadow-sm">
+                        <MapPin className="w-5 h-5" />
+                    </div>
+                    <h3 className="font-semibold text-zinc-900 text-sm mb-1">Office</h3>
+                    <address className="text-zinc-600 not-italic text-sm">
+                        Gurugram, Haryana
+                    </address>
+                </div>
+            </div>
+
+            <form className="space-y-4" onSubmit={handleSubmit}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <label htmlFor="first-name" className="text-sm font-medium text-zinc-700">First name</label>
+                        <Input id="first-name" placeholder="First name" required value={formData.firstName} onChange={handleChange} />
+                    </div>
+                    <div className="space-y-2">
+                        <label htmlFor="last-name" className="text-sm font-medium text-zinc-700">Last name</label>
+                        <Input id="last-name" placeholder="Last name" required value={formData.lastName} onChange={handleChange} />
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    <label htmlFor="email" className="text-sm font-medium text-zinc-700">Email</label>
+                    <Input id="email" type="email" placeholder="you@company.com" required value={formData.email} onChange={handleChange} />
+                </div>
+
+                <div className="space-y-2">
+                    <label htmlFor="message" className="text-sm font-medium text-zinc-700">Message</label>
+                    <Textarea id="message" placeholder="Leave us a message..." className="min-h-[120px]" required value={formData.message} onChange={handleChange} />
+                </div>
+
+                <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? 'Opening Mail Client...' : 'Send Message'}
+                </Button>
+            </form>
+        </>
+    );
+}
