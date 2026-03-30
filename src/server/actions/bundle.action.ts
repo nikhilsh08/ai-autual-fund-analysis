@@ -3,11 +3,8 @@
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/server/auth/auth";
-<<<<<<< HEAD
 import { _includes } from "zod/v4/core";
 import { courses } from "@/data/courses";
-=======
->>>>>>> 5da359ff0f39f34542ac2b2fa89c5c7b08ed8b32
 
 // ============ ADMIN ACTIONS ============
 
@@ -321,7 +318,6 @@ export async function getActiveBundleForHomepage() {
 
 export async function getBundleBySlug(slug: string) {
   try {
-<<<<<<< HEAD
     // 1. Fetch the bundle first
     const bundle = await dataBasePrisma.bundle.findUnique({
       where: { 
@@ -329,17 +325,12 @@ export async function getBundleBySlug(slug: string) {
         isPublished: true, 
         isActive: true 
       },
-=======
-    const bundle = await dataBasePrisma.bundle.findUnique({
-      where: { slug, isPublished: true, isActive: true },
->>>>>>> 5da359ff0f39f34542ac2b2fa89c5c7b08ed8b32
     });
 
     if (!bundle) {
       return { success: false, error: "Bundle not found" };
     }
 
-<<<<<<< HEAD
     // 2. Fetch the full course details for all IDs in the bundle
     // We use the 'in' operator to find all courses at once
     const courses = await dataBasePrisma.course.findMany({
@@ -371,9 +362,6 @@ export async function getBundleBySlug(slug: string) {
       } 
     };
 
-=======
-    return { success: true, data: bundle };
->>>>>>> 5da359ff0f39f34542ac2b2fa89c5c7b08ed8b32
   } catch (error: any) {
     console.error("Get Bundle By Slug Error:", error);
     return { success: false, error: error.message };

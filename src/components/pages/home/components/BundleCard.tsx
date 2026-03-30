@@ -27,7 +27,6 @@ export default function BundleCard({ bundle }: BundleCardProps) {
   const handleBuyBundle = async () => {
     // If we have bundle data from database
     if (id && courseIds) {
-<<<<<<< HEAD
       // const hasConflicts = hasConflictingCourses(courseIds);
 
       // if (hasConflicts) {
@@ -49,29 +48,6 @@ export default function BundleCard({ bundle }: BundleCardProps) {
       // );
 
       router.push('bundle/12-courses-every-major-topic');
-=======
-      const hasConflicts = hasConflictingCourses(courseIds);
-
-      if (hasConflicts) {
-        const confirmed = window.confirm(
-          "Some courses in your cart are included in this bundle. Adding the bundle will replace them with better savings. Continue?"
-        );
-        if (!confirmed) return;
-      }
-
-      await addBundle(
-        {
-          id,
-          title: name || 'Complete Finance Masterclass',
-          price,
-          type: 'bundle',
-          courseIds,
-        },
-        !!session
-      );
-
-      router.push('/checkout');
->>>>>>> 5da359ff0f39f34542ac2b2fa89c5c7b08ed8b32
     } else {
       // Fallback: Navigate to checkout with a flag (for static bundle)
       router.push('/checkout?bundle=complete');
