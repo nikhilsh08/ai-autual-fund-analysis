@@ -329,7 +329,11 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
 
         // Rate-limiting delay: wait 2 seconds before next enrollment
         // Prevents hitting Zoho API rate limits (typically 100 req/min)
+<<<<<<< HEAD
         await delay(1000);
+=======
+        await delay(2000);
+>>>>>>> 5da359ff0f39f34542ac2b2fa89c5c7b08ed8b32
       } catch (err) {
         // Log error but don't throw - we don't want to fail payment verification
         // Admin can manually enroll users if this fails
