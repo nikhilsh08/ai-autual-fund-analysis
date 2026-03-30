@@ -347,6 +347,8 @@ export async function getBundleBySlug(slug: string) {
         price: true,
         originalPrice: true,
         slug: true,
+        status:true,
+        category:true,
         // Add any other course fields you need for the UI here
       }
     });

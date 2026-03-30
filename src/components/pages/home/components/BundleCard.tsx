@@ -27,14 +27,14 @@ export default function BundleCard({ bundle }: BundleCardProps) {
   const handleBuyBundle = async () => {
     // If we have bundle data from database
     if (id && courseIds) {
-      const hasConflicts = hasConflictingCourses(courseIds);
+      // const hasConflicts = hasConflictingCourses(courseIds);
 
-      if (hasConflicts) {
-        const confirmed = window.confirm(
-          "Some courses in your cart are included in this bundle. Adding the bundle will replace them with better savings. Continue?"
-        );
-        if (!confirmed) return;
-      }
+      // if (hasConflicts) {
+      //   const confirmed = window.confirm(
+      //     "Some courses in your cart are included in this bundle. Adding the bundle will replace them with better savings. Continue?"
+      //   );
+      //   if (!confirmed) return;
+      // }
 
       // await addBundle(
       //   {
@@ -47,7 +47,7 @@ export default function BundleCard({ bundle }: BundleCardProps) {
       //   !!session
       // );
 
-      router.push('/bundle');
+      router.push('bundle/12-courses-every-major-topic');
     } else {
       // Fallback: Navigate to checkout with a flag (for static bundle)
       router.push('/checkout?bundle=complete');

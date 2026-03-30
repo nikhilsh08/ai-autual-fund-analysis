@@ -63,7 +63,7 @@ export const CoursePricing = ({ courseId, price, originalPrice, duration, bundle
         //     !!session
         // );
 
-        router.push("/bundle");
+        router.push("/bundle/12-courses-every-major-topic");
     };
 
     const stats = [

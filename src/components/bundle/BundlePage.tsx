@@ -21,13 +21,20 @@ interface Bundle {
     coursesIncluded: number;
 }
 
+interface Category {
+    id: string;
+    name: string;
+}
+
 interface Course {
     id: string | number;
     title: string;
-    category: string;
+    category: string | Category;
     price: number;
     slug?: string;
-    tag?: string;
+    status?: string;
+    thumbnail?: string;
+    originalPrice?: number;
 }
 
 export interface BundlePageProps {
@@ -50,7 +57,7 @@ export function BundlePage({ bundle, courses }: BundlePageProps) {
     const router = useRouter();
     const { data: session } = useSession();
     const { addBundle, hasConflictingCourses } = useCartStore();
-    console.log(bundle);
+    console.log(bundle , "and, ", courses);
     
     
 
@@ -128,17 +135,18 @@ export function BundlePage({ bundle, courses }: BundlePageProps) {
                         {courses.map((course) => (
                             <div
                                 key={course.id}
-                                className="bg-white border border-border rounded-2xl px-5 py-4 hover:border-sky/40 hover:shadow-sm transition-all"
+                                className="bg-white border border-border rounded-2xl px-5 py-4 hover:border-sky/40 hover:shadow-sm transition-all cursor-pointer"
+                                onClick={() => router.push(`/courses/${course.slug}`)}
                             >
                                 {course.category && (
-                                    <p className="text-[9px] font-bold tracking-[.12em] uppercase text-ink-secondary/60 mb-1">
-                                        {course.category}
-                                    </p>
-                                )}
+                                        <p className="text-[9px] font-bold tracking-[.12em] uppercase text-ink-secondary/60 mb-1">
+                                            {typeof course.category === 'object' ? course.category.name : course.category}
+                                        </p>
+                                    )}
                                 <p className="text-[14px] font-semibold text-ink leading-snug">
                                     {course.title}
                                 </p>
-                                {course.tag === 'Coming Soon' && (
+                                {course.status === 'Coming Soon' && (
                                     <span className="inline-block mt-2 text-[9px] font-bold uppercase tracking-widest text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-pill">
                                         Coming Soon
                                     </span>
