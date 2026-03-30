@@ -39,7 +39,11 @@ export const CoursePricing = ({ courseId, price, originalPrice, duration, bundle
     console.log(bundle)
 
     const handleEnroll = () => {
+<<<<<<< HEAD
+       router.push('/bundle');
+=======
         router.push(`/checkout?courseId=${courseId}`);
+>>>>>>> 5da359ff0f39f34542ac2b2fa89c5c7b08ed8b32
     };
 
     const handleBuyBundle = async () => {
@@ -52,6 +56,20 @@ export const CoursePricing = ({ courseId, price, originalPrice, duration, bundle
             if (!confirmed) return;
         }
 
+<<<<<<< HEAD
+        // await addBundle(
+        //     {
+        //         id: bundle.id,
+        //         title: bundle.name,
+        //         price: bundle.price,
+        //         type: "bundle",
+        //         courseIds: bundle.courseIds,
+        //     },
+        //     !!session
+        // );
+
+        router.push("/bundle/12-courses-every-major-topic");
+=======
         await addBundle(
             {
                 id: bundle.id,
@@ -64,6 +82,7 @@ export const CoursePricing = ({ courseId, price, originalPrice, duration, bundle
         );
 
         router.push("/checkout?bundle=complete");
+>>>>>>> 5da359ff0f39f34542ac2b2fa89c5c7b08ed8b32
     };
 
     const stats = [
