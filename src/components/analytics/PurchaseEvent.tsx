@@ -51,16 +51,20 @@ export default function PurchaseEvent({
         }
 
         // Meta Pixel Purchase Event
+        // NOTE: The { eventID } option enables deduplication with the server-side
+        // Meta Conversions API event (meta-capi.ts). Both use orderId as event_id.
+        // Meta will count it as ONE purchase, not two.
         if (typeof (window as any).fbq !== "undefined") {
             (window as any).fbq("track", "Purchase", {
                 value: amount,
                 currency: currency,
                 content_ids: items.map((item) => item.item_id),
                 content_type: "product",
-                // Meta can also take custom parameters
                 utm_source: utm?.source,
                 utm_medium: utm?.medium,
                 utm_campaign: utm?.campaign,
+            }, {
+                eventID: transactionId, // Must match event_id sent via CAPI (orderId)
             });
         }
 

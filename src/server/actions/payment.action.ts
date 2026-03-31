@@ -14,6 +14,7 @@ import { Cashfree, CFEnvironment } from "cashfree-pg";
 import { v4 as uuidv4 } from "uuid";
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import { enrollUserInTrainerCentral } from "@/lib/trainer-central";
+import { sendMetaCAPIPurchaseEvent } from "@/lib/meta-capi";
 
 // --- CASHFREE SDK CONFIGURATION ---
 const cashfree = new Cashfree(
@@ -337,7 +338,39 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
       }
     }
 
-    // --- STEP 5: UPDATE COUPON USAGE COUNT ---
+    // --- STEP 5: SEND META CONVERSIONS API PURCHASE EVENT ---
+    // Server-side event ensures tracking works even if user closes browser
+    // before landing on /order-status (where the client-side pixel fires).
+    // Uses orderId as event_id so Meta deduplicates with the browser pixel.
+    if (internalStatus === "PAID") {
+      try {
+        const email = localOrder.guestEmail || localOrder.lead?.email;
+        const phone = localOrder.guestPhone || localOrder.lead?.phone;
+        const name = localOrder.lead?.name || "Guest User";
+
+        await sendMetaCAPIPurchaseEvent({
+          orderId: localOrder.orderId ?? localOrder.id,
+          amount: Number(localOrder.totalAmount) || 0,
+          currency: "INR",
+          email: email || undefined,
+          phone: phone || undefined,
+          name: name || undefined,
+          items: localOrder.items?.map((item: any) => ({
+            item_id: item.courseId,
+            item_name: item.course?.title || "Course",
+            price: item.price,
+          })) || [],
+          utmSource: localOrder.utmSource || undefined,
+          utmMedium: localOrder.utmMedium || undefined,
+          utmCampaign: localOrder.utmCampaign || undefined,
+        });
+      } catch (err) {
+        // Non-critical - never block payment confirmation
+        console.error("[Meta CAPI] Failed to send Purchase event", err);
+      }
+    }
+
+    // --- STEP 6: UPDATE COUPON USAGE COUNT ---
     // Increment coupon usage counter (done outside transaction to avoid locking)
     // If this fails, it's not critical - the payment already succeeded
     if (internalStatus === "PAID" && localOrder.couponId) {
@@ -353,7 +386,7 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
       }
     }
 
-    // --- STEP 6: RETURN VERIFICATION RESULT ---
+    // --- STEP 7: RETURN VERIFICATION RESULT ---
     // Return the transaction result to the caller
     return result;
 
