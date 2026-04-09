@@ -328,7 +328,7 @@ export default function PortalGuide() {
                </button>
 
                {/* Video Guide Option */}
-               <button 
+               {/* <button 
                  onClick={() => alert("This would open the video tutorial popup/modal.")}
                  className="flex items-center justify-center space-x-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-bold bg-transparent text-black border-2 border-black hover:bg-[#EBE7DD] transition-all"
                  title="Confused? Watch the video guide."
@@ -336,7 +336,7 @@ export default function PortalGuide() {
                  <Video size={16} />
                  <span className="hidden sm:inline">Watch Video Guide</span>
                  <span className="sm:hidden">Video</span>
-               </button>
+               </button> */}
             </div>
 
             <div className="flex space-x-2 justify-center w-full xl:w-auto">
