@@ -14,9 +14,9 @@ export const Footer = () => (
           </p>
           <div className="flex gap-4">
             {/* Social Links Placeholders */}
-            <a href="#" className="text-cream/50 hover:text-accent transition-colors">Instagram</a>
+            {/* <a href="#" className="text-cream/50 hover:text-accent transition-colors">Instagram</a>
             <a href="#" className="text-cream/50 hover:text-accent transition-colors">YouTube</a>
-            <a href="#" className="text-cream/50 hover:text-accent transition-colors">LinkedIn</a>
+            <a href="#" className="text-cream/50 hover:text-accent transition-colors">LinkedIn</a> */}
           </div>
         </div>
 
@@ -25,7 +25,7 @@ export const Footer = () => (
           <h4 className="font-bold text-cream mb-6">Quick Links</h4>
           <ul className="space-y-4 text-cream/70">
             <li><Link href="/courses" className="hover:text-accent transition-colors">All Courses</Link></li>
-            <li><Link href="/ai-mutual-fund-workshop" className="hover:text-accent transition-colors">Live Workshops</Link></li>
+            <li><Link href="/ai-mutual-fund" className="hover:text-accent transition-colors">Live Workshops</Link></li>
             <li><Link href="/#about" className="hover:text-accent transition-colors">About Us</Link></li>
             <li><Link href="/contact-us" className="hover:text-accent transition-colors">Contact Us</Link></li>
           </ul>
