@@ -268,6 +268,7 @@ User/Lead clicks "Checkout"
 | `couponId` | Link to applied `Coupon` |
 | `discountAmount` | Calculated at checkout |
 | `orderId` | Cashfree's CF order ID (unique) |
+| `bundleItems` | List of `BundleOrderItem` records associated with this order |
 
 #### `PaymentTransaction`
 Stores the raw Cashfree webhook payload (`rawResponse: Json`), `paymentMethod` (UPI/CARD/NET_BANKING), and `status` string.
@@ -279,7 +280,9 @@ Final access record: `{ userId, courseId }` with a `@@unique` constraint — pre
 
 | Model | Purpose |
 |---|---|
-| `Coupon` | Discount codes with `PERCENTAGE` or `FIXED` types, expiry, usage limits, and optional `applicableCourseIds` |
+| `Bundle` | Represents a collection of courses sold together. Includes pricing, feature lists, and an array of `courseIds`. |
+| `BundleOrderItem` | A junction model linking an `Order` to a purchased `Bundle`. |
+| `Coupon` | Discount codes with `PERCENTAGE` or `FIXED` types, expiry, usage limits, and optional `applicableCourseIds` or `applicableBundleIds` |
 | `NotificationRequest` | Waitlist for Coming Soon courses — stores `email + courseId` (unique pair) |
 | `Image` | Central store for uploaded image metadata (UploadThing `key`, URL, etc.) |
 | `Blog` | Admin-authored blog posts with SEO fields (`seoTitle`, `seoDesc`), `tags[]`, and rich HTML `content` |
@@ -347,6 +350,13 @@ All require `role === "ADMIN"`.
 | `DELETE` | `/api/admin/masterclass/delete/[masterclassId]` | Delete a course |
 | `GET` | `/api/admin/masterclass/[masterclassId]` | Get course detail + waitlist |
 | `GET` | `/api/admin/masterclass/myclasses` | Courses visible to current user |
+
+#### Bundle Management
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/admin/bundles` | List all active combinations of course bundles |
+| `POST` | `/api/admin/bundles` | Create a new bundle |
+| `PATCH` | `/api/admin/bundles/[id]` | Update bundle information and pricing |
 
 **Update route field behaviour:**  
 `nullableStringFields` (including `content`, `description`, `thumbnail`, etc.) are set to `null` when explicitly sent as `null` — this allows clearing a field. Fields **absent** from the request body are ignored entirely (no accidental overwrites).
@@ -503,8 +513,9 @@ The `admin-cashflowcrew` folder is a **separate Vite + React SPA**. It has no ba
 | Blog management | `/api/admin/blogs/*` |
 | Order viewer | `/api/admin/orders` |
 | Coupon management | `/api/admin/coupons/*` |
+| Bundle management | `/api/admin/bundles` |
 | Image library | `/api/admin/images` |
-| Dashboard stats | `/api/admin/dashboard-stats` |
+| Dashboard stats | `/api/admin/dashboard-stats` & `/payment-analytics` & `/registration-trends` |
 
 ### Authentication between apps
 Both apps share the same domain in production, so the NextAuth session cookie is accessible cross-app. In local development, set `ADMIN_PANNEL_URL=http://localhost:5173` in the env and ensure the admin app's `VITE_SERVER_URL` points to `http://localhost:3000`.

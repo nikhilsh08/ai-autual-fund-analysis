@@ -52,7 +52,7 @@ export const Navbar = () => {
         {/* Desktop Navigation Links */}
         <div className="hidden md:flex items-center gap-8 text-sm font-medium">
           <Link href="/courses" className="text-ink hover:text-accent transition-colors">courses</Link>
-          <Link href="/#about" className="text-ink hover:text-accent transition-colors">founder</Link>
+          <Link href="/#founder" className="text-ink hover:text-accent transition-colors">founder</Link>
           <Link href="/blogs" className="text-ink hover:text-accent transition-colors">blog</Link>
         </div>
 

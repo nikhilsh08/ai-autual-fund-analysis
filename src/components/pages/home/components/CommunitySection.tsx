@@ -60,7 +60,7 @@ export default function CommunitySection({ perks, bundlePrice }: CommunitySectio
               </div>
 
               <a
-                href="#"
+                href="#bundle"
                 className="w-full inline-flex items-center justify-center px-6 py-3 rounded-pill text-sm font-medium text-white hover:-translate-y-px transition-transform"
                 style={{ background: "linear-gradient(135deg,#5B4FD6,#1E8FE1)" }}
               >

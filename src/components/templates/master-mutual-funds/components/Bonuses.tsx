@@ -1,8 +1,14 @@
 import React from "react";
 import { bonuses } from "../data"; // Assuming your data file is correctly set up
+import { CTA } from "./CTA";
 
+interface BonusesProps {
+  onEnroll?: () => void;
+  price?: number;
+  originalPrice?: number;
+}
 
-export const Bonuses: React.FC = () => {
+export const Bonuses: React.FC<BonusesProps> = ({ onEnroll, price, originalPrice }) => {
   // Calculate the total worth of all bonuses
   const totalWorth = bonuses.reduce((sum, bonus) => sum + Number(bonus.worth), 0);
 
@@ -59,6 +65,12 @@ export const Bonuses: React.FC = () => {
             <span className="text-green-600 ml-2">₹{totalWorth.toLocaleString()}/-</span>
           </h3>
         </div> */}
+        
+        {onEnroll && price && (
+          <div className="mt-16">
+            <CTA price={price} originalPrice={originalPrice} onEnroll={onEnroll} />
+          </div>
+        )}
       </div>
     </div>
   );
