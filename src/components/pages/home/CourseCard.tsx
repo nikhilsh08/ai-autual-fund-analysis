@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import CourseIcon from './CourseIcon';
 import { NotifyModal } from '@/components/NotifyModal';
-import { BellRing } from 'lucide-react';
+import { BellRing, ShoppingCart } from 'lucide-react';
+import { useCartStore } from '@/store/cart-store';
 
 interface Course {
   id: string | number;
@@ -27,6 +29,9 @@ export default function CourseCard({ course }: CourseCardProps) {
   const { title, category, price, tagline, level, tag, icon, id, slug, staticRoute } = course;
   const [isNotifyModalOpen, setIsNotifyModalOpen] = useState(false);
   const router = useRouter();
+  const { data: session } = useSession();
+  const isLoggedIn = !!session?.user;
+  const addItem = useCartStore((state) => state.addItem);
 
   // Check if tag indicates coming soon status
   // Database statuses other than "Available" are mapped to tag field
@@ -42,6 +47,19 @@ export default function CourseCard({ course }: CourseCardProps) {
       const courseUrl = staticRoute ? `/${staticRoute}` : `/courses/${slug}`;
       router.push(courseUrl);
     }
+  };
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    // Prevent the card's onClick from firing
+    e.preventDefault();
+    e.stopPropagation();
+
+    await addItem({
+      id: id.toString(),
+      title,
+      price,
+      type: 'course',
+    }, isLoggedIn);
   };
 
   return (
@@ -107,9 +125,18 @@ export default function CourseCard({ course }: CourseCardProps) {
                   or <span className="text-accent font-semibold">free in bundle</span>
                 </span>
               </div>
-              <span className="px-4 py-2 rounded-pill text-xs font-medium text-white bg-accent cursor-pointer hover:-translate-y-px transition-transform">
-                enroll →
-              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleAddToCart}
+                  className="cursor-pointer w-9 h-9 rounded-full flex items-center justify-center border border-accent/30 text-accent hover:bg-accent-light transition-colors"
+                  title="Add to cart"
+                >
+                  <ShoppingCart size={15} />
+                </button>
+                <span className="px-4 py-2 rounded-pill text-xs font-medium text-white bg-accent cursor-pointer hover:-translate-y-px transition-transform">
+                  enroll →
+                </span>
+              </div>
             </>
           )}
         </div>

@@ -25,28 +25,47 @@ export const Popup: React.FC<PopupProps> = ({
   const [error, setError] = useState('');
 
   // Trigger popup when user scrolls 60% of the page
+  // Uses a flag to skip stale scroll positions from previous page navigation
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      const docHeight = document.documentElement.scrollHeight;
-      const winHeight = window.innerHeight;
+    let isListening = false;
+    let cleanup = () => {};
 
-      // Calculate scroll percentage (0 to 1)
-      const scrollPercent = scrollTop / (docHeight - winHeight);
+    // Wait a short tick so the browser can reset scroll position for the new page.
+    // This prevents the popup from firing immediately due to a stale scrollY value
+    // carried over from the previous page.
+    const initTimer = setTimeout(() => {
+      const handleScroll = () => {
+        if (!isListening) return;
 
-      if (scrollPercent > 0.6) {
-        setIsOpen(true);
-        // Remove listener so it only opens once
-        window.removeEventListener('scroll', handleScroll);
-      }
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight;
+        const winHeight = window.innerHeight;
+
+        // Avoid division by zero on very short pages
+        const scrollable = docHeight - winHeight;
+        if (scrollable <= 0) return;
+
+        // Calculate scroll percentage (0 to 1)
+        const scrollPercent = scrollTop / scrollable;
+
+        if (scrollPercent > 0.6) {
+          setIsOpen(true);
+          // Remove listener so it only opens once
+          window.removeEventListener('scroll', handleScroll);
+        }
+      };
+
+      // Mark as ready to listen – only genuine scroll events from now on will count
+      isListening = true;
+      window.addEventListener('scroll', handleScroll);
+
+      cleanup = () => window.removeEventListener('scroll', handleScroll);
+    }, 100);
+
+    return () => {
+      clearTimeout(initTimer);
+      cleanup();
     };
-
-    window.addEventListener('scroll', handleScroll);
-
-    // Check immediately in case page is loaded already scrolled
-    handleScroll();
-
-    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
