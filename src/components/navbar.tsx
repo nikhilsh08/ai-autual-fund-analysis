@@ -99,7 +99,7 @@ export const Navbar = () => {
       {isOpen && (
         <div className="md:hidden bg-cream border-b border-border p-6 space-y-4 shadow-lg">
           <Link href="/courses" onClick={() => setIsOpen(false)} className="block w-full text-left text-ink hover:text-accent font-medium">courses</Link>
-          <Link href="/#about" onClick={() => setIsOpen(false)} className="block w-full text-left text-ink hover:text-accent font-medium">founder</Link>
+          <Link href="/#founder" onClick={() => setIsOpen(false)} className="block w-full text-left text-ink hover:text-accent font-medium">founder</Link>
           <Link href="/blogs" onClick={() => setIsOpen(false)} className="block w-full text-left text-ink hover:text-accent font-medium">blog</Link>
           <a
             href="https://cashflowcrew.trainercentralsite.in/clientapp/login"
