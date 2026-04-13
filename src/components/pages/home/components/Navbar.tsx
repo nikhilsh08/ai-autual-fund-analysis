@@ -32,6 +32,14 @@ export default function Navbar({ links, scrolled }: NavbarProps) {
             </a>
           ))}
           <a
+            href="https://cashflowcrew.trainercentralsite.in/clientapp/login"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-2 inline-flex items-center gap-2 px-5 py-[9px] rounded-pill text-xs font-medium bg-black text-white hover:bg-neutral-800 hover:-translate-y-px transition-all"
+          >
+            login
+          </a>
+          <a
             href="#courses"
             className="ml-2 inline-flex items-center gap-2 px-5 py-[9px] rounded-pill text-xs font-medium bg-ink text-cream hover:-translate-y-px transition-transform"
           >

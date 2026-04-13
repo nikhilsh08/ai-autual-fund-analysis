@@ -72,6 +72,15 @@ export const Navbar = () => {
             )}
           </button>
 
+          <a
+            href="https://cashflowcrew.trainercentralsite.in/clientapp/login"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:inline-flex items-center py-2 px-4 h-9 text-xs rounded-md bg-black text-white hover:bg-neutral-800 transition-all font-medium"
+          >
+            login
+          </a>
+
           <Button
             variant="primary"
             className="hidden md:flex py-2 px-4 h-9 text-xs"
@@ -92,6 +101,15 @@ export const Navbar = () => {
           <Link href="/courses" onClick={() => setIsOpen(false)} className="block w-full text-left text-ink hover:text-accent font-medium">courses</Link>
           <Link href="/#about" onClick={() => setIsOpen(false)} className="block w-full text-left text-ink hover:text-accent font-medium">founder</Link>
           <Link href="/blogs" onClick={() => setIsOpen(false)} className="block w-full text-left text-ink hover:text-accent font-medium">blog</Link>
+          <a
+            href="https://cashflowcrew.trainercentralsite.in/clientapp/login"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full text-center bg-black text-white hover:bg-neutral-800 transition-all font-medium py-2 px-4 rounded-md text-sm"
+            onClick={() => setIsOpen(false)}
+          >
+            login
+          </a>
           <Button
             variant="primary"
             className="w-full justify-center mt-4"
