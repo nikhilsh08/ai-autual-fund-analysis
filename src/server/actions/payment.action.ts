@@ -155,7 +155,16 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
 
     if (!localOrder) throw new Error("Local order not found");
 
-    // --- ARCHITECTURE: ENROLLMENT QUEUE ---
+    // --- EARLY EXIT: IDEMPOTENCY GUARD ---
+    // If the order is already PAID in our DB, another concurrent request
+    // (webhook vs browser redirect race) already processed it successfully.
+    // Return success immediately to avoid deadlock on the same row.
+    if (localOrder.status === "PAID") {
+      console.log(`[verify] Order ${orderId} already PAID — skipping duplicate processing`);
+      return { success: true, data: localOrder, status: "PAID" };
+    }
+
+
     // We collect all enrollments to process AFTER the transaction
     // WHY? External API calls (Trainer Central) can take 2-10 seconds each
     // If we call them inside the transaction, it will timeout (Prisma limit: 5 seconds)
@@ -185,6 +194,17 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
     // upserts + findMany which can exceed the 5s Prisma default in production
     // ========================================================================
     const result = await dataBasePrisma.$transaction(async (tx: any) => {
+      // --- TRANSACTION STEP 0: RE-CHECK ORDER STATUS (Deadlock Guard) ---
+      // Re-read the order inside the transaction to guard against the race
+      // where two concurrent requests (webhook + browser) both passed the
+      // early-exit check above before either committed. If another transaction
+      // already marked it PAID, skip all writes and return early.
+      const freshOrder = await tx.order.findUnique({ where: { id: localOrder.id }, select: { status: true } });
+      if (freshOrder?.status === "PAID") {
+        console.log(`[verify] Order ${orderId} already PAID inside transaction — skipping`);
+        return { success: true, data: localOrder, status: "PAID" };
+      }
+
       // --- TRANSACTION STEP 1: UPDATE ORDER STATUS ---
       // Mark order as PAID/FAILED/PENDING and save payment ID
       await tx.order.update({
@@ -197,6 +217,7 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
         // Ensuring we have an email for enrollment
         const email = localOrder.guestEmail || localOrder.lead?.email;
         if (!email) throw new Error("No customer email available for enrollment");
+
 
         // --- TRANSACTION STEP 3: LEAD → USER CONVERSION ---
         // If user doesn't exist, create a new User account from Lead/Guest data
