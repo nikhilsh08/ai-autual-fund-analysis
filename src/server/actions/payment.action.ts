@@ -177,10 +177,12 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
     };
 
     // ========================================================================
-    // DATABASE TRANSACTION - MUST COMPLETE IN < 5 SECONDS
+    // DATABASE TRANSACTION - TIMEOUT: 15 SECONDS
     // ========================================================================
     // This block updates the database atomically (all-or-nothing)
-    // Only FAST operations allowed here (no external API calls, no delays)
+    // Only DB operations allowed here (no external API calls, no delays)
+    // Timeout raised to 15s: bundle purchases require multiple sequential
+    // upserts + findMany which can exceed the 5s Prisma default in production
     // ========================================================================
     const result = await dataBasePrisma.$transaction(async (tx: any) => {
       // --- TRANSACTION STEP 1: UPDATE ORDER STATUS ---
@@ -304,7 +306,7 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
 
       // Return transaction result
       return { success: true, data: localOrder, status: internalStatus };
-    }); // <-- END OF TRANSACTION BLOCK
+    }, { timeout: 15000 }); // <-- END OF TRANSACTION BLOCK (15s timeout)
 
     // ========================================================================
     // POST-TRANSACTION: EXTERNAL API CALLS
