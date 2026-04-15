@@ -7,6 +7,10 @@ import PurchaseEvent from '@/components/analytics/PurchaseEvent';
 import RedirectHandler from '@/components/checkout/RedirectHandler';
 import AutoRefresh from '@/components/checkout/AutoRefresh';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+
 export default async function OrderStatusPage({
     searchParams,
 }: {
@@ -103,8 +107,8 @@ export default async function OrderStatusPage({
                     </div>
                 ) : isPending ? (
                     <div className="space-y-6">
-                        {/* Silently refreshes every 5s (up to 60s) while the webhook processes */}
-                        <AutoRefresh intervalSeconds={5} maxRefreshes={12} />
+                        {/* Faster polling to reflect webhook completion with less visible lag */}
+                        <AutoRefresh orderId={orderId} intervalSeconds={2} maxRefreshes={30} />
 
                         <div className="w-20 h-20 bg-gold/10 rounded-full flex items-center justify-center mx-auto">
                             <Loader2 className="w-10 h-10 text-gold animate-spin" />
@@ -129,7 +133,7 @@ export default async function OrderStatusPage({
                         </div>
 
                         <div className="pt-4 space-y-3">
-                            <Link href={`/order-status?order_id=${orderId}`}>
+                            <Link href={`/order-status?order_id=${orderId}`} prefetch={false}>
                                 <Button className="w-full h-12 rounded-xl text-base" size="lg">
                                     Refresh Status
                                 </Button>
