@@ -212,11 +212,10 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
     };
 
     // ========================================================================
-    // DATABASE TRANSACTION - TIMEOUT: 15 SECONDS, WITH RETRY ON DEADLOCK
+    // DATABASE TRANSACTION - TIMEOUT: 15 SECONDS, WITH RETRY ON WRITE CONFLICTS
     // ========================================================================
-    // Uses SELECT FOR UPDATE to acquire an exclusive row lock immediately.
-    // This forces the second concurrent request (webhook vs browser) to WAIT
-    // rather than deadlock. Retries up to 3 times for any remaining P2034s.
+    // MongoDB serializes concurrent writes to the same document within a
+    // transaction. The retry loop handles any P2034 write conflicts.
     // ========================================================================
     let result: any;
     let attempts = 0;
@@ -226,16 +225,16 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
       attempts++;
       try {
         result = await dataBasePrisma.$transaction(async (tx: any) => {
-      // --- TRANSACTION STEP 0: SELECT FOR UPDATE (True Deadlock Prevention) ---
-      // Acquires an exclusive lock on this order row immediately.
-      // If another transaction already holds the lock, this one WAITS here
-      // until the first commits — then reads the committed status.
-      // This is fundamentally different from findUnique (plain SELECT with no lock).
-      const [lockedOrder] = await tx.$queryRaw`
-        SELECT id, status FROM "Order" WHERE id = ${localOrder.id} FOR UPDATE
-      `;
-      if (lockedOrder?.status === "PAID") {
-        console.log(`[verify] Order ${orderId} already PAID (SELECT FOR UPDATE) — skipping`);
+      // --- TRANSACTION STEP 0: IDEMPOTENCY CHECK ---
+      // Re-read the order inside the transaction.
+      // MongoDB serializes concurrent transactions on the same document — the
+      // second concurrent request will see the committed PAID status and exit.
+      const freshOrder = await tx.order.findUnique({
+        where: { id: localOrder.id },
+        select: { status: true }
+      });
+      if (freshOrder?.status === "PAID") {
+        console.log(`[verify] Order ${orderId} already PAID — skipping duplicate`);
         return { success: true, data: localOrder, status: "PAID" };
       }
 
