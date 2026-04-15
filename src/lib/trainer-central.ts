@@ -43,6 +43,38 @@ async function getAccessToken() {
     }
 }
 
+// --- NAME SANITIZER ---
+// TrainerCentral rejects firstName/lastName containing digits, dots, or special
+// characters (error: ST_203 / PATTERN_NOT_MATCHED).
+// This strips anything that isn't a letter or space, and handles edge cases
+// like an email address being stored as the user's name.
+function sanitizeName(raw: string): { firstName: string; lastName: string } {
+    let name = raw?.trim() || "";
+
+    // If the "name" looks like an email address, extract only the local part
+    // before the @ sign (e.g. "john.doe@gmail.com" → "john doe")
+    if (name.includes("@")) {
+        name = name.split("@")[0];
+    }
+
+    // Replace dots, underscores, hyphens, and digits with spaces
+    name = name.replace(/[.\-_0-9]/g, " ");
+
+    // Strip every remaining non-letter, non-space character
+    name = name.replace(/[^a-zA-Z\s]/g, "");
+
+    // Collapse multiple spaces and trim
+    name = name.replace(/\s+/g, " ").trim();
+
+    // Split into parts
+    const parts = name.split(" ").filter(Boolean);
+
+    const firstName = parts[0] || "User";
+    const lastName  = parts.slice(1).join(" ") || firstName;
+
+    return { firstName, lastName };
+}
+
 // --- ENROLLMENT FUNCTION ---
 export async function enrollUserInTrainerCentral(
     type: string,
@@ -56,10 +88,9 @@ export async function enrollUserInTrainerCentral(
 
         console.log(`Enrolling ${email} into Course ${tcCourseId} (Org: ${orgId})...`);
 
-        // Split name into First and Last
-        const nameParts = fullName.split(" ");
-        const firstName = nameParts[0];
-        const lastName = nameParts.slice(1).join(" ") || firstName; 
+        // Sanitize the name to remove digits/symbols that TrainerCentral rejects
+        const { firstName, lastName } = sanitizeName(fullName);
+        console.log(`[TC] Sanitized name: "${fullName}" → firstName="${firstName}", lastName="${lastName}"`);
 
         const url = `${API_BASE_URL}/api/v4/${orgId}/addCourseAttendee.json`;
 
