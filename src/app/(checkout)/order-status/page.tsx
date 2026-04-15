@@ -1,10 +1,11 @@
-import { verifyCashfreePayment } from '@/server/actions/payment.action';
+import { getOrderStatus } from '@/server/actions/payment.action';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { CheckCircle2, XCircle, AlertCircle, ShoppingBag, ArrowRight, BookOpen } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader2, ArrowRight, BookOpen } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import PurchaseEvent from '@/components/analytics/PurchaseEvent';
 import RedirectHandler from '@/components/checkout/RedirectHandler';
+import AutoRefresh from '@/components/checkout/AutoRefresh';
 
 export default async function OrderStatusPage({
     searchParams,
@@ -17,30 +18,36 @@ export default async function OrderStatusPage({
         redirect('/');
     }
 
-    const verification = await verifyCashfreePayment(orderId) as any;
+    // READ-ONLY: only check the DB, never trigger payment processing.
+    // The Cashfree webhook is the single source of truth for processing.
+    // This completely eliminates the race/deadlock between page + webhook.
+    const statusCheck = await getOrderStatus(orderId);
 
-    // If status is paid, we show success
-    const isSuccess = verification.success && verification.status === 'PAID';
-    const isPending = verification.status === 'PENDING';
-    const isFailed = verification.status === 'FAILED';
-    const orderData = verification.data;
+    if (!statusCheck.found) {
+        redirect('/');
+    }
 
-    // Prepare purchase event data
+    const isSuccess = statusCheck.status === 'PAID';
+    const isPending = statusCheck.status === 'PENDING';
+    const isFailed  = statusCheck.status === 'FAILED';
+    const orderData = statusCheck.data;
+
+    // Prepare purchase event data (only fires on success)
     const purchaseEventData = isSuccess && orderData ? {
-        amount: orderData.totalAmount,
+        amount: (orderData as any).totalAmount,
         currency: "INR",
-        transactionId: orderData.paymentId || orderData.id,
-        items: orderData.items.map((item: any) => ({
+        transactionId: (orderData as any).paymentId || (orderData as any).id,
+        items: (orderData as any).items?.map((item: any) => ({
             item_id: item.courseId,
             item_name: item.course?.title || "Course",
             price: item.price
-        })),
+        })) || [],
         utm: {
-            source: orderData.utmSource || undefined,
-            medium: orderData.utmMedium || undefined,
-            campaign: orderData.utmCampaign || undefined,
-            term: orderData.utmTerm || undefined,
-            content: orderData.utmContent || undefined,
+            source: (orderData as any).utmSource || undefined,
+            medium: (orderData as any).utmMedium || undefined,
+            campaign: (orderData as any).utmCampaign || undefined,
+            term: (orderData as any).utmTerm || undefined,
+            content: (orderData as any).utmContent || undefined,
         }
     } : null;
 
@@ -96,14 +103,17 @@ export default async function OrderStatusPage({
                     </div>
                 ) : isPending ? (
                     <div className="space-y-6">
+                        {/* Silently refreshes every 5s (up to 60s) while the webhook processes */}
+                        <AutoRefresh intervalSeconds={5} maxRefreshes={12} />
+
                         <div className="w-20 h-20 bg-gold/10 rounded-full flex items-center justify-center mx-auto">
-                            <AlertCircle className="w-10 h-10 text-gold" />
+                            <Loader2 className="w-10 h-10 text-gold animate-spin" />
                         </div>
 
                         <div className="space-y-2">
-                            <h1 className="text-2xl font-bold text-ink">Payment Pending</h1>
+                            <h1 className="text-2xl font-bold text-ink">Processing Your Payment…</h1>
                             <p className="text-ink-secondary">
-                                We are verifying your payment status. Please wait a moment or check back later.
+                                Your payment was received. We are confirming your order — this takes just a few seconds. Please do not close this page.
                             </p>
                         </div>
 
@@ -114,14 +124,14 @@ export default async function OrderStatusPage({
                             </div>
                             <div className="flex justify-between py-2">
                                 <span>Status</span>
-                                <span className="font-medium text-gold">Verification Pending</span>
+                                <span className="font-medium text-gold">Verifying…</span>
                             </div>
                         </div>
 
                         <div className="pt-4 space-y-3">
                             <Link href={`/order-status?order_id=${orderId}`}>
                                 <Button className="w-full h-12 rounded-xl text-base" size="lg">
-                                    Check Status Again
+                                    Refresh Status
                                 </Button>
                             </Link>
                             <Link href="/contact-us">

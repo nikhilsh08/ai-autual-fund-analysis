@@ -110,6 +110,32 @@ export const createCashfreeOrder = async (
 // - Delays inside transactions = "Transaction already closed" error
 // - Solution: Queue enrollments, then process AFTER transaction commits
 // ============================================================================
+// GET ORDER STATUS (READ-ONLY — for status page)
+// ============================================================================
+// IMPORTANT: This function only READS from the database.
+// It does NOT call the Cashfree API or trigger any payment processing.
+// The status page should use this — the webhook handles all processing.
+// ============================================================================
+export const getOrderStatus = async (orderId: string) => {
+  try {
+    const order = await dataBasePrisma.order.findUnique({
+      where: { orderId },
+      include: {
+        items: { include: { course: true } },
+        bundleItems: { include: { bundle: true } },
+        lead: true,
+      }
+    });
+    if (!order) return { found: false, status: null, data: null };
+    return { found: true, status: order.status, data: order };
+  } catch (error) {
+    console.error('[getOrderStatus] Error:', error);
+    return { found: false, status: null, data: null };
+  }
+};
+
+// ============================================================================
+// VERIFY CASHFREE PAYMENT
 export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVerificationResult> => {
   try {
     // --- STEP 1: FETCH PAYMENT STATUS FROM CASHFREE ---
@@ -186,22 +212,30 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
     };
 
     // ========================================================================
-    // DATABASE TRANSACTION - TIMEOUT: 15 SECONDS
+    // DATABASE TRANSACTION - TIMEOUT: 15 SECONDS, WITH RETRY ON DEADLOCK
     // ========================================================================
-    // This block updates the database atomically (all-or-nothing)
-    // Only DB operations allowed here (no external API calls, no delays)
-    // Timeout raised to 15s: bundle purchases require multiple sequential
-    // upserts + findMany which can exceed the 5s Prisma default in production
+    // Uses SELECT FOR UPDATE to acquire an exclusive row lock immediately.
+    // This forces the second concurrent request (webhook vs browser) to WAIT
+    // rather than deadlock. Retries up to 3 times for any remaining P2034s.
     // ========================================================================
-    const result = await dataBasePrisma.$transaction(async (tx: any) => {
-      // --- TRANSACTION STEP 0: RE-CHECK ORDER STATUS (Deadlock Guard) ---
-      // Re-read the order inside the transaction to guard against the race
-      // where two concurrent requests (webhook + browser) both passed the
-      // early-exit check above before either committed. If another transaction
-      // already marked it PAID, skip all writes and return early.
-      const freshOrder = await tx.order.findUnique({ where: { id: localOrder.id }, select: { status: true } });
-      if (freshOrder?.status === "PAID") {
-        console.log(`[verify] Order ${orderId} already PAID inside transaction — skipping`);
+    let result: any;
+    let attempts = 0;
+    const MAX_ATTEMPTS = 3;
+
+    while (attempts < MAX_ATTEMPTS) {
+      attempts++;
+      try {
+        result = await dataBasePrisma.$transaction(async (tx: any) => {
+      // --- TRANSACTION STEP 0: SELECT FOR UPDATE (True Deadlock Prevention) ---
+      // Acquires an exclusive lock on this order row immediately.
+      // If another transaction already holds the lock, this one WAITS here
+      // until the first commits — then reads the committed status.
+      // This is fundamentally different from findUnique (plain SELECT with no lock).
+      const [lockedOrder] = await tx.$queryRaw`
+        SELECT id, status FROM "Order" WHERE id = ${localOrder.id} FOR UPDATE
+      `;
+      if (lockedOrder?.status === "PAID") {
+        console.log(`[verify] Order ${orderId} already PAID (SELECT FOR UPDATE) — skipping`);
         return { success: true, data: localOrder, status: "PAID" };
       }
 
@@ -327,7 +361,21 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
 
       // Return transaction result
       return { success: true, data: localOrder, status: internalStatus };
-    }, { timeout: 15000 }); // <-- END OF TRANSACTION BLOCK (15s timeout)
+        }, { timeout: 15000 }); // <-- END OF TRANSACTION BLOCK
+
+        break; // Success — exit retry loop
+
+      } catch (err: any) {
+        if (err?.code === "P2034" && attempts < MAX_ATTEMPTS) {
+          // Deadlock or write conflict — wait briefly and retry
+          const backoff = attempts * 200; // 200ms, 400ms
+          console.warn(`[verify] P2034 deadlock on attempt ${attempts}/${MAX_ATTEMPTS}, retrying in ${backoff}ms...`);
+          await new Promise((r) => setTimeout(r, backoff));
+        } else {
+          throw err; // Non-deadlock error or max retries exceeded — rethrow
+        }
+      }
+    } // end while
 
     // ========================================================================
     // POST-TRANSACTION: EXTERNAL API CALLS
