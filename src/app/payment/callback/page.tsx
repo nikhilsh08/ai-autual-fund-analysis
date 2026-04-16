@@ -28,8 +28,8 @@ const CallbackContent = () => {
                 if (result.success && result.status === 'PAID') {
                     setStatus('SUCCESS');
                     setMessage('Payment Successful!');
-                    // Optional: Redirect after a delay
-                    setTimeout(() => router.push('/dashboard'), 3000);
+                    // Redirect to order-status so the client-side Meta Pixel Purchase event fires
+                    setTimeout(() => router.push(`/order-status?order_id=${orderId}`), 1500);
                 } else {
                     setStatus('FAILED');
                     setMessage(result.error || 'Payment failed or pending.');
@@ -62,8 +62,8 @@ const CallbackContent = () => {
                         </div>
                         <h2 className="text-2xl font-semibold text-zinc-900 mb-2">Payment Successful!</h2>
                         <p className="text-zinc-500 mb-8">Your order has been confirmed. Redirecting you to dashboard...</p>
-                        <Button onClick={() => router.push('/dashboard')} className="w-full">
-                            Go to Dashboard
+                        <Button onClick={() => router.push('/')} className="w-full">
+                            Go to home page
                         </Button>
                     </>
                 )}

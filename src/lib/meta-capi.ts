@@ -137,7 +137,7 @@ export async function sendMetaCAPIPurchaseEvent(
   };
 
   // --- BUILD API REQUEST ---
-  const apiUrl = `https://graph.facebook.com/v19.0/${pixelId}/events`;
+  const apiUrl = `https://graph.facebook.com/v21.0/${pixelId}/events`;
 
   const body = {
     data: [eventData],

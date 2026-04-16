@@ -54,6 +54,19 @@ export const useCartStore = create<CartState>()(
         set({ items: [...currentItems, itemWithType], isOpen: true });
         toast.success("Course added");
 
+        // --- META PIXEL: AddToCart ---
+        // Fires for every course added to cart, from any component.
+        // Uses fbq which is loaded globally by MetaPixel in layout.tsx
+        if (typeof window !== 'undefined' && typeof (window as any).fbq === 'function') {
+          (window as any).fbq('track', 'AddToCart', {
+            content_ids: [itemWithType.id],
+            content_name: itemWithType.title,
+            content_type: 'product',
+            value: itemWithType.price,
+            currency: 'INR',
+          });
+        }
+
         // Server Sync (only for courses, bundles are handled client-side only)
         if (isLoggedIn && itemWithType.type === 'course') {
           const result = await addToCartAction(item.id);
@@ -93,6 +106,17 @@ export const useCartStore = create<CartState>()(
           toast.success(`Bundle added! ${removedCount} individual course(s) replaced.`);
         } else {
           toast.success("Bundle added to cart!");
+        }
+
+        // --- META PIXEL: AddToCart (Bundle) ---
+        if (typeof window !== 'undefined' && typeof (window as any).fbq === 'function') {
+          (window as any).fbq('track', 'AddToCart', {
+            content_ids: [bundleItem.id],
+            content_name: bundleItem.title,
+            content_type: 'product',
+            value: bundleItem.price,
+            currency: 'INR',
+          });
         }
 
         // Note: Bundles are not synced to server cart (they're stored locally only)

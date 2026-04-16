@@ -40,7 +40,7 @@ export default async function OrderStatusPage({
     const purchaseEventData = isSuccess && orderData ? {
         amount: (orderData as any).totalAmount,
         currency: "INR",
-        transactionId: (orderData as any).paymentId || (orderData as any).id,
+        transactionId: (orderData as any).orderId,  // MUST match event_id in CAPI (meta-capi.ts uses orderId)
         items: (orderData as any).items?.map((item: any) => ({
             item_id: item.courseId,
             item_name: item.course?.title || "Course",
