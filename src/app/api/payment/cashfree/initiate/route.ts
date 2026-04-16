@@ -8,7 +8,7 @@ import { dataBasePrisma } from '@/lib/dbPrisma';
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { name, email, phone, courseIds, bundleIds, couponCode } = body;
+        const { name, email, phone, courseIds, bundleIds, couponCode, utmParams } = body;
         const authenticatedUser = await currentUser();
 
         if (!name || !email || !phone) {
@@ -188,7 +188,7 @@ export async function POST(req: Request) {
         });
 
         // 7. Cashfree Initiation
-        const cashfreeRes = await createCashfreeOrder(orderId, finalAmount, { name, email, phone });
+        const cashfreeRes = await createCashfreeOrder(orderId, finalAmount, { name, email, phone }, utmParams);
 
         if (!cashfreeRes.success) throw new Error(cashfreeRes.error);
 

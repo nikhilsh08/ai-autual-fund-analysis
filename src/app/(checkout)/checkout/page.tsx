@@ -22,6 +22,7 @@ import { useZwitchPayment } from '@/hooks/useZwitchPayment';
 import { getCashfreeInstance } from '@/lib/PGinitialize';
 import { validateCoupon } from '@/server/actions/coupon.action';
 import axios from 'axios';
+import { getSessionUTMs } from '@/components/analytics/UTMCapture';
 
 const checkoutSchema = z.object({
   name: z.string().min(2, { message: "Full name is required" }),
@@ -282,11 +283,14 @@ const CheckoutContent = () => {
           couponCode: appliedCoupon?.code,
           // Capture UTMs
           utmParams: {
-            utmSource: searchParams.get('utm_source') || undefined,
-            utmMedium: searchParams.get('utm_medium') || undefined,
-            utmCampaign: searchParams.get('utm_campaign') || undefined,
-            utmTerm: searchParams.get('utm_term') || undefined,
-            utmContent: searchParams.get('utm_content') || undefined,
+            // Prefer UTMs from current URL; fall back to sessionStorage (set on
+            // landing page by UTMCapture) so Facebook ad attribution is preserved
+            // even when the user navigates to /checkout from the landing page.
+            utmSource:   searchParams.get('utm_source')   || getSessionUTMs().utmSource,
+            utmMedium:   searchParams.get('utm_medium')   || getSessionUTMs().utmMedium,
+            utmCampaign: searchParams.get('utm_campaign') || getSessionUTMs().utmCampaign,
+            utmTerm:     searchParams.get('utm_term')     || getSessionUTMs().utmTerm,
+            utmContent:  searchParams.get('utm_content')  || getSessionUTMs().utmContent,
           }
         });
 

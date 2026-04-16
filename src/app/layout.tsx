@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { DM_Sans, Fraunces, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
@@ -8,6 +9,7 @@ import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import MetaPixel from "@/components/analytics/MetaPixel";
 import GoogleTagManager, { GoogleTagManagerNoScript } from "@/components/analytics/GoogleTagManager";
 import MicrosoftClarity from "@/components/analytics/MicrosoftClarity";
+import { UTMCapture } from "@/components/analytics/UTMCapture";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -131,6 +133,10 @@ export default function RootLayout({
           <MetaPixel pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID!} />
           <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID!} />
           <MicrosoftClarity clarityId={process.env.NEXT_PUBLIC_CLARITY_ID!} />
+          {/* Captures UTM params on first page load and stores in sessionStorage */}
+          <Suspense fallback={null}>
+            <UTMCapture />
+          </Suspense>
         </SessionProvider>
       </body>
     </html>
