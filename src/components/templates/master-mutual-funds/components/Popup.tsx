@@ -25,46 +25,54 @@ export const Popup: React.FC<PopupProps> = ({
   const [error, setError] = useState('');
 
   // Trigger popup when user scrolls 60% of the page
-  // Uses a flag to skip stale scroll positions from previous page navigation
+  // Uses a flag to wait for actual user interaction, avoiding browser scroll restoration jumps
   useEffect(() => {
-    let isListening = false;
-    let cleanup = () => {};
+    let hasTriggered = false;
+    let userInteracted = false;
 
-    // Wait a short tick so the browser can reset scroll position for the new page.
-    // This prevents the popup from firing immediately due to a stale scrollY value
-    // carried over from the previous page.
-    const initTimer = setTimeout(() => {
-      const handleScroll = () => {
-        if (!isListening) return;
+    // Detect actual physical interaction from the user
+    const markInteracted = () => {
+      userInteracted = true;
+      window.removeEventListener('wheel', markInteracted);
+      window.removeEventListener('touchmove', markInteracted);
+      window.removeEventListener('keydown', markInteracted);
+      window.removeEventListener('mousedown', markInteracted);
+    };
 
-        const scrollTop = window.scrollY;
-        const docHeight = document.documentElement.scrollHeight;
-        const winHeight = window.innerHeight;
+    window.addEventListener('wheel', markInteracted, { passive: true });
+    window.addEventListener('touchmove', markInteracted, { passive: true });
+    window.addEventListener('keydown', markInteracted, { passive: true });
+    window.addEventListener('mousedown', markInteracted, { passive: true });
 
-        // Avoid division by zero on very short pages
-        const scrollable = docHeight - winHeight;
-        if (scrollable <= 0) return;
+    const handleScroll = () => {
+      if (hasTriggered || !userInteracted) return;
 
-        // Calculate scroll percentage (0 to 1)
-        const scrollPercent = scrollTop / scrollable;
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const docHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+      const winHeight = window.innerHeight || document.documentElement.clientHeight;
 
-        if (scrollPercent > 0.6) {
-          setIsOpen(true);
-          // Remove listener so it only opens once
-          window.removeEventListener('scroll', handleScroll);
-        }
-      };
+      // Avoid division by zero on very short pages
+      const scrollable = docHeight - winHeight;
+      if (scrollable <= 0) return;
 
-      // Mark as ready to listen – only genuine scroll events from now on will count
-      isListening = true;
-      window.addEventListener('scroll', handleScroll);
+      // Calculate scroll percentage (0 to 1)
+      const scrollPercent = scrollTop / scrollable;
 
-      cleanup = () => window.removeEventListener('scroll', handleScroll);
-    }, 100);
+      if (scrollPercent > 0.6) {
+        setIsOpen(true);
+        hasTriggered = true;
+        window.removeEventListener('scroll', handleScroll);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
-      clearTimeout(initTimer);
-      cleanup();
+      window.removeEventListener('wheel', markInteracted);
+      window.removeEventListener('touchmove', markInteracted);
+      window.removeEventListener('keydown', markInteracted);
+      window.removeEventListener('mousedown', markInteracted);
+      window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
