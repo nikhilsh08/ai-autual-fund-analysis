@@ -2,6 +2,8 @@ import { MetadataRoute } from 'next';
 import { siteConfig } from '@/config/seo';
 import { dataBasePrisma } from '@/lib/dbPrisma';
 
+export const dynamic = 'force-dynamic';
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Fetch active courses/masterclasses
     const courses = await dataBasePrisma.course.findMany({
