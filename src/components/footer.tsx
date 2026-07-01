@@ -47,7 +47,18 @@ export const Footer = () => (
       <div className="border-t border-cream/10 pt-8 text-cream/50 text-xs leading-relaxed space-y-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <p>&copy; 2026 CashFlowCrew. All rights reserved.</p>
-          <p>Collabroot Marketing Private Limited, Gurugram, Haryana</p>
+          <p>
+            CashFlowCrew is owned and operated by{" "}
+            <a
+              href="https://collabroot.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-accent transition-colors underline"
+            >
+              Collabroot Marketing Private Limited
+            </a>
+            , Gurugram, Haryana
+          </p>
         </div>
         <p className="max-w-4xl opacity-80">
           Disclaimer: For educational purposes only. Not investment advice. Consult a SEBI-registered RIA for personalized advice.
