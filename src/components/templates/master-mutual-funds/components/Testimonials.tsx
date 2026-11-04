@@ -1,48 +1,35 @@
 import React from 'react';
-import { ArrowLeft, Phone, Video as VideoIcon, MoreVertical } from 'lucide-react';
 import { testimonials } from '../data';
 
+const AVATAR_COLORS = ['bg-[#13432B]', 'bg-[#2E6B4A]', 'bg-[#9A7B33]'];
+
 export const Testimonials: React.FC = () => (
-  <div className="mt-24 overflow-hidden">
-    <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">What Our Students Say</h2>
-    <div className="relative testimonials-mask">
-      <div className="flex gap-6 animate-scroll">
-        {[...testimonials, ...testimonials].map((testimonial, index) => (
-          <div key={index} className="flex-none w-[320px]">
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-              <div className="bg-[#075E54] text-white p-2.5 flex items-center gap-2">
-                <ArrowLeft className="w-5 h-5" />
-                <img src={testimonial.avatar} alt={testimonial.name} className="w-8 h-8 rounded-full object-cover" />
-                <div className="flex-1 text-left">
-                  <h3 className="font-semibold text-sm">{testimonial.name}</h3>
-                  <p className="text-[10px] opacity-80">online</p>
-                </div>
-                <div className="flex gap-3">
-                  <Phone className="w-4 h-4" />
-                  <VideoIcon className="w-4 h-4" />
-                  <MoreVertical className="w-4 h-4" />
-                </div>
-              </div>
-              
-              <div className="whatsapp-chat p-3 space-y-2 h-[180px]">
-                <div className="bg-gray-200/50 text-gray-600 text-[10px] text-center py-1 rounded-lg">Today</div>
-                {testimonial.messages.map((message, mIndex) => (
-                  <div key={mIndex} className={`flex ${message.type === 'student' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[75%] rounded-lg p-2 relative ${
-                      message.type === 'student' 
-                        ? 'bg-[#E7FFDB] rounded-tr-none' 
-                        : 'bg-white rounded-tl-none shadow-sm'
-                    }`}>
-                      <p className="text-xs leading-snug text-left">{message.text}</p>
-                      <p className="text-[9px] text-gray-500 text-right mt-0.5">{message.time}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+  <div className="mt-24 max-w-6xl mx-auto px-4">
+    <h2 className="text-3xl font-bold text-gray-900 mb-2 text-center">
+      What past attendees wrote after the session.
+    </h2>
+    <p className="text-gray-600 text-center mb-12">
+      Shown exactly as written. These are individual experiences.
+    </p>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {testimonials.map((testimonial, index) => (
+        <figure
+          key={testimonial.name + index}
+          className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 flex flex-col gap-4"
+        >
+          <blockquote className="text-gray-900 text-base leading-relaxed flex-1">
+            {testimonial.quote}
+          </blockquote>
+          <figcaption className="flex items-center gap-3 pt-4 border-t border-gray-100">
+            <span
+              className={`w-9 h-9 rounded-full ${AVATAR_COLORS[index % AVATAR_COLORS.length]} text-white text-xs font-bold flex items-center justify-center flex-none`}
+            >
+              {testimonial.initials}
+            </span>
+            <span className="text-sm font-semibold text-gray-900">{testimonial.name}</span>
+          </figcaption>
+        </figure>
+      ))}
     </div>
   </div>
 );

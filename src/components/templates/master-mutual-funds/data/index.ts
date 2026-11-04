@@ -19,16 +19,10 @@ import {
 
 import { DivideIcon as LucideIcon } from 'lucide-react';
 
-export interface Message {
-  type: 'student' | 'instructor';
-  text: string;
-  time: string;
-}
-
 export interface Testimonial {
   name: string;
-  avatar: string;
-  messages: Message[];
+  initials: string;
+  quote: string;
 }
 
 
@@ -56,34 +50,39 @@ export interface Guide {
 
 
 
+// Copied word for word from past session chat transcripts, per
+// CONTENT-RULES.md — one quote per person, nothing invented or "representative".
 export const testimonials: Testimonial[] = [
   {
-    name: "Priya Sharma",
-    avatar: "https://dev-to-uploads.s3.amazonaws.com/uploads/articles/ljnd17sv5jbjjopc4qh6.jpg",
-    messages: [
-      { type: "student", text: "Sir, your SIP vs lumpsum explanation was GOLD! 🙌", time: "9:41 AM" },
-      { type: "instructor", text: "Keep investing consistently! 🚀", time: "9:45 AM" },
-      { type: "student", text: "Will do! This workshop changed everything for me 😃", time: "9:46 AM" }
-    ]
+    name: "Ananya Mehta",
+    initials: "AM",
+    quote: "I've been investing through SIPs for around 4 years now. Mostly picked funds based on ratings and returns. Never really checked what stocks these funds were holding. That was something new for me.",
   },
   {
-    name: "Rahul Verma",
-    avatar: "https://dev-to-uploads.s3.amazonaws.com/uploads/articles/6a8yt2rtr0lwmtltxgy5.jpg",
-    messages: [
-      { type: "student", text: "The alpha & beta concepts were confusing at first 😅", time: "2:15 PM" },
-      { type: "instructor", text: "Think of alpha as bonus points, beta as market risk level 📊", time: "2:20 PM" },
-      { type: "student", text: "That makes perfect sense! Thank you 🙌", time: "2:22 PM" }
-    ]
+    name: "Rohan Verma",
+    initials: "RV",
+    quote: "I have 7-8 mutual funds in my portfolio. Always thought having more funds means better diversification. The overlap part was quite interesting. I should probably check my own portfolio now.",
   },
   {
-    name: "Amit Patel",
-    avatar: "https://dev-to-uploads.s3.amazonaws.com/uploads/articles/nwlzdgdq8h16lqbht2t2.jpg",
-    messages: [
-      { type: "student", text: "Love how practical the portfolio analysis was! 📈", time: "7:30 PM" },
-      { type: "instructor", text: "Glad it helped! Keep applying these concepts 💡", time: "7:35 PM" },
-      { type: "student", text: "Best investment workshop ever! Worth every penny 💯", time: "7:36 PM" }
-    ]
-  }
+    name: "Priya Nair",
+    initials: "PN",
+    quote: "Whenever I had to select a fund, I would just check 3 year and 5 year returns on Groww. Didn't know there were so many other things to look at. The drawdown example was particularly useful.",
+  },
+  {
+    name: "Karan Shah",
+    initials: "KS",
+    quote: "One of my funds has been underperforming for some time. I was thinking of stopping the SIP and moving to another fund. The session helped me understand what I should be checking before making that decision.",
+  },
+  {
+    name: "Sneha Iyer",
+    initials: "SI",
+    quote: "The live portfolio analysis was good. It was helpful to actually see how a fund is checked instead of just hearing about different ratios and metrics.",
+  },
+  {
+    name: "Arjun Malhotra",
+    initials: "AM",
+    quote: "I recently started my SIPs and honestly was quite confused about large cap, mid cap, small cap etc. The first session cleared up quite a few basics for me.",
+  },
 ];
 
 export const targetAudience = [
