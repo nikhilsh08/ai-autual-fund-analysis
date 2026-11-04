@@ -5,10 +5,9 @@ import { CTA } from "./CTA";
 interface BonusesProps {
   onEnroll?: () => void;
   price?: number;
-  originalPrice?: number;
 }
 
-export const Bonuses: React.FC<BonusesProps> = ({ onEnroll, price, originalPrice }) => {
+export const Bonuses: React.FC<BonusesProps> = ({ onEnroll, price }) => {
   // Calculate the total worth of all bonuses
   const totalWorth = bonuses.reduce((sum, bonus) => sum + Number(bonus.worth), 0);
 
@@ -68,7 +67,7 @@ export const Bonuses: React.FC<BonusesProps> = ({ onEnroll, price, originalPrice
         
         {onEnroll && price && (
           <div className="mt-16">
-            <CTA price={price} originalPrice={originalPrice} onEnroll={onEnroll} />
+            <CTA price={price} onEnroll={onEnroll} />
           </div>
         )}
       </div>

@@ -31,7 +31,6 @@ const MasterMutualFunds: React.FC<MasterMutualFundsProps> = ({ course }) => {
               </div>
               <CTA
                 price={course.price}
-                originalPrice={course.originalPrice || undefined}
                 onEnroll={handleEnroll}
               />
             </div>
