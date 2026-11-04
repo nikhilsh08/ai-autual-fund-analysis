@@ -106,7 +106,7 @@ export const experiences: Experience[] = [
   {
     icon: Building2,
     title: "Goldman Sachs (4+ years)",
-    description: "Managed ₹65Bn AUM, risk analysis for flagship hedge funds"
+    description: "Analysed the risk of $65B of mutual fund and hedge-fund assets"
   },
   {
     icon: Briefcase,
