@@ -15,12 +15,6 @@ import {
   TrendingUp,
   Target as TargetIcon,
   AlertTriangle,
-  FileText,
-  BarChart2,
-  BookOpen,
-  PenTool as Tool,
-  
-  Link
 } from 'lucide-react';
 
 import { DivideIcon as LucideIcon } from 'lucide-react';
@@ -52,11 +46,10 @@ export interface TimelineItem {
   timeSlot: string;
 }
 
-export interface Bonus {
-  icon: typeof LucideIcon;
+export interface Guide {
+  cover: string;
   title: string;
   description: string;
-  worth: Number;
 }
 
 
@@ -176,42 +169,32 @@ export const timelineItems: TimelineItem[] = [
   }
 ];
 
-export const bonuses: Bonus[] = [
+// The 5 guides are shared as PDFs during the live workshop, never emailed
+// before and never linked directly from the page (see BACKEND.md section 4).
+export const guides: Guide[] = [
   {
-    icon: FileText,
+    cover: "/master-mutual-funds/assets/guide-1.webp",
     title: "Mutual Fund Investment Starter Guide",
-    description: "Learn the fundamentals of mutual fund investing with this easy-to-follow guide, perfect for beginners.",
-    worth: 1500
+    description: "From what a mutual fund is to your first portfolio.",
   },
   {
-    icon: BarChart2,
-    title: "Quick Hacks to Improve Portfolio Returns",
-    description: "Discover actionable strategies to optimize your mutual fund portfolio and maximize returns.",
-    worth: 1500
-  },
-  {
-    icon: TrendingUp,
-    title: "Monthly Portfolio Audit Checklist",
-    description: "Stay on track with your financial goals using this powerful, comprehensive portfolio evaluation blueprint.",
-    worth: 2000
-  },
-  {
-    icon: BookOpen,
+    cover: "/master-mutual-funds/assets/guide-2.webp",
     title: "Essential Mutual Fund Strategies for Beginners",
-    description: "Master the key strategies for mutual fund selection and smart investing.",
-    worth: 1500
+    description: "The strategies that suit a first-time investor, and the ones to avoid.",
   },
   {
-    icon: Tool,
-    title: "Portfolio Analysis Tools & Templates",
-    description: "Access powerful tools and ready-to-use templates to make better financial decisions.",
-    worth: 1000
+    cover: "/master-mutual-funds/assets/guide-3.webp",
+    title: "Monthly Portfolio Audit Checklist",
+    description: "A list of checks to run on your portfolio once a month.",
   },
   {
-  icon: Link,
-  title: "Get a List of All Websites Discussed in Class",
-  description: "Access a curated list of all the websites covered during live sessions — each packed with resources to help you kickstart and refine your portfolio analysis.",
-  worth: 1500
-}
-
+    cover: "/master-mutual-funds/assets/guide-4.webp",
+    title: "Complete Guide to Free Portfolio Analysis Tools in India",
+    description: "Five free websites and tools for checking a mutual fund or a portfolio, and what each one is good for.",
+  },
+  {
+    cover: "/master-mutual-funds/assets/guide-5.webp",
+    title: "Small Changes That Reduce Your Costs and Taxes",
+    description: "Practical ideas on costs, taxes and investing habits.",
+  },
 ];
