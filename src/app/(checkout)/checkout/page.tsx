@@ -88,7 +88,8 @@ const CheckoutContent = () => {
             title: course.title,
             price: course.price || 0,
             originalPrice: (course as any).originalPrice,
-            thumbnail: course.thumbnail || ""
+            thumbnail: course.thumbnail || "",
+            batchGroup: (course as any).batchGroup,
           });
         }
       } catch (error) {
@@ -103,6 +104,9 @@ const CheckoutContent = () => {
 
   useEffect(() => {
     const fetchUpsells = async () => {
+      // Master Mutual Funds: no follow-on paid offer or links to other
+      // courses on this checkout, per CONTENT-RULES.md.
+      if (buyNowItem?.batchGroup === "mmf") return;
       if (!cartStore) return;
       const idsToAnalyze: string[] = [];
       if (buyNowItem) idsToAnalyze.push(buyNowItem.id);
