@@ -286,6 +286,20 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
             create: { userId: user.id, courseId: item.courseId }
           });
 
+          // Master Mutual Funds: count this paid seat. The database refuses
+          // if the batch is already full.
+          if (item.course?.batchGroup === "mmf") {
+            const max = item.course.maxSeats ?? 50;
+            const counted = await tx.course.updateMany({
+              where: { id: item.courseId, seatsSold: { lt: max } },
+              data: { seatsSold: { increment: 1 } },
+            });
+            if (counted.count === 0) {
+              // Very rare: two people paid for the last seat at the same moment.
+              console.error(`[MMF] Batch ${item.courseId} was full when order ${orderId} was paid. Refund or move this buyer.`);
+            }
+          }
+
           // Queue enrollment for processing AFTER transaction commits
           // (Trainer Central API calls take 2-10 seconds, can't run inside transaction)
           if (item.course?.tcCourseId) {
