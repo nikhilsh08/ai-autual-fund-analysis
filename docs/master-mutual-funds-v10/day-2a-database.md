@@ -1,4 +1,4 @@
-# Master Mutual Funds v10 — Day 3: teaching the database about batches
+# Master Mutual Funds v10 — Day 2A: teaching the database about batches
 
 Adds four optional fields to `Course` so a weekend Master Mutual Funds batch
 can be its own course row, and wires them into the two admin APIs that
@@ -25,7 +25,7 @@ by hand or a timer; only the (later) payment code is allowed to change it.
 - `npx prisma db push` was **not** run here: it needs a real `DATABASE_URL`
   pointed at the test database, which this environment does not have. The
   person who runs this against that database should confirm the push only
-  adds the four new optional fields, per the plan's Day 3 checklist.
+  adds the four new optional fields, per the plan's Day 2A checklist.
 
 ## API changes
 
@@ -39,6 +39,6 @@ by hand or a timer; only the (later) payment code is allowed to change it.
 
 ## Not done here (later days)
 
-Admin-panel form fields (`admin-cashflowcrew`, Day 4) and the actual
-`mmf-batch.ts` lookup/checkout logic (Day 5 onward) are a separate repo and
+Admin-panel form fields (`admin-cashflowcrew`, Day 2B) and the actual
+`mmf-batch.ts` lookup/checkout logic (Day 3A onward) are a separate repo and
 a separate day's scope.
