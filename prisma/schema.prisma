@@ -134,6 +134,14 @@ model Course {
   maxSeats  Int?
   seatsSold Int       @default(0)
 
+  // Master Mutual Funds batches: group recurring live batches and track
+  // when booking for a given batch closes. All optional so existing
+  // courses are unaffected.
+  batchGroup      String?   // "mmf" for every Master Mutual Funds batch
+  bookingCloseAt  DateTime? // booking for this batch stops at this time
+  startTime       String?   // optional, shown on the page, e.g. "11:00 AM IST"
+  language        String?   // optional, shown on the page, e.g. "English"
+
   categoryId String   @db.ObjectId
   category   Category @relation(fields: [categoryId], references: [id])
 
