@@ -338,7 +338,7 @@ const CheckoutContent = () => {
 
       } catch (error) {
         console.error("Payment Error:", error);
-        toast.error("Payment Failed");
+        toast.error((error as any)?.response?.data?.error || "Payment Failed");
       } finally {
         setIsProcessing(false);
       }

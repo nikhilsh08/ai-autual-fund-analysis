@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { createCashfreeOrder } from '@/server/actions/payment.action';
 import { currentUser } from '@/lib/authDetails';
 import { dataBasePrisma } from '@/lib/dbPrisma';
+import { mmfBookingError } from '@/lib/mmf-batch';
 
 export async function POST(req: Request) {
     try {
@@ -66,6 +67,14 @@ export async function POST(req: Request) {
             }
 
             individualCourseTotal = courses.reduce((sum, course) => sum + course.price, 0);
+
+            // Master Mutual Funds: refuse a closed or full batch before taking payment
+            for (const c of courses) {
+                const problem = await mmfBookingError(c, email);
+                if (problem) {
+                    return NextResponse.json({ success: false, error: problem }, { status: 409 });
+                }
+            }
         }
 
         // 3. Calculate Totals (Pre-discount)
