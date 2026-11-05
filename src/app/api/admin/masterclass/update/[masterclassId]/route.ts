@@ -23,7 +23,8 @@ export async function PATCH(
         // Nullable string fields — safe to set to null to clear them
         const nullableStringFields = ["subHeading", "description", "thumbnail",
             "status", "tcCourseId", "tcCourseUrl",
-            "staticRoute", "visibility", "duration", "content"];
+            "staticRoute", "visibility", "duration", "content",
+            "batchGroup", "startTime", "language"];
         for (const field of nullableStringFields) {
             if (field in body) {
                 updateData[field] = body[field] ?? null;
@@ -52,6 +53,7 @@ export async function PATCH(
         if ("originalPrice" in body) updateData.originalPrice = body.originalPrice ? parseFloat(body.originalPrice) : null;
         if ("maxSeats" in body) updateData.maxSeats = body.maxSeats ? parseInt(body.maxSeats) : null;
         if ("startDate" in body) updateData.startDate = body.startDate ? new Date(body.startDate) : null;
+        if ("bookingCloseAt" in body) updateData.bookingCloseAt = body.bookingCloseAt ? new Date(body.bookingCloseAt) : null;
 
         console.log(updateData, "updateData — only fields sent by frontend");
 
