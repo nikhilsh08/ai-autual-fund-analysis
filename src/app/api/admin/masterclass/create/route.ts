@@ -16,6 +16,7 @@ export async function POST(req: Request) {
             thumbnail, type, tcCourseId,
             tcCourseUrl, startDate, maxSeats, categoryId,
             staticRoute, visibility,duration,content,
+            batchGroup, bookingCloseAt, startTime, language,
         } = body;
         let slug = title.trim().toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
 
@@ -52,6 +53,10 @@ export async function POST(req: Request) {
                 tcCourseUrl,
                 startDate: startDate ? new Date(startDate) : undefined,
                 maxSeats: maxSeats ? parseInt(maxSeats) : undefined,
+                batchGroup: batchGroup || undefined,
+                bookingCloseAt: bookingCloseAt ? new Date(bookingCloseAt) : undefined,
+                startTime: startTime || undefined,
+                language: language || undefined,
                 categoryId,
                 isPublished: true, // Default to true?
                 duration,
