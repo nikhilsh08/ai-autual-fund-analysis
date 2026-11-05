@@ -1,4 +1,4 @@
-# Master Mutual Funds v10 — Day 2: bringing the design into the site
+# Master Mutual Funds v10 — Day 1B: bringing the design into the site
 
 The designer's v10 handoff is a single `index.html` written against a small
 runtime (`support.js`, a "dc-runtime") that this project does not use in
@@ -11,7 +11,7 @@ mail-merge letter is filled from a spreadsheet.
 - The handoff (`index.html`, `motion.js`, `support.js`, `BACKEND.md`,
   `CONTENT-RULES.md`, `README.md`, and the 14 image assets) lives in a
   sibling folder next to this repo, not inside it, per `BACKEND.md`/the
-  12-day plan's Day 2 instructions.
+  plan's Day 1B instructions.
 - The 14 images were copied into `public/mmf/assets/` and are served at
   `/mmf/assets/<name>`.
 - `motion.js` was copied to `public/mmf/motion.js`, with its `lenis` CDN
@@ -59,5 +59,5 @@ command above.
 `MMF_V10_BODY_HTML` still contains `₹{price}`, `{class date}`,
 `{booking close date}` and the `{{ … }}`/`<!--mmf:if-->` markers unresolved.
 Filling them with real batch data, and mounting the template as the actual
-`/master-mutual-funds` page, is later work (the plan's Day 5 onward) and is
-out of scope for Day 2.
+`/master-mutual-funds` page, is later work (the plan's Day 3A onward) and is
+out of scope for Day 1B.
