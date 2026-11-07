@@ -8,7 +8,7 @@
     "postinstall": "prisma generate",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint --ignore-pattern \"public/mmf/**\"",
     "test": "vitest run"
   },
   "dependencies": {
