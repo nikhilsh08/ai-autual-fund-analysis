@@ -14,6 +14,7 @@ export async function createCoupon(data: {
     minAmount?: number;
     description?: string;
     applicableCourseIds?: string[];
+    applicableBatchIds?: string[];
 }) {
     try {
         const session = await auth();
@@ -35,6 +36,7 @@ export async function createCoupon(data: {
                 usageLimit: data.usageLimit || null, // handle optional/undefined
                 minAmount: data.minAmount || 0,
                 applicableCourseIds: data.applicableCourseIds || [],
+                applicableBatchIds: data.applicableBatchIds || [],
             },
         });
 
