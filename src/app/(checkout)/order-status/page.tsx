@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import PurchaseEvent from '@/components/analytics/PurchaseEvent';
 import RedirectHandler from '@/components/checkout/RedirectHandler';
 import AutoRefresh from '@/components/checkout/AutoRefresh';
+import WorkshopThankYou from '@/components/checkout/WorkshopThankYou';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -35,6 +36,8 @@ export default async function OrderStatusPage({
     const isPending = statusCheck.status === 'PENDING';
     const isFailed  = statusCheck.status === 'FAILED';
     const orderData = statusCheck.data;
+    // Workshop (batch) orders get the join-link view and never redirect away.
+    const isBatchOrder = Boolean((orderData as any)?.items?.some((item: any) => item.batchId));
 
     // Prepare purchase event data (only fires on success)
     const purchaseEventData = isSuccess && orderData ? {
@@ -67,7 +70,9 @@ export default async function OrderStatusPage({
                 />
             )}
             <div className="max-w-md w-full bg-card rounded-3xl shadow-sm border border-border p-8 text-center">
-                {isSuccess ? (
+                {isSuccess ? isBatchOrder ? (
+                    <WorkshopThankYou orderId={orderId} />
+                ) : (
                     <div className="space-y-6">
                         <div className="w-20 h-20 bg-teal/10 rounded-full flex items-center justify-center mx-auto">
                             <CheckCircle2 className="w-10 h-10 text-teal" />

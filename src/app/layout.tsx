@@ -129,7 +129,10 @@ export default function RootLayout({
           <CartSync />
           {children}
           <Toaster />
-          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID!} />
+          {/* When the GTM container owns the GA4 tag, loading gtag here would count every event twice (OWNER D7). */}
+          {process.env.NEXT_PUBLIC_GA4_VIA_GTM !== "true" && (
+            <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID!} />
+          )}
           <MetaPixel pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID!} />
           <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID!} />
           <MicrosoftClarity clarityId={process.env.NEXT_PUBLIC_CLARITY_ID!} />
