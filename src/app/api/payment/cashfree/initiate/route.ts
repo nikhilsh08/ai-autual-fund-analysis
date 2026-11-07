@@ -4,11 +4,24 @@ import { v4 as uuidv4 } from 'uuid';
 import { createCashfreeOrder } from '@/server/actions/payment.action';
 import { currentUser } from '@/lib/authDetails';
 import { dataBasePrisma } from '@/lib/dbPrisma';
+import { z } from 'zod';
+import { applyCoupon, couponAppliesTo, roundRupees } from '@/lib/pricing';
+import { isOnSale } from '@/lib/batches/schedule';
+
+const batchFieldsSchema = z.object({
+    batchId: z.string().min(1).optional(),
+    whatsappOptIn: z.boolean().optional(),
+});
 
 export async function POST(req: Request) {
     try {
         const body = await req.json();
         const { name, email, phone, courseIds, bundleIds, couponCode, utmParams } = body;
+        const batchFields = batchFieldsSchema.safeParse(body);
+        if (!batchFields.success) {
+            return NextResponse.json({ success: false, error: 'Invalid batch fields' }, { status: 400 });
+        }
+        const { batchId, whatsappOptIn = false } = batchFields.data;
         const authenticatedUser = await currentUser();
 
         if (!name || !email || !phone) {
@@ -25,7 +38,7 @@ export async function POST(req: Request) {
 
         // Track all course IDs for enrollment (including bundle courses)
         let allCourseIdsForEnrollment: string[] = [...courseIdArray];
-        let bundleItemsData: { bundleId: string; price: number }[] = [];
+        const bundleItemsData: { bundleId: string; price: number }[] = [];
         let bundleTotal = 0;
 
         // 1. Fetch and Validate Bundles
@@ -68,6 +81,26 @@ export async function POST(req: Request) {
             individualCourseTotal = courses.reduce((sum, course) => sum + course.price, 0);
         }
 
+        // 2b. Batch courses are buy-now only. The price is the batch price —
+        // never Course.price and never anything sent by the browser — and the
+        // batch must be on sale right now.
+        let batch: { id: string; priceRupees: number } | null = null;
+        const batchCourses = courses.filter((c) => c.useBatches);
+        if (batchCourses.length > 0) {
+            if (courses.length !== 1 || bundleIdArray.length > 0) {
+                return NextResponse.json({ success: false, error: 'batch_course_must_be_alone' }, { status: 400 });
+            }
+            if (!batchId) {
+                return NextResponse.json({ success: false, error: 'batch_required' }, { status: 400 });
+            }
+            const candidate = await dataBasePrisma.batch.findUnique({ where: { id: batchId } });
+            if (!candidate || candidate.courseId !== batchCourses[0].id || !isOnSale(candidate, new Date())) {
+                return NextResponse.json({ success: false, error: 'batch_not_on_sale' }, { status: 409 });
+            }
+            batch = { id: candidate.id, priceRupees: candidate.priceRupees };
+            individualCourseTotal = candidate.priceRupees;
+        }
+
         // 3. Calculate Totals (Pre-discount)
         const subtotal = bundleTotal + individualCourseTotal;
         let discountAmount = 0;
@@ -93,50 +126,23 @@ export async function POST(req: Request) {
                     return NextResponse.json({ success: false, error: `Minimum order amount of ₹${coupon.minAmount} required` }, { status: 400 });
                 }
 
-                // Check if coupon applies to selected items
-                const hasRestrictedItems =
-                    (coupon.applicableCourseIds?.length > 0) ||
-                    (coupon.applicableBundleIds?.length > 0);
-
-                if (hasRestrictedItems) {
-                    const hasApplicableCourse = courseIdArray.some((id: string) =>
-                        coupon.applicableCourseIds?.includes(id)
-                    );
-                    const hasApplicableBundle = bundleIdArray.some((id: string) =>
-                        coupon.applicableBundleIds?.includes(id)
-                    );
-
-                    if (!hasApplicableCourse && !hasApplicableBundle) {
-                        return NextResponse.json({
-                            success: false,
-                            error: 'Coupon not applicable to selected items'
-                        }, { status: 400 });
-                    }
+                // Same rules as validateCoupon (checkout preview), including
+                // batch scope.
+                if (!couponAppliesTo(coupon, { courseIds: courseIdArray, bundleIds: bundleIdArray, batchId: batch?.id })) {
+                    return NextResponse.json({
+                        success: false,
+                        error: 'Coupon not applicable to selected items'
+                    }, { status: 400 });
                 }
 
-                // Calculate discount
-                if (coupon.discountType === "PERCENTAGE") {
-                    let calculatedDiscount = (subtotal * coupon.discount) / 100;
-                    if (coupon.maxDiscount && calculatedDiscount > coupon.maxDiscount) {
-                        calculatedDiscount = coupon.maxDiscount;
-                    }
-                    discountAmount = calculatedDiscount;
-                } else {
-                    discountAmount = coupon.discount;
-                }
-
-                // Ensure discount doesn't exceed subtotal
-                if (discountAmount > subtotal) {
-                    discountAmount = subtotal;
-                }
-
+                discountAmount = applyCoupon(subtotal, coupon);
                 couponId = coupon.id;
             } else {
                 return NextResponse.json({ success: false, error: 'Invalid coupon code' }, { status: 400 });
             }
         }
 
-        const finalAmount = Math.max(0, Math.round((subtotal - discountAmount) * 100) / 100);
+        const finalAmount = roundRupees(subtotal - discountAmount);
 
         // 5. User Identity Resolution
         let targetUserId: string | null = authenticatedUser?.id || null;
@@ -173,11 +179,13 @@ export async function POST(req: Request) {
                 discountAmount: discountAmount,
                 couponId: couponId,
                 status: 'PENDING',
+                whatsappOptIn: batch ? whatsappOptIn : false,
                 // Individual course items
                 items: courseIdArray.length > 0 ? {
                     create: courses.map((c) => ({
                         courseId: c.id,
-                        price: c.price
+                        price: batch ? batch.priceRupees : c.price,
+                        batchId: batch?.id ?? null,
                     }))
                 } : undefined,
                 // Bundle items
