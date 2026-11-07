@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from "uuid";
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import { enrollUserInTrainerCentral } from "@/lib/trainer-central";
 import { sendMetaCAPIPurchaseEvent } from "@/lib/meta-capi";
+import { processBatchRegistrationForOrder } from "@/lib/batches/registration";
 
 // --- CASHFREE SDK CONFIGURATION ---
 const isProduction = process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === "PRODUCTION";
@@ -203,6 +204,7 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
       courseTitle: string;
       isBundle: boolean;
     }> = [];
+    const batchOrderDbIds: string[] = [];
 
     // --- HELPER: DELAY FOR RATE-LIMITING ---
     // Used AFTER transaction to avoid hitting external API rate limits
@@ -286,9 +288,27 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
             create: { userId: user.id, courseId: item.courseId }
           });
 
+          // Batch (workshop) seat: one registration per order, idempotent.
+          if (item.batchId) {
+            await tx.batchRegistration.upsert({
+              where: { orderId: localOrder.id },
+              update: {},
+              create: {
+                batchId: item.batchId,
+                orderId: localOrder.id,
+                name: user.name || localOrder.lead?.name || "Attendee",
+                email: user.email,
+                phone: localOrder.guestPhone || localOrder.lead?.phone || "",
+                whatsappOptIn: Boolean(localOrder.whatsappOptIn),
+              }
+            });
+            batchOrderDbIds.push(localOrder.id);
+          }
+
           // Queue enrollment for processing AFTER transaction commits
           // (Trainer Central API calls take 2-10 seconds, can't run inside transaction)
-          if (item.course?.tcCourseId) {
+          // Batch courses use Zoho Webinar instead of TrainerCentral.
+          if (item.course?.tcCourseId && !item.course?.useBatches) {
             enrollmentTasks.push({
               type: item.course.type,
               email: user.email,
@@ -407,6 +427,12 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
         // Admin can manually enroll users if this fails
         console.error(`Failed to enroll in TC for course ${task.courseTitle}${task.isBundle ? ' (bundle)' : ''}`, err);
       }
+    }
+
+    // --- STEP 4b: ZOHO WEBINAR REGISTRATION + WHATSAPP CONFIRMATION ---
+    // Each step records its own failure; the messages job retries later.
+    for (const orderDbId of new Set(batchOrderDbIds)) {
+      await processBatchRegistrationForOrder(orderDbId);
     }
 
     // --- STEP 5: SEND META CONVERSIONS API PURCHASE EVENT ---
