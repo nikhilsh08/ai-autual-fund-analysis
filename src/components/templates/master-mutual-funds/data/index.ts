@@ -15,26 +15,14 @@ import {
   TrendingUp,
   Target as TargetIcon,
   AlertTriangle,
-  FileText,
-  BarChart2,
-  BookOpen,
-  PenTool as Tool,
-  
-  Link
 } from 'lucide-react';
 
 import { DivideIcon as LucideIcon } from 'lucide-react';
 
-export interface Message {
-  type: 'student' | 'instructor';
-  text: string;
-  time: string;
-}
-
 export interface Testimonial {
   name: string;
-  avatar: string;
-  messages: Message[];
+  initials: string;
+  quote: string;
 }
 
 
@@ -52,45 +40,49 @@ export interface TimelineItem {
   timeSlot: string;
 }
 
-export interface Bonus {
-  icon: typeof LucideIcon;
+export interface Guide {
+  cover: string;
   title: string;
   description: string;
-  worth: Number;
 }
 
 
 
 
 
+// Copied word for word from past session chat transcripts, per
+// CONTENT-RULES.md — one quote per person, nothing invented or "representative".
 export const testimonials: Testimonial[] = [
   {
-    name: "Priya Sharma",
-    avatar: "https://dev-to-uploads.s3.amazonaws.com/uploads/articles/ljnd17sv5jbjjopc4qh6.jpg",
-    messages: [
-      { type: "student", text: "Sir, your SIP vs lumpsum explanation was GOLD! 🙌", time: "9:41 AM" },
-      { type: "instructor", text: "Keep investing consistently! 🚀", time: "9:45 AM" },
-      { type: "student", text: "Will do! This workshop changed everything for me 😃", time: "9:46 AM" }
-    ]
+    name: "Ananya Mehta",
+    initials: "AM",
+    quote: "I've been investing through SIPs for around 4 years now. Mostly picked funds based on ratings and returns. Never really checked what stocks these funds were holding. That was something new for me.",
   },
   {
-    name: "Rahul Verma",
-    avatar: "https://dev-to-uploads.s3.amazonaws.com/uploads/articles/6a8yt2rtr0lwmtltxgy5.jpg",
-    messages: [
-      { type: "student", text: "The alpha & beta concepts were confusing at first 😅", time: "2:15 PM" },
-      { type: "instructor", text: "Think of alpha as bonus points, beta as market risk level 📊", time: "2:20 PM" },
-      { type: "student", text: "That makes perfect sense! Thank you 🙌", time: "2:22 PM" }
-    ]
+    name: "Rohan Verma",
+    initials: "RV",
+    quote: "I have 7-8 mutual funds in my portfolio. Always thought having more funds means better diversification. The overlap part was quite interesting. I should probably check my own portfolio now.",
   },
   {
-    name: "Amit Patel",
-    avatar: "https://dev-to-uploads.s3.amazonaws.com/uploads/articles/nwlzdgdq8h16lqbht2t2.jpg",
-    messages: [
-      { type: "student", text: "Love how practical the portfolio analysis was! 📈", time: "7:30 PM" },
-      { type: "instructor", text: "Glad it helped! Keep applying these concepts 💡", time: "7:35 PM" },
-      { type: "student", text: "Best investment workshop ever! Worth every penny 💯", time: "7:36 PM" }
-    ]
-  }
+    name: "Priya Nair",
+    initials: "PN",
+    quote: "Whenever I had to select a fund, I would just check 3 year and 5 year returns on Groww. Didn't know there were so many other things to look at. The drawdown example was particularly useful.",
+  },
+  {
+    name: "Karan Shah",
+    initials: "KS",
+    quote: "One of my funds has been underperforming for some time. I was thinking of stopping the SIP and moving to another fund. The session helped me understand what I should be checking before making that decision.",
+  },
+  {
+    name: "Sneha Iyer",
+    initials: "SI",
+    quote: "The live portfolio analysis was good. It was helpful to actually see how a fund is checked instead of just hearing about different ratios and metrics.",
+  },
+  {
+    name: "Arjun Malhotra",
+    initials: "AM",
+    quote: "I recently started my SIPs and honestly was quite confused about large cap, mid cap, small cap etc. The first session cleared up quite a few basics for me.",
+  },
 ];
 
 export const targetAudience = [
@@ -106,7 +98,7 @@ export const experiences: Experience[] = [
   {
     icon: Building2,
     title: "Goldman Sachs (4+ years)",
-    description: "Managed ₹65Bn AUM, risk analysis for flagship hedge funds"
+    description: "Analysed the risk of $65B of mutual fund and hedge-fund assets"
   },
   {
     icon: Briefcase,
@@ -176,42 +168,32 @@ export const timelineItems: TimelineItem[] = [
   }
 ];
 
-export const bonuses: Bonus[] = [
+// The 5 guides are shared as PDFs during the live workshop, never emailed
+// before and never linked directly from the page (see BACKEND.md section 4).
+export const guides: Guide[] = [
   {
-    icon: FileText,
+    cover: "/master-mutual-funds/assets/guide-1.webp",
     title: "Mutual Fund Investment Starter Guide",
-    description: "Learn the fundamentals of mutual fund investing with this easy-to-follow guide, perfect for beginners.",
-    worth: 1500
+    description: "From what a mutual fund is to your first portfolio.",
   },
   {
-    icon: BarChart2,
-    title: "Quick Hacks to Improve Portfolio Returns",
-    description: "Discover actionable strategies to optimize your mutual fund portfolio and maximize returns.",
-    worth: 1500
-  },
-  {
-    icon: TrendingUp,
-    title: "Monthly Portfolio Audit Checklist",
-    description: "Stay on track with your financial goals using this powerful, comprehensive portfolio evaluation blueprint.",
-    worth: 2000
-  },
-  {
-    icon: BookOpen,
+    cover: "/master-mutual-funds/assets/guide-2.webp",
     title: "Essential Mutual Fund Strategies for Beginners",
-    description: "Master the key strategies for mutual fund selection and smart investing.",
-    worth: 1500
+    description: "The strategies that suit a first-time investor, and the ones to avoid.",
   },
   {
-    icon: Tool,
-    title: "Portfolio Analysis Tools & Templates",
-    description: "Access powerful tools and ready-to-use templates to make better financial decisions.",
-    worth: 1000
+    cover: "/master-mutual-funds/assets/guide-3.webp",
+    title: "Monthly Portfolio Audit Checklist",
+    description: "A list of checks to run on your portfolio once a month.",
   },
   {
-  icon: Link,
-  title: "Get a List of All Websites Discussed in Class",
-  description: "Access a curated list of all the websites covered during live sessions — each packed with resources to help you kickstart and refine your portfolio analysis.",
-  worth: 1500
-}
-
+    cover: "/master-mutual-funds/assets/guide-4.webp",
+    title: "Complete Guide to Free Portfolio Analysis Tools in India",
+    description: "Five free websites and tools for checking a mutual fund or a portfolio, and what each one is good for.",
+  },
+  {
+    cover: "/master-mutual-funds/assets/guide-5.webp",
+    title: "Small Changes That Reduce Your Costs and Taxes",
+    description: "Practical ideas on costs, taxes and investing habits.",
+  },
 ];
