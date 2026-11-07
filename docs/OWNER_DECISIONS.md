@@ -35,3 +35,11 @@ The site has no email service. `sendAlert()` uses Resend if `RESEND_API_KEY` and
 `CRON_SECRET`, `ZW_CLIENT_ID`, `ZW_CLIENT_SECRET`, `ZW_REFRESH_TOKEN`, `ZW_ORG_ID`, `ZW_DC`, `ZW_SEND_MAIL`, `WA_PROVIDER`, `WA_API_KEY`, `WA_TEMPLATE_LANG`, `WA_TPL_CONFIRMATION`, `WA_TPL_REMINDER_24H`, `WA_TPL_REMINDER_1H`, `WA_TPL_SURVEY`, `DRY_RUN`, `RESEND_API_KEY`, `ALERT_FROM_EMAIL`, `ALERT_WEBHOOK_URL`.
 
 `DRY_RUN` defaults to true outside production. Set `DRY_RUN=false` explicitly in the production project.
+
+## Phase 4 copy that needs sign-off (not in the brief's tables)
+
+| Where | Text used | Why |
+|---|---|---|
+| Landing page, when nothing is on sale, in place of `{class date}` and `{booking close date}` | "to be announced" | The brief says to still fill every token in the C5 state but gives no wording. |
+| Landing page `<title>` / meta description | "Master Mutual Funds \| Invest Smarter" / "Learn how to pick the right mutual funds and build a wealth-generating portfolio." | Carried over from the previous page as the spec allows, but "Invest Smarter" and "wealth-generating" read as slogans under CONTENT-RULES. Replace if you want. |
+| K2 checkbox | unticked by default | The brief asks "ticked by default? yes/no"; unticked is the safer consent default. |

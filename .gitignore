@@ -41,3 +41,8 @@ yarn-error.log*
 next-env.d.ts
 
 /generated/prisma
+
+# Master Mutual Funds v10 handoff: source material and the guide PDFs are never committed or deployed
+/handoff/
+/src/landing/**/*.pdf
+/public/mmf/**/*.pdf
