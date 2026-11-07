@@ -11,11 +11,12 @@ export async function POST(req: Request) {
 
         const result = await verifyCashfreePayment(orderId);
 
-        if (result.success) {
-            return NextResponse.json(result);
-        } else {
-            return NextResponse.json(result, { status: 400 });
-        }
+        // This endpoint is public (anyone with an order ID can call it), so it
+        // must never echo the order or lead record back.
+        return NextResponse.json(
+            { success: result.success, status: result.status ?? null },
+            { status: result.success ? 200 : 400 },
+        );
     } catch (error: any) {
         return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
     }

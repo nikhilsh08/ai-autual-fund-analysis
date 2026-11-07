@@ -18,7 +18,6 @@ import { useCartStore } from '@/store/cart-store';
 import { useStore } from '@/hooks/use-store';
 import { getUpsellRecommendations } from '@/server/actions/get-recommendations';
 import { getCourseByIdAction } from '@/server/actions/get-courses';
-import { useZwitchPayment } from '@/hooks/useZwitchPayment';
 import { getCashfreeInstance } from '@/lib/PGinitialize';
 import { validateCoupon } from '@/server/actions/coupon.action';
 import axios from 'axios';
@@ -45,9 +44,6 @@ const CheckoutContent = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [buyNowItem, setBuyNowItem] = useState<any>(null);
   const [isLoadingBuyNow, setIsLoadingBuyNow] = useState(!!buyNowId);
-  const { initiateZwitch } = useZwitchPayment();
-  let zwitchPayment = false;
-
   const [upsellItem, setUpsellItem] = useState<any>(null);
   const [isRedirecting, setIsRedirecting] = useState(false);
 
@@ -261,18 +257,7 @@ const CheckoutContent = () => {
   const onPaymentSubmit = async (data: CheckoutFormValues) => {
     console.log("Payment Data:", data, { total });
     setIsProcessing(true);
-    if (zwitchPayment) {
       try {
-        await initiateZwitch({ ...data, amount: total });
-      } catch (error) {
-        toast.error("Payment Failed");
-      } finally {
-        setIsProcessing(false);
-      }
-    }
-    else {
-      try {
-
 
         const paymentSession = await axios.post('/api/payment/cashfree/initiate', {
           name: data.name,
@@ -304,7 +289,7 @@ const CheckoutContent = () => {
 
           const cashfree = await getCashfreeInstance();
 
-          let checkOutOptions = {
+          const checkOutOptions = {
             paymentSessionId: payment_session_id,
             redirectTarget: "_modal",
           }
@@ -338,7 +323,6 @@ const CheckoutContent = () => {
       } finally {
         setIsProcessing(false);
       }
-    }
   };
 
   const showUpsellCard = !isEmpty && upsellItem && !isUpsellInCart;
