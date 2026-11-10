@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   // The workshop landing route reads its HTML template from disk at request
   // time; make sure the file ships with the serverless function on Vercel.
   outputFileTracingIncludes: {
-    "/master-mutual-funds": ["./src/landing/**/*"],
+    "/v10": ["./src/landing/**/*"],
   },
   images: {
     remotePatterns: [

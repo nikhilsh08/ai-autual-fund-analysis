@@ -22,7 +22,7 @@ const DESCRIPTION = "Learn how to pick the right mutual funds and build a wealth
 function config(courseId: string, fallbackPriceRupees: number | null): LandingConfig {
     return {
         courseId,
-        canonicalUrl: `${siteConfig.url}/master-mutual-funds`,
+        canonicalUrl: `${siteConfig.url}/v10`,
         title: TITLE,
         description: DESCRIPTION,
         ogImage: siteConfig.ogImage,

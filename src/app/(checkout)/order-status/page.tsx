@@ -12,12 +12,47 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
 
+// Development-only preview of the workshop thank-you card with sample data:
+// /order-status?preview=workshop  (and &links=1 to show the join buttons).
+// Never available in production; reads nothing from the database.
+function workshopPreviewBooking(withLinks: boolean) {
+    const day1 = new Date('2026-11-21T06:00:00.000Z'); // Sat 21 Nov 2026, 11:30 IST
+    const day2 = new Date('2026-11-22T06:00:00.000Z');
+    return {
+        status: 'PAID',
+        isBatchOrder: true,
+        batch: {
+            id: 'preview',
+            day1Date: 'Saturday, 21 November 2026',
+            day2Date: 'Sunday, 22 November 2026',
+            startTime: '11:30 AM',
+            durationMinutes: 120,
+            day1StartAt: day1.toISOString(),
+            day2StartAt: day2.toISOString(),
+        },
+        zohoState: withLinks ? 'REGISTERED' : 'PENDING',
+        joinLinkDay1: withLinks ? 'https://example.com/join/day1' : null,
+        joinLinkDay2: withLinks ? 'https://example.com/join/day2' : null,
+        whatsappGroupLink: 'https://chat.whatsapp.com/preview',
+    };
+}
+
 export default async function OrderStatusPage({
     searchParams,
 }: {
-    searchParams: Promise<{ order_id: string }>;
+    searchParams: Promise<{ order_id?: string; preview?: string; links?: string }>;
 }) {
-    const { order_id: orderId } = await searchParams;
+    const { order_id: orderId, preview, links } = await searchParams;
+
+    if (preview === 'workshop' && process.env.NODE_ENV !== 'production') {
+        return (
+            <div className="min-h-screen pt-24 pb-12 px-4 bg-cream flex items-center justify-center">
+                <div className="max-w-md w-full bg-card rounded-3xl shadow-sm border border-border p-8 text-center">
+                    <WorkshopThankYou orderId="ORDER_PREVIEW_0000" initialBooking={workshopPreviewBooking(links === '1')} />
+                </div>
+            </div>
+        );
+    }
 
     if (!orderId) {
         redirect('/');

@@ -16,7 +16,7 @@ const batchFieldsSchema = z.object({
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { name, email, phone, courseIds, bundleIds, couponCode, utmParams } = body;
+        const { name, email, phone, courseIds, bundleIds, couponCode, utmParams, landingSource } = body;
         const batchFields = batchFieldsSchema.safeParse(body);
         if (!batchFields.success) {
             return NextResponse.json({ success: false, error: 'Invalid batch fields' }, { status: 400 });
@@ -196,7 +196,7 @@ export async function POST(req: Request) {
         });
 
         // 7. Cashfree Initiation
-        const cashfreeRes = await createCashfreeOrder(orderId, finalAmount, { name, email, phone }, utmParams);
+        const cashfreeRes = await createCashfreeOrder(orderId, finalAmount, { name, email, phone }, utmParams, landingSource);
 
         if (!cashfreeRes.success) throw new Error(cashfreeRes.error);
 

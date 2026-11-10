@@ -37,6 +37,16 @@ export const MMF_COPY = {
     T6: "Add both sessions to my calendar",
     T7: "You need a stable internet connection and a computer, tablet or phone with audio.",
     T8: "For help, write to support@cashflowcrew.in with your order ID.",
+    // Payment pending / failed states of the v10 thank-you page. Not in the
+    // brief's tables — needs owner sign-off (see OWNER_DECISIONS).
+    pendingTitle: "Confirming your payment…",
+    pendingBody:
+      "Your payment was received. We are confirming your booking, which takes a few seconds. Please keep this page open.",
+    refresh: "Refresh status",
+    contactSupport: "Write to support",
+    failedTitle: "Payment not completed",
+    failedBody: "The payment did not go through and you have not been charged. You can try again from the workshop page.",
+    backToWorkshop: "Back to the workshop page",
   },
 } as const;
 

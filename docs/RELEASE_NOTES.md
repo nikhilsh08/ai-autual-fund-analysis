@@ -83,7 +83,7 @@ Optional: `MMF_LANGUAGE`, `MMF_DURATION_MINUTES` (120), `MMF_FUTURE_BATCHES` (2)
 
 1. Admin → Batch settings: confirm the defaults.
 2. Admin → Batches: Edit batch 1 → add both Zoho keys and the WhatsApp group link → **Open**.
-3. Visit `/master-mutual-funds`: the price, Saturday date and booking close time come from the batch; "Book my seat" links to `/checkout?courseId=…&batchId=…`.
+3. Visit `/v10` (the old page stays at `/master-mutual-funds`): the price, Saturday date and booking close time come from the batch; "Book my seat" links to `/checkout?courseId=…&batchId=…`.
 
 ## 9. Deploy order
 
@@ -95,7 +95,7 @@ Optional: `MMF_LANGUAGE`, `MMF_DURATION_MINUTES` (120), `MMF_FUTURE_BATCHES` (2)
 
 ## 10. Rollback (Vercel)
 
-- Site: Vercel → Deployments → previous production deployment → **Promote to Production**. The old landing page code is kept in `src/legacy/`; the new Prisma fields are optional, so an older build runs against the new database.
+- Site: Vercel → Deployments → previous production deployment → **Promote to Production**. The old landing page is still served at `/master-mutual-funds`; the new Prisma fields are optional, so an older build runs against the new database.
 - Admin: same, in the admin project.
 - Nothing is deleted from the database by these changes.
 

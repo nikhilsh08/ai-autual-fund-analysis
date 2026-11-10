@@ -148,7 +148,7 @@ export function renderLanding(template: string, batch: LandingBatch | null, cfg:
   html = setPropDefault(html, "language", batch?.language ?? "");
 
   if (batch) {
-    const href = `/checkout?courseId=${encodeURIComponent(cfg.courseId)}&amp;batchId=${encodeURIComponent(batch.id)}`;
+    const href = `/checkout?courseId=${encodeURIComponent(cfg.courseId)}&amp;batchId=${encodeURIComponent(batch.id)}&amp;src=mmf-v10`;
     html = html.replace('href="#" data-checkout="1"', `href="${href}" data-checkout="1"`);
   } else {
     html = html.replace(/<a href="#" data-checkout="1"[^>]*>[\s\S]*?<\/a>/, "");

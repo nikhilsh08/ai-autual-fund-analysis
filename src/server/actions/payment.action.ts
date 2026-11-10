@@ -51,7 +51,10 @@ export const createCashfreeOrder = async (
     utmCampaign?: string;
     utmTerm?: string;
     utmContent?: string;
-  }
+  },
+  // "mmf-v10" when the buyer came from the v10 landing page. Carried in the
+  // return URL so the callback can send them to that page's own thank-you.
+  landingSource?: string
 ) => {
   try {
     // --- STEP 1: SAVE UTM TRACKING DATA TO DATABASE ---
@@ -83,7 +86,7 @@ export const createCashfreeOrder = async (
         customer_email: customerDetails.email,
       },
       order_meta: {
-        return_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/callback?order_id=${orderId}`,
+        return_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/callback?order_id=${orderId}${landingSource === "mmf-v10" ? "&src=mmf-v10" : ""}`,
       },
     };
 

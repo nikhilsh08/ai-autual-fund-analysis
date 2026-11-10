@@ -52,6 +52,8 @@ const CheckoutContent = () => {
 
   // Workshop (batch) path: price and dates come from the batch on sale.
   const requestedBatchId = searchParams.get('batchId');
+  // Which landing page sent the buyer here; decides the thank-you page after payment.
+  const landingSource = searchParams.get('src');
   const [batch, setBatch] = useState<{ id: string; priceRupees: number; day1Date: string; startTime: string } | null>(null);
   const [batchUnavailable, setBatchUnavailable] = useState(false);
   const [whatsappOptIn, setWhatsappOptIn] = useState(false);
@@ -304,6 +306,7 @@ const CheckoutContent = () => {
           couponCode: appliedCoupon?.code,
           batchId: batch?.id,
           whatsappOptIn: batch ? whatsappOptIn : undefined,
+          landingSource: batch ? landingSource : undefined,
           // Capture UTMs
           utmParams: {
             // Prefer UTMs from current URL; fall back to sessionStorage (set on

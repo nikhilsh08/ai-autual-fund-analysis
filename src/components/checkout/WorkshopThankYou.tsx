@@ -39,11 +39,15 @@ function googleCalendarUrl(summary: string, startIso: string, minutes: number, d
     return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
-export default function WorkshopThankYou({ orderId }: { orderId: string }) {
-    const [booking, setBooking] = useState<Booking | null>(null);
+export type WorkshopBooking = Booking;
+
+export default function WorkshopThankYou({ orderId, initialBooking }: { orderId: string; initialBooking?: Booking }) {
+    const [booking, setBooking] = useState<Booking | null>(initialBooking ?? null);
     const [polls, setPolls] = useState(0);
 
     useEffect(() => {
+        // A preset booking (development preview) never fetches or polls.
+        if (initialBooking) return;
         let cancelled = false;
         const load = async () => {
             try {
@@ -59,15 +63,15 @@ export default function WorkshopThankYou({ orderId }: { orderId: string }) {
         return () => {
             cancelled = true;
         };
-    }, [orderId, polls]);
+    }, [orderId, polls, initialBooking]);
 
     const linksReady = Boolean(booking?.joinLinkDay1 && booking?.joinLinkDay2);
 
     useEffect(() => {
-        if (!booking || linksReady || polls >= POLL_LIMIT) return;
+        if (initialBooking || !booking || linksReady || polls >= POLL_LIMIT) return;
         const handle = setTimeout(() => setPolls((n) => n + 1), POLL_MS);
         return () => clearTimeout(handle);
-    }, [booking, linksReady, polls]);
+    }, [booking, linksReady, polls, initialBooking]);
 
     const batch = booking?.batch;
     const t = MMF_COPY.thankYou;
@@ -150,7 +154,11 @@ export default function WorkshopThankYou({ orderId }: { orderId: string }) {
                 <p>{t.T8}</p>
                 <div className="flex justify-between pt-2 border-t border-border">
                     <span>Order ID</span>
-                    <span className="font-mono font-medium text-ink">{orderId}</span>
+                    <span className="font-mono font-medium text-ink text-right break-all">{orderId}</span>
+                </div>
+                <div className="flex justify-between pt-2 border-t border-border">
+                    <span>Status</span>
+                    <span className="font-medium text-teal">Paid</span>
                 </div>
             </div>
         </div>

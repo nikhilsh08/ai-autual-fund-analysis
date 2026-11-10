@@ -8,7 +8,7 @@ const template = readFileSync(fileURLToPath(new URL("../../src/landing/mmf-v10.h
 
 const cfg: LandingConfig = {
   courseId: "course1",
-  canonicalUrl: "https://www.cashflowcrew.in/master-mutual-funds",
+  canonicalUrl: "https://www.cashflowcrew.in/v10",
   title: "Master Mutual Funds",
   description: "A live workshop.",
   ogImage: "https://www.cashflowcrew.in/og.png",
@@ -35,7 +35,7 @@ describe("landing renderer (spec 5.2, 11)", () => {
     const html = renderLanding(template, batch, cfg);
 
     expect(html).not.toMatch(/\{(price|class date|booking close date)\}/);
-    expect(html).toContain('href="/checkout?courseId=course1&amp;batchId=batch1" data-checkout="1"');
+    expect(html).toContain('href="/checkout?courseId=course1&amp;batchId=batch1&amp;src=mmf-v10" data-checkout="1"');
     expect(html).toContain("₹1,999");
     expect(html).toContain("Saturday, 21 November 2026");
     expect(html).toContain("Friday, 20 November 2026, 11:59 PM IST");
@@ -46,7 +46,7 @@ describe("landing renderer (spec 5.2, 11)", () => {
     expect(html).toContain('"clarity","script","clarity1"');
     expect(html).toContain("fbq('track','ViewContent'");
     expect(html).toContain("gtag('event','view_item'");
-    expect(html).toContain('rel="canonical" href="https://www.cashflowcrew.in/master-mutual-funds"');
+    expect(html).toContain('rel="canonical" href="https://www.cashflowcrew.in/v10"');
     expect(html).toContain("sessionStorage.setItem");
 
     const reactAt = html.indexOf("/mmf/vendor/react.production.min.js");
