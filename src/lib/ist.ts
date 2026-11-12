@@ -84,6 +84,16 @@ export function formatIstDateTime(date: Date): string {
   return `${formatIstDate(date)}, ${formatIstTime(date)} IST`;
 }
 
+// 120 -> "2 hours", 90 -> "1 hour 30 minutes", 45 -> "45 minutes"
+export function formatDuration(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  const parts: string[] = [];
+  if (hours > 0) parts.push(`${hours} ${hours === 1 ? "hour" : "hours"}`);
+  if (rest > 0 || hours === 0) parts.push(`${rest} ${rest === 1 ? "minute" : "minutes"}`);
+  return parts.join(" ");
+}
+
 // "19:00" -> "7:00 PM" (for a time-of-day string without a date)
 export function formatTimeHm(timeHm: string): string {
   return formatIstTime(istToUtc("2026-01-01", timeHm));

@@ -5,10 +5,11 @@ import { siteConfig } from "@/config/seo";
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import { getCurrentBatch } from "@/lib/batches/current";
 import { renderLanding, type LandingConfig } from "@/lib/landing/render";
+import { MMF_V10_COURSE_SLUG } from "@/lib/landing/v10";
 
 export const dynamic = "force-dynamic";
 
-const SLUG = "master-mutual-funds-invest-smarter";
+const SLUG = MMF_V10_COURSE_SLUG;
 const TEMPLATE_PATH = path.join(process.cwd(), "src", "landing", "mmf-v10.html");
 
 let templateCache: string | null = null;
@@ -19,7 +20,11 @@ const loadTemplate = () => (templateCache ??= readFileSync(TEMPLATE_PATH, "utf8"
 const TITLE = "Master Mutual Funds | Invest Smarter";
 const DESCRIPTION = "Learn how to pick the right mutual funds and build a wealth-generating portfolio.";
 
-function config(courseId: string, fallbackPriceRupees: number | null): LandingConfig {
+// Mirrors `durationMinutes @default(120)` in prisma/schema.prisma. Only used
+// when neither a batch nor the batch settings can be read.
+const SCHEMA_DEFAULT_DURATION_MINUTES = 120;
+
+function config(courseId: string, fallbackPriceRupees: number | null, fallbackDurationMinutes: number): LandingConfig {
     return {
         courseId,
         canonicalUrl: `${siteConfig.url}/v10`,
@@ -32,6 +37,7 @@ function config(courseId: string, fallbackPriceRupees: number | null): LandingCo
         ga4ViaGtm: process.env.NEXT_PUBLIC_GA4_VIA_GTM === "true",
         clarityId: process.env.NEXT_PUBLIC_CLARITY_ID,
         fallbackPriceRupees,
+        fallbackDurationMinutes,
     };
 }
 
@@ -44,6 +50,7 @@ export async function GET() {
     const template = loadTemplate();
     let courseId = "";
     let fallbackPrice: number | null = null;
+    let fallbackDuration = SCHEMA_DEFAULT_DURATION_MINUTES;
 
     try {
         const course = await dataBasePrisma.course.findUnique({
@@ -60,17 +67,18 @@ export async function GET() {
         if (!batch) {
             const settings = await dataBasePrisma.batchSettings.findUnique({
                 where: { courseId: course.id },
-                select: { defaultPriceRupees: true },
+                select: { defaultPriceRupees: true, durationMinutes: true },
             });
             fallbackPrice = settings?.defaultPriceRupees ?? course.price;
+            fallbackDuration = settings?.durationMinutes ?? fallbackDuration;
         }
 
-        const html = renderLanding(template, batch, config(course.id, fallbackPrice));
+        const html = renderLanding(template, batch, config(course.id, fallbackPrice, fallbackDuration));
         return htmlResponse(html, "public, s-maxage=60, stale-while-revalidate=300");
     } catch (error) {
         console.error("[landing] render failed, serving fallback", error);
         try {
-            const html = renderLanding(template, null, config(courseId, fallbackPrice));
+            const html = renderLanding(template, null, config(courseId, fallbackPrice, fallbackDuration));
             return htmlResponse(html, "public, s-maxage=30");
         } catch (fallbackError) {
             console.error("[landing] fallback render failed", fallbackError);

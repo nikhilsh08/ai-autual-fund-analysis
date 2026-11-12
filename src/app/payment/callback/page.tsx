@@ -86,7 +86,7 @@ const CallbackContent = () => {
                         <h2 className="text-2xl font-semibold text-zinc-900 mb-2">Payment Failed</h2>
                         <p className="text-zinc-500 mb-8">{message}</p>
                         <div className="flex gap-3">
-                            <Button variant="outline" onClick={() => router.push('/checkout')} className="w-full">
+                            <Button variant="outline" onClick={() => router.push(landingSource === 'mmf-v10' ? '/v10/checkout' : '/checkout')} className="w-full">
                                 Try Again
                             </Button>
                             <Button variant="ghost" onClick={() => router.push('/support')} className="w-full">

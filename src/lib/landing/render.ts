@@ -1,4 +1,5 @@
-import { formatIstDate, formatIstDateTime, formatIstTime } from "@/lib/ist";
+import { formatDuration, formatIstDate, formatIstDateTime, formatIstTime } from "@/lib/ist";
+import { MMF_V10_CHECKOUT_PATH } from "@/lib/landing/v10";
 import { MMF_COPY } from "@/lib/mmf-copy";
 
 export interface LandingBatch {
@@ -6,6 +7,7 @@ export interface LandingBatch {
   priceRupees: number;
   day1StartAt: Date;
   bookingCloseAt: Date;
+  durationMinutes: number;
   language: string | null;
 }
 
@@ -22,11 +24,14 @@ export interface LandingConfig {
   clarityId?: string;
   // Used for the price token when nothing is on sale.
   fallbackPriceRupees: number | null;
+  // Length of one session, used for the duration tokens when nothing is on sale.
+  fallbackDurationMinutes: number;
 }
 
 export class LandingRenderError extends Error {}
 
-const TOKEN_RE = /\{(price|class date|booking close date)\}/;
+const TOKEN_RE = /\{(price|class date|booking close date|session duration|total duration)\}/;
+const SESSIONS_PER_BATCH = 2; // Day 1 and Day 2
 const SUPPORT_SCRIPT = '<script src="/mmf/support.js"></script>';
 const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"];
 
@@ -113,6 +118,16 @@ var item=${item};
 if(typeof fbq==='function'){fbq('track','ViewContent',{content_ids:item.contentIds,content_type:'product',content_name:item.contentName,value:item.value,currency:item.currency});}
 var ga={currency:item.currency,value:item.value,items:item.contentIds.map(function(id){return {item_id:id,item_name:item.contentName,price:item.value};})};
 ${cfg.ga4ViaGtm ? "window.dataLayer=window.dataLayer||[];window.dataLayer.push({event:'view_item',ecommerce:ga});" : "if(typeof gtag==='function'){gtag('event','view_item',ga);}"}
+// AddToCart / add_to_cart: once per page view, when the visitor clicks the
+// button that goes to checkout. Listens on the document because support.js
+// re-renders the page.
+var added=false;
+document.addEventListener('click',function(e){
+var a=e.target&&e.target.closest?e.target.closest('a[data-checkout]'):null;
+if(!a||added)return;added=true;
+if(typeof fbq==='function'){fbq('track','AddToCart',{content_ids:item.contentIds,content_type:'product',content_name:item.contentName,value:item.value,currency:item.currency});}
+${cfg.ga4ViaGtm ? "window.dataLayer=window.dataLayer||[];window.dataLayer.push({event:'add_to_cart',ecommerce:ga});" : "if(typeof gtag==='function'){gtag('event','add_to_cart',ga);}"}
+},true);
 })();
 </script>`);
 
@@ -138,17 +153,22 @@ export function renderLanding(template: string, batch: LandingBatch | null, cfg:
   const classDate = batch ? formatIstDate(batch.day1StartAt) : MMF_COPY.landing.dateToBeAnnounced;
   const closeText = batch ? formatIstDateTime(batch.bookingCloseAt) : MMF_COPY.landing.dateToBeAnnounced;
 
+  const sessionMinutes = batch ? batch.durationMinutes : cfg.fallbackDurationMinutes;
+
   let html = template.replace("<html>", '<html lang="en">');
   html = html
     .replaceAll("{price}", escapeHtml(priceText))
     .replaceAll("{class date}", escapeHtml(classDate))
-    .replaceAll("{booking close date}", escapeHtml(closeText));
+    .replaceAll("{booking close date}", escapeHtml(closeText))
+    .replaceAll("{session duration}", escapeHtml(formatDuration(sessionMinutes)))
+    .replaceAll("{total duration}", escapeHtml(formatDuration(sessionMinutes * SESSIONS_PER_BATCH)));
 
   html = setPropDefault(html, "startTime", batch ? formatIstTime(batch.day1StartAt) : "");
   html = setPropDefault(html, "language", batch?.language ?? "");
 
   if (batch) {
-    const href = `/checkout?courseId=${encodeURIComponent(cfg.courseId)}&amp;batchId=${encodeURIComponent(batch.id)}&amp;src=mmf-v10`;
+    // The v10 checkout page looks up the course and the batch on sale itself.
+    const href = MMF_V10_CHECKOUT_PATH;
     html = html.replace('href="#" data-checkout="1"', `href="${href}" data-checkout="1"`);
   } else {
     html = html.replace(/<a href="#" data-checkout="1"[^>]*>[\s\S]*?<\/a>/, "");

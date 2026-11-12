@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { CalendarPlus, CheckCircle2, MessageCircle, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MMF_COPY, withoutWeekday } from "@/lib/mmf-copy";
+import { formatDuration } from "@/lib/ist";
 
 interface Booking {
     status: string;
@@ -86,7 +87,7 @@ export default function WorkshopThankYou({ orderId, initialBooking }: { orderId:
                 <h1 className="text-2xl font-bold text-ink">{t.T1}</h1>
                 {batch && (
                     <p className="text-ink-secondary">
-                        {t.T2(withoutWeekday(batch.day1Date), withoutWeekday(batch.day2Date), batch.startTime)}
+                        {t.T2(withoutWeekday(batch.day1Date), withoutWeekday(batch.day2Date), batch.startTime, formatDuration(batch.durationMinutes))}
                     </p>
                 )}
             </div>

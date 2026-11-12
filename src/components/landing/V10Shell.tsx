@@ -10,24 +10,61 @@ const SUPPORT_EMAIL = "support@cashflowcrew.in";
 // below, both mirroring src/landing/mmf-v10.html. The main site's navbar is
 // deliberately not used here. `className` carries the next/font variables
 // for Archivo and Playfair Display.
-export default function V10Shell({ className, children }: { className?: string; children: ReactNode }) {
+//
+// The thank-you page uses the defaults. The checkout page passes
+// `variant="checkout"`: the landing page's black announcement bar
+// (`announcement`), its section links in the nav, a plain cream main area, and
+// room under the footer for the mobile pay bar.
+const NAV_LINKS = [
+    { href: `${LANDING}#learn`, label: "Your 2-day path" },
+    { href: `${LANDING}#live`, label: "Live check" },
+    { href: `${LANDING}#instructor`, label: "Instructor" },
+    { href: `${LANDING}#faq`, label: "FAQ" },
+];
+
+export default function V10Shell({
+    className,
+    children,
+    variant = "thankYou",
+    announcement,
+}: {
+    className?: string;
+    children: ReactNode;
+    variant?: "thankYou" | "checkout";
+    announcement?: ReactNode;
+}) {
+    const checkout = variant === "checkout";
     return (
-        <div className={`${s.page} ${className ?? ""}`}>
+        <div className={`${s.page} ${checkout ? s.pageCheckout : ""} ${className ?? ""}`}>
+            {announcement && (
+                <div className={s.bar}>
+                    <span>{announcement}</span>
+                </div>
+            )}
             <nav className={s.nav} aria-label="Workshop">
-                <div className={s.navInner}>
+                <div className={`${s.navInner} ${checkout ? s.navInnerWide : ""}`}>
                     <a href={LANDING} className={s.brand}>
                         <Image src="/mmf/assets/logo-gold.png" alt="" width={26} height={27} priority />
                         CashFlowCrew
                     </a>
-                    <a href={`mailto:${SUPPORT_EMAIL}`} className={s.navLink}>
+                    {checkout && (
+                        <div className={s.navLinks}>
+                            {NAV_LINKS.map((link) => (
+                                <a key={link.href} href={link.href}>
+                                    {link.label}
+                                </a>
+                            ))}
+                        </div>
+                    )}
+                    <a href={`mailto:${SUPPORT_EMAIL}`} className={`${s.navLink} ${checkout ? s.navMail : ""}`}>
                         {SUPPORT_EMAIL}
                     </a>
                 </div>
             </nav>
 
-            <main className={s.main}>{children}</main>
+            <main className={checkout ? s.mainCheckout : s.main}>{children}</main>
 
-            <footer className={s.footer}>
+            <footer className={`${s.footer} ${checkout ? s.footerSticky : ""}`}>
                 <div className={s.footerInner}>
                     <div className={s.footerGrid}>
                         <div>

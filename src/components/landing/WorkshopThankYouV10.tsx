@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { CalendarPlus, Check, MessageCircle, Video, X } from "lucide-react";
 import { MMF_COPY, withoutWeekday } from "@/lib/mmf-copy";
+import { formatDuration } from "@/lib/ist";
 import { googleCalendarUrl, useWorkshopBooking, type WorkshopBooking } from "@/components/checkout/useWorkshopBooking";
 import s from "./ThankYouV10.module.css";
 
@@ -23,9 +24,6 @@ function AccentTitle({ text }: { text: string }) {
         </>
     );
 }
-
-const formatDuration = (minutes: number) =>
-    minutes % 60 === 0 ? `${minutes / 60} ${minutes === 60 ? "hour" : "hours"}` : `${minutes} minutes`;
 
 // The single centred card: badge, eyebrow, headline and lead on top, then
 // whatever the state needs (`children`), ending with <OrderMeta />.
@@ -122,7 +120,7 @@ export default function WorkshopThankYouV10({ orderId, initialBooking }: { order
     const timeLine = batch ? `${batch.startTime} IST · ${formatDuration(batch.durationMinutes)}` : "";
 
     return (
-        <ThankYouCard tone="paid" title={t.T1} lead={batch ? t.T2(withoutWeekday(batch.day1Date), withoutWeekday(batch.day2Date), batch.startTime) : undefined}>
+        <ThankYouCard tone="paid" title={t.T1} lead={batch ? t.T2(withoutWeekday(batch.day1Date), withoutWeekday(batch.day2Date), batch.startTime, formatDuration(batch.durationMinutes)) : undefined}>
             {batch && (
                 <>
                     <p className={s.cardLabel}>Your two sessions</p>

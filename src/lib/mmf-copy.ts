@@ -4,8 +4,9 @@ export const MMF_COPY = {
   contentName: "Master Mutual Funds workshop",
 
   landing: {
-    // C2 — announcement bar (replaces "50 seats per batch")
-    bar: "Live online, Saturday and Sunday",
+    // C2 — announcement bar. Back to "50 seats per batch" at the owner's
+    // request (12 Nov 2026); the site does not enforce a seat limit.
+    bar: "50 seats per batch",
     // C3 — mobile sticky bar (replaces "{N} of 50 seats left")
     sticky: "2-day live workshop + 5 guides",
     // C4 — FAQ, device question
@@ -20,16 +21,16 @@ export const MMF_COPY = {
 
   checkout: {
     // K1 — above the form
-    batchLine: (classDate: string, startTime: string) =>
-      `Batch: ${classDate}, ${startTime} IST, Saturday and Sunday, 2 hours each, live online.`,
+    batchLine: (classDate: string, startTime: string, duration: string) =>
+      `Batch: ${classDate}, ${startTime} IST, Saturday and Sunday, ${duration} each, live online.`,
     // K2 — checkbox under phone
     whatsappConsent: "Send booking confirmation and session reminders to this number on WhatsApp.",
   },
 
   thankYou: {
     T1: "Your seat is booked.",
-    T2: (day1: string, day2: string, startTime: string) =>
-      `Saturday ${day1} and Sunday ${day2}, ${startTime} IST, 2 hours each.`,
+    T2: (day1: string, day2: string, startTime: string, duration: string) =>
+      `Saturday ${day1} and Sunday ${day2}, ${startTime} IST, ${duration} each.`,
     T3_DAY1: "Join Saturday's session",
     T3_DAY2: "Join Sunday's session",
     T4: "Your join link is being prepared. It will appear here in a few seconds and will also be sent to your email.",
