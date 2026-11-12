@@ -50,7 +50,9 @@ export function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
-        // Match all API routes EXCEPT /api/uploadthing (UploadThing handles its own auth/CORS)
+        // Matches every route except Next static assets. This middleware only
+        // adds CORS headers; it does not authenticate anything. Admin routes
+        // enforce auth themselves (verifyAdmin / auth()).
         "/((?!_next/static|_next/image|favicon.ico).*)"
     ],
 };

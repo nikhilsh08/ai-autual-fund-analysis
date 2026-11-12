@@ -25,6 +25,99 @@ enum OrderStatus {
   FAILED
 }
 
+enum BatchStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  COMPLETED
+}
+
+enum RegistrationState {
+  PENDING
+  REGISTERED
+  FAILED
+}
+
+// A 2-day live workshop run (Saturday + Sunday). What is on sale is computed
+// at request time: status OPEN and bookingCloseAt in the future.
+model Batch {
+  id              String      @id @default(auto()) @map("_id") @db.ObjectId
+  courseId        String      @db.ObjectId
+  course          Course      @relation(fields: [courseId], references: [id])
+  batchNumber     Int
+  day1StartAt     DateTime
+  day2StartAt     DateTime
+  durationMinutes Int         @default(120)
+  startTimeIst    String
+  language        String?
+  priceRupees     Float
+  bookingCloseAt  DateTime
+  status          BatchStatus @default(DRAFT)
+
+  zohoWebinarKeyDay1 String?
+  zohoWebinarKeyDay2 String?
+  zohoInstanceIdDay1 String?
+  zohoInstanceIdDay2 String?
+  whatsappGroupLink  String?
+  surveyUrl          String?
+
+  createdBy     String
+  registrations BatchRegistration[]
+  orderItems    OrderItem[]
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@unique([courseId, day1StartAt])
+  @@index([status, bookingCloseAt])
+}
+
+model BatchSettings {
+  id                       String      @id @default(auto()) @map("_id") @db.ObjectId
+  courseId                 String      @unique @db.ObjectId
+  anchorDay1Date           DateTime
+  cadenceDays              Int         @default(14)
+  defaultPriceRupees       Float
+  defaultStartTimeIst      String
+  durationMinutes          Int         @default(120)
+  defaultLanguage          String?
+  closeHoursBefore         Int
+  newBatchStatus           BatchStatus @default(DRAFT)
+  futureBatchCount         Int         @default(2)
+  autoCreate               Boolean     @default(true)
+  defaultWhatsappGroupLink String?
+  defaultSurveyUrl         String?
+  alertEmails              String[]
+  updatedAt                DateTime    @updatedAt
+}
+
+model BatchRegistration {
+  id            String            @id @default(auto()) @map("_id") @db.ObjectId
+  batchId       String            @db.ObjectId
+  batch         Batch             @relation(fields: [batchId], references: [id])
+  orderId       String            @unique @db.ObjectId
+  name          String
+  email         String
+  phone         String
+  whatsappOptIn Boolean           @default(false)
+  zohoState     RegistrationState @default(PENDING)
+  zohoAttempts  Int               @default(0)
+  zohoLastError String?
+  zohoAlertedAt DateTime?
+  joinLinkDay1  String?
+  joinLinkDay2  String?
+
+  msgConfirmationAt DateTime?
+  msgReminder24hAt  DateTime?
+  msgReminderDay1At DateTime?
+  msgReminderDay2At DateTime?
+  msgSurveyAt       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([batchId])
+}
+
 model Lead {
   id     String  @id @default(auto()) @map("_id") @db.ObjectId
   email  String  @unique
@@ -128,6 +221,11 @@ model Course {
   tcCourseId  String  @unique
   tcCourseUrl String?
 
+  // Sold in batches: price comes from the batch, TrainerCentral is skipped,
+  // Zoho Webinar is used, workshop thank-you view is shown.
+  useBatches Boolean @default(false)
+  batches    Batch[]
+
   // Live Metadata
   startDate DateTime?
   duration  String?
@@ -192,6 +290,7 @@ model Order {
   totalAmount Float
   discountAmount Float @default(0)
   couponId    String?  @db.ObjectId
+  whatsappOptIn Boolean @default(false)
 
   status      OrderStatus @default(PENDING)
 
@@ -227,6 +326,8 @@ model OrderItem {
   courseId String @db.ObjectId
   course   Course @relation(fields: [courseId], references: [id])
   price    Float
+  batchId  String? @db.ObjectId
+  batch    Batch?  @relation(fields: [batchId], references: [id])
 }
 
 model Purchase {
@@ -257,6 +358,8 @@ model Coupon {
   applicableCourseIds String[] @db.ObjectId
   // Relation to bundles (optional, if empty applies to all)
   applicableBundleIds String[] @db.ObjectId
+  // Relation to batches (optional, if empty applies to all batches)
+  applicableBatchIds  String[] @db.ObjectId
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

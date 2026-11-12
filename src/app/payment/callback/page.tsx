@@ -10,6 +10,8 @@ const CallbackContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const orderId = searchParams.get('order_id');
+    // Set by createCashfreeOrder when the buyer came from the v10 landing page.
+    const landingSource = searchParams.get('src');
 
     const [status, setStatus] = useState<'VERIFYING' | 'SUCCESS' | 'FAILED'>('VERIFYING');
     const [message, setMessage] = useState('Verifying your payment...');
@@ -28,8 +30,16 @@ const CallbackContent = () => {
                 if (result.success && result.status === 'PAID') {
                     setStatus('SUCCESS');
                     setMessage('Payment Successful!');
-                    // Redirect to order-status so the client-side Meta Pixel Purchase event fires
-                    setTimeout(() => router.push(`/order-status?order_id=${orderId}`), 1500);
+                    // Workshop (batch) orders from the v10 landing page get that page's own
+                    // thank-you; the old landing page and everything else keep /order-status.
+                    // Both fire the client-side Meta Pixel Purchase event.
+                    const isBatchOrder = Boolean(
+                        result.data?.items?.some((item: { batchId?: string | null }) => item.batchId),
+                    );
+                    const destination = isBatchOrder && landingSource === 'mmf-v10'
+                        ? `/v10/thank-you?order_id=${encodeURIComponent(orderId)}`
+                        : `/order-status?order_id=${orderId}`;
+                    setTimeout(() => router.push(destination), 1500);
                 } else {
                     setStatus('FAILED');
                     setMessage(result.error || 'Payment failed or pending.');
@@ -76,7 +86,7 @@ const CallbackContent = () => {
                         <h2 className="text-2xl font-semibold text-zinc-900 mb-2">Payment Failed</h2>
                         <p className="text-zinc-500 mb-8">{message}</p>
                         <div className="flex gap-3">
-                            <Button variant="outline" onClick={() => router.push('/checkout')} className="w-full">
+                            <Button variant="outline" onClick={() => router.push(landingSource === 'mmf-v10' ? '/v10/checkout' : '/checkout')} className="w-full">
                                 Try Again
                             </Button>
                             <Button variant="ghost" onClick={() => router.push('/support')} className="w-full">

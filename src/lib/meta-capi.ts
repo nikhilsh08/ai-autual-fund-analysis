@@ -139,10 +139,15 @@ export async function sendMetaCAPIPurchaseEvent(
   // --- BUILD API REQUEST ---
   const apiUrl = `https://graph.facebook.com/v21.0/${pixelId}/events`;
 
-  const body = {
+  const body: Record<string, any> = {
     data: [eventData],
     access_token: accessToken,
   };
+  // Optional: set META_CAPI_TEST_EVENT_CODE (from Events Manager → Test Events)
+  // so server events show in the Test Events tab. Leave unset in production.
+  if (process.env.META_CAPI_TEST_EVENT_CODE) {
+    body.test_event_code = process.env.META_CAPI_TEST_EVENT_CODE;
+  }
 
   // --- SEND TO META ---
   try {

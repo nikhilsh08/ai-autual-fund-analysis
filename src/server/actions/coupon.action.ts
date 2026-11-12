@@ -3,6 +3,7 @@
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/server/auth/auth";
+import { applyCoupon, couponAppliesTo } from "@/lib/pricing";
 
 export async function createCoupon(data: {
     code: string;
@@ -13,6 +14,7 @@ export async function createCoupon(data: {
     minAmount?: number;
     description?: string;
     applicableCourseIds?: string[];
+    applicableBatchIds?: string[];
 }) {
     try {
         const session = await auth();
@@ -34,6 +36,7 @@ export async function createCoupon(data: {
                 usageLimit: data.usageLimit || null, // handle optional/undefined
                 minAmount: data.minAmount || 0,
                 applicableCourseIds: data.applicableCourseIds || [],
+                applicableBatchIds: data.applicableBatchIds || [],
             },
         });
 
@@ -100,7 +103,8 @@ export async function validateCoupon(
     code: string,
     courseIds: string[],
     orderTotal: number,
-    bundleIds: string[] = []
+    bundleIds: string[] = [],
+    batchId: string | null = null
 ) {
     try {
         const coupon = await dataBasePrisma.coupon.findFirst({
@@ -132,41 +136,17 @@ export async function validateCoupon(
             };
         }
 
-        // 4. Check Applicable Courses/Bundles (if restricted)
-        const hasRestrictedCourses = coupon.applicableCourseIds && coupon.applicableCourseIds.length > 0;
-        const hasRestrictedBundles = coupon.applicableBundleIds && coupon.applicableBundleIds.length > 0;
-
-        if (hasRestrictedCourses || hasRestrictedBundles) {
-            const hasApplicableCourse = courseIds.some((id) =>
-                coupon.applicableCourseIds?.includes(id)
-            );
-            const hasApplicableBundle = bundleIds.some((id) =>
-                coupon.applicableBundleIds?.includes(id)
-            );
-
-            if (!hasApplicableCourse && !hasApplicableBundle) {
-                return {
-                    success: false,
-                    error: "Coupon not applicable to the selected items",
-                };
-            }
+        // 4. Check applicable courses/bundles/batches (if restricted). Same
+        // helper as the initiate route so preview and charge always agree.
+        if (!couponAppliesTo(coupon, { courseIds, bundleIds, batchId })) {
+            return {
+                success: false,
+                error: "Coupon not applicable to the selected items",
+            };
         }
 
         // 5. Calculate Discount
-        let discountAmount = 0;
-        if (coupon.discountType === "PERCENTAGE") {
-            discountAmount = (orderTotal * coupon.discount) / 100;
-            if (coupon.maxDiscount && discountAmount > coupon.maxDiscount) {
-                discountAmount = coupon.maxDiscount;
-            }
-        } else {
-            discountAmount = coupon.discount;
-        }
-
-        // Ensure discount doesn't exceed total
-        if (discountAmount > orderTotal) {
-            discountAmount = orderTotal;
-        }
+        const discountAmount = applyCoupon(orderTotal, coupon);
 
         return {
             success: true,

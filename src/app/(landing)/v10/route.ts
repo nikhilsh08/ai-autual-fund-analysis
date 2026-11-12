@@ -1,0 +1,91 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { NextResponse } from "next/server";
+import { siteConfig } from "@/config/seo";
+import { dataBasePrisma } from "@/lib/dbPrisma";
+import { getCurrentBatch } from "@/lib/batches/current";
+import { renderLanding, type LandingConfig } from "@/lib/landing/render";
+import { MMF_V10_COURSE_SLUG } from "@/lib/landing/v10";
+
+export const dynamic = "force-dynamic";
+
+const SLUG = MMF_V10_COURSE_SLUG;
+const TEMPLATE_PATH = path.join(process.cwd(), "src", "landing", "mmf-v10.html");
+
+let templateCache: string | null = null;
+const loadTemplate = () => (templateCache ??= readFileSync(TEMPLATE_PATH, "utf8"));
+
+// Title/description carried over from the previous page; wording to be
+// reviewed against CONTENT-RULES (see OWNER_DECISIONS).
+const TITLE = "Master Mutual Funds | Invest Smarter";
+const DESCRIPTION = "Learn how to pick the right mutual funds and build a wealth-generating portfolio.";
+
+// Mirrors `durationMinutes @default(120)` in prisma/schema.prisma. Only used
+// when neither a batch nor the batch settings can be read.
+const SCHEMA_DEFAULT_DURATION_MINUTES = 120;
+
+function config(courseId: string, fallbackPriceRupees: number | null, fallbackDurationMinutes: number): LandingConfig {
+    return {
+        courseId,
+        canonicalUrl: `${siteConfig.url}/v10`,
+        title: TITLE,
+        description: DESCRIPTION,
+        ogImage: siteConfig.ogImage,
+        pixelId: process.env.NEXT_PUBLIC_META_PIXEL_ID,
+        gtmId: process.env.NEXT_PUBLIC_GTM_ID,
+        gaId: process.env.NEXT_PUBLIC_GA_ID,
+        ga4ViaGtm: process.env.NEXT_PUBLIC_GA4_VIA_GTM === "true",
+        clarityId: process.env.NEXT_PUBLIC_CLARITY_ID,
+        fallbackPriceRupees,
+        fallbackDurationMinutes,
+    };
+}
+
+const htmlResponse = (html: string, cacheControl: string) =>
+    new NextResponse(html, {
+        headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": cacheControl },
+    });
+
+export async function GET() {
+    const template = loadTemplate();
+    let courseId = "";
+    let fallbackPrice: number | null = null;
+    let fallbackDuration = SCHEMA_DEFAULT_DURATION_MINUTES;
+
+    try {
+        const course = await dataBasePrisma.course.findUnique({
+            where: { slug: SLUG },
+            select: { id: true, price: true, isPublished: true, useBatches: true },
+        });
+        if (!course || !course.isPublished) {
+            return new NextResponse("Not found", { status: 404 });
+        }
+        courseId = course.id;
+        fallbackPrice = course.price;
+
+        const batch = course.useBatches ? await getCurrentBatch(course.id) : null;
+        if (!batch) {
+            const settings = await dataBasePrisma.batchSettings.findUnique({
+                where: { courseId: course.id },
+                select: { defaultPriceRupees: true, durationMinutes: true },
+            });
+            fallbackPrice = settings?.defaultPriceRupees ?? course.price;
+            fallbackDuration = settings?.durationMinutes ?? fallbackDuration;
+        }
+
+        const html = renderLanding(template, batch, config(course.id, fallbackPrice, fallbackDuration));
+        return htmlResponse(html, "public, s-maxage=60, stale-while-revalidate=300");
+    } catch (error) {
+        console.error("[landing] render failed, serving fallback", error);
+        try {
+            const html = renderLanding(template, null, config(courseId, fallbackPrice, fallbackDuration));
+            return htmlResponse(html, "public, s-maxage=30");
+        } catch (fallbackError) {
+            console.error("[landing] fallback render failed", fallbackError);
+            return new NextResponse("Temporarily unavailable", {
+                status: 503,
+                headers: { "Cache-Control": "no-store" },
+            });
+        }
+    }
+}
