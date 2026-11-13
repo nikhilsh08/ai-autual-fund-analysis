@@ -21,10 +21,13 @@
   :focus-visible{outline:2px solid #E8A33D;outline-offset:2px}
   section[id]{scroll-margin-top:72px}
   html.lenis,html.lenis body{height:auto}
+  /* Without this the page containers are one screen tall on phones (no smooth-scroll script there),
+     and the sticky menu bar scrolls away after the first screen. */
+  html,body,#dc-root,#dc-root>div{height:auto!important;min-height:100%}
   .lenis.lenis-smooth{scroll-behavior:auto!important}
   @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
   [data-nav].scrolled{border-bottom-color:rgba(255,255,255,.16)!important}
-  [data-sticky].show{transform:none!important}
+  [data-sticky]{transform:none!important}
   @media(max-width:479px){[data-navprice]{display:none}}
   @media(max-width:959px){[data-navlinks]{display:none!important}footer{padding-bottom:120px!important}}
   @media(min-width:960px){[data-sticky]{display:none!important}[data-byline]{display:none!important}[data-portrait]{display:block!important}[data-hero]{grid-template-columns:1.05fr .78fr!important}[data-heroleft]{align-items:flex-start!important;text-align:left!important}[data-heroleft] [data-meta]{justify-content:flex-start!important}}
@@ -99,6 +102,33 @@
   details[data-qa]>summary::-webkit-details-marker{display:none}
   details[data-qa]>summary::after{content:"+";position:absolute;right:2px;top:18px;font-size:24px;font-weight:300;color:#B08D3F}
   details[data-qa][open]>summary::after{content:"–"}
+
+  /* ---------- Phone and tablet optimisations (added on top of the designer's CSS) ---------- */
+  @media(max-width:959px){
+    /* The bottom bar carries "Book my seat" at all times here, so the menu bar drops its copy of the
+       button and becomes a slim logo bar: 53px tall, down from 69px. */
+    [data-nav] a[href="#admission"]{display:none!important}
+    [data-nav]>div{padding-top:4px!important;padding-bottom:4px!important}
+    [data-nav] a[href="#top"]{min-height:44px}
+    /* Tap targets of at least 44px for the footer links, and a taller touch area for inline links. */
+    footer [data-grid3] a{display:flex!important;align-items:center;min-height:44px;margin-top:0!important}
+    footer [data-grid3] div[style*="gap: 9px"],footer [data-grid3] div[style*="gap:9px"]{gap:0!important}
+    a[href="#guides"],section a[href$="/refund-policy"],details[data-qa] p a{padding:13px 0}
+    /* The smallest labels (11.5px and 12px) are hard to read on a phone. */
+    /* (The runtime writes inline styles with a space after the colon, so both spellings are matched.) */
+    [style*="font-size: 11.5px"],[style*="font-size:11.5px"]{font-size:12.5px!important}
+    [style*="font-size: 12px"],[style*="font-size:12px"]{font-size:13px!important}
+    /* Levels stage: use the small viewport height so the phone's address bar does not cut it off,
+       and leave room for the bottom bar, which now stays on screen. */
+    html.p3d [data-p3dsticky]{height:100svh;padding:60px 0 78px!important}
+  }
+  @media(max-width:759px){html.p3d [data-path3d]{height:175svh}}
+  /* Short phones (about 640px tall): keep each level's text clear of the bottom bar. */
+  @media(max-width:959px) and (max-height:700px){[data-coinwrap]{height:104px!important}[data-coin]{width:92px!important}[data-ltext]{gap:6px!important}[data-ltext] p{font-size:14.5px!important;line-height:1.5!important}[data-ltext] h3{font-size:21px!important}}
+  /* Narrow phones: a little less space above the headline so the first Book my seat button clears the bottom bar,
+     and the bottom bar's line stays on one row. */
+  @media(max-width:479px){section[data-screen-label="01 Hero"]{padding-top:16px!important}[data-byline]{margin-bottom:12px!important}}
+  @media(max-width:380px){[data-sticky]>div{font-size:12px!important;white-space:nowrap}}
 </style>
 <script src="/mmf/motion.js"></script>
 </helmet>
@@ -122,7 +152,7 @@
 
 <main id="top" style="display:block">
 
-<section data-screen-label="01 Hero" style="background:#13432B;padding:clamp(48px,6.5vw,88px) clamp(20px,5vw,64px) 0">
+<section data-screen-label="01 Hero" style="background:#13432B;padding:clamp(28px,3.6vw,52px) clamp(20px,5vw,64px) 0">
   <div data-hero="1" style="max-width:1120px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:clamp(32px,4vw,56px);align-items:center">
     <div data-heroleft="1" style="display:flex;flex-direction:column;align-items:center;text-align:center">
       <div style="margin:0 0 18px;font-family:'Playfair Display',Georgia,serif;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B08D3F">2-day live workshop · Saturday and Sunday · {session duration} each</div>
@@ -130,15 +160,15 @@
         <span style="width:44px;height:44px;border-radius:50%;overflow:hidden;border:1.5px solid rgba(176,141,63,.6);flex:none"><img decoding="async" src="/mmf/assets/portrait.webp" alt="Nikhil Sharma, the instructor" width="44" height="44" style="width:100%;height:100%;object-fit:cover;display:block"></span>
         <span style="font-family:'Playfair Display',Georgia,serif;font-size:12.5px;font-weight:600;color:#C7D2C8;border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:6px 11px">Taught by a former Goldman Sachs risk analyst</span>
       </div>
-      <h1 style="margin:0;font-family:'Archivo',sans-serif;font-weight:800;font-size:clamp(36px,4.8vw,62px);line-height:1.06;letter-spacing:-.028em;color:#FBF9F4;max-width:16ch">Learn to check a mutual fund's risk, <span style="font-family:'Playfair Display',Georgia,serif;font-style:italic;font-weight:600;letter-spacing:-.012em;color:#B08D3F">not only its past returns.</span></h1>
-      <p style="margin:24px 0 0;font-size:clamp(17px,1.5vw,19px);line-height:1.6;color:#D4DED4;max-width:50ch">In {total duration} over one weekend, you learn a repeatable set of checks for evaluating any mutual fund yourself: how far the fund fell in past market declines, whether two funds hold the same stocks, and how much to put in equity, debt and gold. On Sunday, you watch these checks run live on a sample portfolio built from real funds. Explained step by step, in simple language, by a former Goldman Sachs risk analyst. No finance background needed.</p>
-      <div data-meta="1" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 14px;margin:24px 0;font-size:14.5px;font-weight:500;color:#C7D2C8"><span style="color:#FBF9F4;font-weight:700">₹{price}</span><span style="width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.35)"></span><span>Starts {class date}</span><sc-if value="{{ hasStart }}" hint-placeholder-val="{{ false }}"><span style="width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.35)"></span><span>{{ startTime }}</span></sc-if><sc-if value="{{ hasLang }}" hint-placeholder-val="{{ false }}"><span style="width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.35)"></span><span>{{ language }}</span></sc-if><span style="width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.35)"></span><span>Live online</span></div>
+      <h1 style="margin:0;font-family:'Archivo',sans-serif;font-weight:800;font-size:clamp(32px,4vw,52px);line-height:1.06;letter-spacing:-.028em;color:#FBF9F4;max-width:16ch">Learn to check a mutual fund's risk, <span style="font-family:'Playfair Display',Georgia,serif;font-style:italic;font-weight:600;letter-spacing:-.012em;color:#B08D3F">not only its past returns.</span></h1>
+      <div data-meta="1" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 14px;margin:20px 0 18px;font-size:14.5px;font-weight:500;color:#C7D2C8"><span style="color:#FBF9F4;font-weight:700">₹{price}</span><span style="width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.35)"></span><span>Starts {class date}</span><sc-if value="{{ hasStart }}" hint-placeholder-val="{{ false }}"><span style="width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.35)"></span><span>{{ startTime }}</span></sc-if><sc-if value="{{ hasLang }}" hint-placeholder-val="{{ false }}"><span style="width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.35)"></span><span>{{ language }}</span></sc-if><span style="width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.35)"></span><span>Live online</span></div>
       <a href="#admission" style="display:inline-flex;align-items:center;justify-content:center;background:#E8A33D;color:#151109;font-weight:700;font-size:17px;border-radius:999px;padding:17px 32px;transition:background .18s" style-hover="background:#D9932B;color:#151109">Book my seat — ₹{price}</a>
+      <p style="margin:22px 0 0;font-size:clamp(17px,1.5vw,19px);line-height:1.6;color:#D4DED4;max-width:50ch">In {total duration} over one weekend, you learn a repeatable set of checks for evaluating any mutual fund yourself: how far the fund fell in past market declines, whether two funds hold the same stocks, and how much to put in equity, debt and gold. On Sunday, you watch these checks run live on a sample portfolio built from real funds. Explained step by step, in simple language, by a former Goldman Sachs risk analyst. No finance background needed.</p>
       <p style="margin:16px 0 0;font-size:14px;line-height:1.55;color:#B7C4B8">Your seat includes 5 guides, shared as PDFs during the workshop. <a href="#guides" style="color:#EAF0EA;border-bottom:1px solid rgba(234,240,234,.4)">See the guides ↓</a></p>
       <p style="margin:10px 0 0;font-family:'Playfair Display',Georgia,serif;font-size:13px;font-weight:600;color:#9FB3A4">Education only. This workshop does not give investment advice or recommend any fund.</p>
     </div>
-    <div data-portrait="1" style="display:none;position:relative;padding-bottom:18px">
-      <div style="border-radius:18px;overflow:hidden;border:1px solid rgba(176,141,63,.5);aspect-ratio:4/5"><img decoding="async" src="/mmf/assets/portrait.webp" alt="Nikhil Sharma, the instructor" width="480" height="600" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+    <div data-portrait="1" style="display:none;position:relative;padding-bottom:18px;align-self:start">
+      <div style="border-radius:18px;overflow:hidden;border:1px solid rgba(176,141,63,.5);aspect-ratio:4/5;max-height:calc(100vh - 210px);min-height:320px"><img decoding="async" src="/mmf/assets/portrait.webp" alt="Nikhil Sharma, the instructor" width="480" height="600" style="width:100%;height:100%;object-fit:cover;display:block"></div>
       <span style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);background:#0F3623;border:1px solid rgba(176,141,63,.5);border-radius:999px;padding:8px 14px;font-family:'Playfair Display',Georgia,serif;font-size:13px;font-weight:600;color:#EAF0EA;white-space:nowrap">Nikhil Sharma · Former risk analyst, Goldman Sachs</span>
     </div>
   </div>
@@ -422,11 +452,14 @@
   </div>
 </section>
 
-<section data-screen-label="11 Price" id="admission" style="background:#F4EFE5;padding:clamp(64px,8vw,112px) clamp(20px,5vw,64px)">
+<section data-screen-label="11 Price" style="background:#F4EFE5;padding:clamp(64px,8vw,112px) clamp(20px,5vw,64px)">
   <div data-fade="1" style="max-width:960px;margin:0 auto;display:flex;flex-direction:column;align-items:center;text-align:center">
     <img decoding="async" data-medal="1" src="/mmf/assets/price-seat.webp" alt="" width="160" height="160" loading="lazy" style="width:clamp(120px,14vw,160px);height:auto;margin-bottom:28px;mix-blend-mode:multiply">
     <h2 style="margin:0;font-family:'Archivo',sans-serif;font-weight:800;font-size:clamp(30px,3.8vw,48px);line-height:1.1;letter-spacing:-.025em;color:#151109">₹{price} to learn a repeatable set of checks for evaluating <span style="font-family:'Playfair Display',Georgia,serif;font-style:italic;font-weight:600;letter-spacing:-.012em;color:#2E6B4A">any mutual fund yourself.</span></h2>
     <p style="margin:20px auto 0;font-size:clamp(16px,1.4vw,18px);line-height:1.65;color:#4B463D">This is an educational workshop. It teaches you how to research mutual funds. It does not recommend any fund.</p>
+    <!-- Target of every "Book my seat" link: sits just above the price card so the card and its pay button
+         land in view below the sticky menu bar (motion.js scrolls to 72px above this element). -->
+    <span id="admission" aria-hidden="true" style="display:block;width:100%;height:0;position:relative;top:22px;scroll-margin-top:72px"></span>
     <div style="margin-top:36px;width:100%;max-width:520px;background:#fff;border:1px solid #E7E0D1;border-radius:16px;padding:clamp(24px,4vw,34px);display:flex;flex-direction:column;align-items:center;gap:20px">
       <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:44px;letter-spacing:-.03em;color:#151109">₹{price}</span><span style="font-size:14.5px;line-height:1.5;color:#4B463D">Starts {class date}<sc-if value="{{ hasStart }}" hint-placeholder-val="{{ false }}"> · {{ startTime }}</sc-if><sc-if value="{{ hasLang }}" hint-placeholder-val="{{ false }}"> · {{ language }}</sc-if></span><span style="font-size:14.5px;line-height:1.5;color:#4B463D">Saturday {session duration} + Sunday {session duration}, live online</span></div>
       <div style="width:100%;border-top:1px solid #E7E0D1;padding-top:18px;display:flex;flex-direction:column;gap:10px;text-align:left">
@@ -439,7 +472,7 @@
       <p style="margin:0;font-size:14px;line-height:1.55;color:#4B463D" data-batch-line="1">Next batch starts {class date}. Booking for this batch closes {booking close date}.</p>
     </div>
     <p style="margin:28px auto 0;font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(18px,2vw,22px);line-height:1.35;letter-spacing:-.015em;color:#151109">If the workshop does not help you, ask for a full refund within 7 days of purchase.</p>
-    <a href="https://www.cashflowcrew.in/refund-policy" style="margin-top:10px;font-size:14.5px;font-weight:600;color:#13432B;border-bottom:1px solid rgba(19,67,43,.35)">Read the refund policy →</a>
+    <a target="_blank" rel="noopener noreferrer" href="https://www.cashflowcrew.in/refund-policy" style="margin-top:10px;font-size:14.5px;font-weight:600;color:#13432B;border-bottom:1px solid rgba(19,67,43,.35)">Read the refund policy →</a>
   </div>
 </section>
 
@@ -457,7 +490,7 @@
       <details data-qa="1" style="border-top:1px solid rgba(255,255,255,.16)"><summary style="font-family:'Archivo',sans-serif;font-weight:700;font-size:17px;color:#fff;letter-spacing:-.015em;line-height:1.3;padding:20px 34px 20px 0">Do I need existing investments or any software?</summary><p style="margin:-2px 0 20px;font-size:15px;line-height:1.6;color:#C7D2C8;max-width:64ch">No. You need a stable internet connection and a computer, tablet or phone with audio. Your personal join link is shown on the confirmation page after payment and is sent to your email and WhatsApp.</p></details>
       <details data-qa="1" style="border-top:1px solid rgba(255,255,255,.16)"><summary style="font-family:'Archivo',sans-serif;font-weight:700;font-size:17px;color:#fff;letter-spacing:-.015em;line-height:1.3;padding:20px 34px 20px 0">I'm a mutual fund distributor. Is this relevant to me?</summary><p style="margin:-2px 0 20px;font-size:15px;line-height:1.6;color:#C7D2C8;max-width:64ch">Yes. You learn to analyse a fund and its manager using data, so you can support each recommendation with evidence. You also receive a certificate of completion.</p></details>
       <details data-qa="1" style="border-top:1px solid rgba(255,255,255,.16)"><summary style="font-family:'Archivo',sans-serif;font-weight:700;font-size:17px;color:#fff;letter-spacing:-.015em;line-height:1.3;padding:20px 34px 20px 0">Will I get a certificate?</summary><p style="margin:-2px 0 20px;font-size:15px;line-height:1.6;color:#C7D2C8;max-width:64ch">Yes. Every attendee receives a certificate of completion from CashFlowCrew.</p></details>
-      <details data-qa="1" style="border-top:1px solid rgba(255,255,255,.16)"><summary style="font-family:'Archivo',sans-serif;font-weight:700;font-size:17px;color:#fff;letter-spacing:-.015em;line-height:1.3;padding:20px 34px 20px 0">What if I miss a day, or it does not help me?</summary><p style="margin:-2px 0 20px;font-size:15px;line-height:1.6;color:#C7D2C8;max-width:64ch">If you miss a day because of an emergency, write to <a href="mailto:support@cashflowcrew.in" style="color:#EAF0EA;border-bottom:1px solid rgba(234,240,234,.4)">support@cashflowcrew.in</a> and the team will help you. If the workshop does not help you, you can ask for a full refund within 7 days of purchase, as per our <a href="https://www.cashflowcrew.in/refund-policy" style="color:#EAF0EA;border-bottom:1px solid rgba(234,240,234,.4)">Refund Policy</a>.</p></details>
+      <details data-qa="1" style="border-top:1px solid rgba(255,255,255,.16)"><summary style="font-family:'Archivo',sans-serif;font-weight:700;font-size:17px;color:#fff;letter-spacing:-.015em;line-height:1.3;padding:20px 34px 20px 0">What if I miss a day, or it does not help me?</summary><p style="margin:-2px 0 20px;font-size:15px;line-height:1.6;color:#C7D2C8;max-width:64ch">If you miss a day because of an emergency, write to <a href="mailto:support@cashflowcrew.in" style="color:#EAF0EA;border-bottom:1px solid rgba(234,240,234,.4)">support@cashflowcrew.in</a> and the team will help you. If the workshop does not help you, you can ask for a full refund within 7 days of purchase, as per our <a target="_blank" rel="noopener noreferrer" href="https://www.cashflowcrew.in/refund-policy" style="color:#EAF0EA;border-bottom:1px solid rgba(234,240,234,.4)">Refund Policy</a>.</p></details>
     </div>
   </div>
 </section>
@@ -474,17 +507,17 @@
       </div>
       <div>
         <h4 style="margin:0 0 14px;font-family:'Playfair Display',Georgia,serif;font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B08D3F">Quick links</h4>
-        <div style="display:flex;flex-direction:column;gap:9px"><a href="https://www.cashflowcrew.in/#about" style="font-size:14.5px;color:#C7D2C8">About Us</a><a href="https://www.cashflowcrew.in/contact-us" style="font-size:14.5px;color:#C7D2C8">Contact Us</a></div>
+        <div style="display:flex;flex-direction:column;gap:9px"><a target="_blank" rel="noopener noreferrer" href="https://www.cashflowcrew.in/#about" style="font-size:14.5px;color:#C7D2C8">About Us</a><a target="_blank" rel="noopener noreferrer" href="https://www.cashflowcrew.in/contact-us" style="font-size:14.5px;color:#C7D2C8">Contact Us</a></div>
       </div>
       <div>
         <h4 style="margin:0 0 14px;font-family:'Playfair Display',Georgia,serif;font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B08D3F">Legal</h4>
-        <div style="display:flex;flex-direction:column;gap:9px"><a href="https://www.cashflowcrew.in/privacy-policy" style="font-size:14.5px;color:#C7D2C8">Privacy Policy</a><a href="https://www.cashflowcrew.in/terms-conditions" style="font-size:14.5px;color:#C7D2C8">Terms &amp; Conditions</a><a href="https://www.cashflowcrew.in/refund-policy" style="font-size:14.5px;color:#C7D2C8">Refund Policy</a><a href="https://www.cashflowcrew.in/delivery-policy" style="font-size:14.5px;color:#C7D2C8">Delivery Policy</a></div>
+        <div style="display:flex;flex-direction:column;gap:9px"><a target="_blank" rel="noopener noreferrer" href="https://www.cashflowcrew.in/privacy-policy" style="font-size:14.5px;color:#C7D2C8">Privacy Policy</a><a target="_blank" rel="noopener noreferrer" href="https://www.cashflowcrew.in/terms-conditions" style="font-size:14.5px;color:#C7D2C8">Terms &amp; Conditions</a><a target="_blank" rel="noopener noreferrer" href="https://www.cashflowcrew.in/refund-policy" style="font-size:14.5px;color:#C7D2C8">Refund Policy</a><a target="_blank" rel="noopener noreferrer" href="https://www.cashflowcrew.in/delivery-policy" style="font-size:14.5px;color:#C7D2C8">Delivery Policy</a></div>
       </div>
     </div>
     <div style="margin:52px 0 0;padding-top:22px;border-top:1px solid rgba(255,255,255,.14);display:flex;flex-direction:column;gap:10px">
       <p style="margin:0;font-size:12.5px;line-height:1.7;color:#B7C4B8"><b style="color:#EAF0EA;font-weight:600">Education only, not investment advice.</b> CashFlowCrew does not give investment advice or recommend any security or fund. Nothing on this page or in the workshop is a recommendation to buy, sell or hold any security or mutual fund scheme. For personalised investment advice, consult a SEBI-registered Investment Adviser (RIA).</p>
       <p style="margin:0;font-size:12px;line-height:1.7;color:#8FA394">Mutual fund investments are subject to market risks; read all scheme-related documents carefully. Mutual fund returns are not guaranteed, and past performance does not indicate future returns. Examples marked "illustrative" use hypothetical numbers. Goldman Sachs is named only to describe the instructor's past employment and does not endorse this workshop. AI tools can produce inaccurate information; verify any AI output against official fund documents.</p>
-      <p style="margin:0;font-size:12px;line-height:1.7;color:#8FA394">© 2026 CashFlowCrew. All rights reserved. CashFlowCrew is owned and operated by <a href="https://collabroot.com" style="color:#B7C4B8;border-bottom:1px solid rgba(183,196,184,.4)">Collabroot Marketing Private Limited</a>, Gurugram, Haryana.</p>
+      <p style="margin:0;font-size:12px;line-height:1.7;color:#8FA394">© 2026 CashFlowCrew. All rights reserved. CashFlowCrew is owned and operated by <a target="_blank" rel="noopener noreferrer" href="https://collabroot.com" style="color:#B7C4B8;border-bottom:1px solid rgba(183,196,184,.4)">Collabroot Marketing Private Limited</a>, Gurugram, Haryana.</p>
     </div>
   </div>
 </footer>
