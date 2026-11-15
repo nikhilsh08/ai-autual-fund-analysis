@@ -284,6 +284,18 @@ model Order {
   utmCampaign String?
   utmTerm     String?
   utmContent  String?
+  // Workshop landing page the order came from ("mmf-v10", "mpf-v20",
+  // "mpf-v30"; lib/landing/sources.ts). Null for main-site orders and for
+  // orders placed before 15 Nov 2026.
+  landingSource String?
+
+  // Meta Conversions API match keys, captured from the buyer's browser when
+  // the payment starts and sent with the server-side Purchase event (the
+  // webhook that confirms payment has no browser). Never shown in the UI.
+  metaFbp         String?
+  metaFbc         String?
+  clientIp        String?
+  clientUserAgent String?
 
   items       OrderItem[]
   bundleItems BundleOrderItem[]

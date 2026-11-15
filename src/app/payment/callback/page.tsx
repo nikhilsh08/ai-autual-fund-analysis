@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { verifyCashfreePayment } from '@/server/actions/payment.action';
+import { LANDING_SOURCES, isLandingSource } from '@/lib/landing/sources';
 
 const CallbackContent = () => {
     const router = useRouter();
@@ -36,9 +37,9 @@ const CallbackContent = () => {
                     const isBatchOrder = Boolean(
                         result.data?.items?.some((item: { batchId?: string | null }) => item.batchId),
                     );
-                    const destination = isBatchOrder && landingSource === 'mmf-v10'
-                        ? `/v10/thank-you?order_id=${encodeURIComponent(orderId)}`
-                        : `/order-status?order_id=${orderId}`;
+                    const destination = isBatchOrder && isLandingSource(landingSource)
+                        ? `${LANDING_SOURCES[landingSource].thankYou}?order_id=${encodeURIComponent(orderId)}`
+                        : `/order-status?order_id=${encodeURIComponent(orderId)}`;
                     setTimeout(() => router.push(destination), 1500);
                 } else {
                     setStatus('FAILED');
@@ -86,7 +87,7 @@ const CallbackContent = () => {
                         <h2 className="text-2xl font-semibold text-zinc-900 mb-2">Payment Failed</h2>
                         <p className="text-zinc-500 mb-8">{message}</p>
                         <div className="flex gap-3">
-                            <Button variant="outline" onClick={() => router.push(landingSource === 'mmf-v10' ? '/v10/checkout' : '/checkout')} className="w-full">
+                            <Button variant="outline" onClick={() => router.push(isLandingSource(landingSource) ? LANDING_SOURCES[landingSource].checkout : '/checkout')} className="w-full">
                                 Try Again
                             </Button>
                             <Button variant="ghost" onClick={() => router.push('/support')} className="w-full">

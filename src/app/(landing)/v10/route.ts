@@ -6,6 +6,7 @@ import { dataBasePrisma } from "@/lib/dbPrisma";
 import { getCurrentBatch } from "@/lib/batches/current";
 import { renderLanding, type LandingConfig } from "@/lib/landing/render";
 import { MMF_V10_COURSE_SLUG } from "@/lib/landing/v10";
+import { isDevPreview, previewBatchFor } from "@/lib/landing/v20-data";
 
 export const dynamic = "force-dynamic";
 
@@ -46,8 +47,21 @@ const htmlResponse = (html: string, cacheControl: string) =>
         headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": cacheControl },
     });
 
-export async function GET() {
+export async function GET(req: Request) {
     const template = loadTemplate();
+
+    // Development only: /v10?preview=1. Every value from the admin panel
+    // (previewBatchFor: batch on sale, next batch, or Batch settings).
+    if (isDevPreview(new URL(req.url).searchParams.get("preview"))) {
+        const p = await previewBatchFor(SLUG);
+        const html = renderLanding(
+            template,
+            p.batch,
+            config(p.courseId ?? "preview", p.fallbackPriceRupees, p.fallbackDurationMinutes ?? SCHEMA_DEFAULT_DURATION_MINUTES),
+        );
+        return htmlResponse(html, "no-store");
+    }
+
     let courseId = "";
     let fallbackPrice: number | null = null;
     let fallbackDuration = SCHEMA_DEFAULT_DURATION_MINUTES;
@@ -79,7 +93,8 @@ export async function GET() {
         console.error("[landing] render failed, serving fallback", error);
         try {
             const html = renderLanding(template, null, config(courseId, fallbackPrice, fallbackDuration));
-            return htmlResponse(html, "public, s-maxage=30");
+            // Served after an error: never cache it, so the real page returns at once.
+            return htmlResponse(html, "no-store");
         } catch (fallbackError) {
             console.error("[landing] fallback render failed", fallbackError);
             return new NextResponse("Temporarily unavailable", {

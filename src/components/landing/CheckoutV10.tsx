@@ -238,6 +238,16 @@ export default function CheckoutV10({ courseId, batch }: { courseId: string; bat
                 Cancel &amp; go back to workshop
             </a>
 
+            {/* Phones only (CSS): what is being bought and its price, above the form. */}
+            <div className={s.mobileItem}>
+                <Image src="/mmf/assets/price-seat.webp" alt="" width={48} height={48} />
+                <div className={s.mobileItemBody}>
+                    <div className={s.mobileItemTitle}>Master Mutual Funds</div>
+                    <div className={s.mobileItemMeta}>2-day live workshop · Starts {batch.classDate}</div>
+                </div>
+                <div className={s.mobileItemPrice}>{whole(total)}</div>
+            </div>
+
             <div className={s.grid}>
                 <div className={s.leftCol}>
                     <div className={s.secure}>

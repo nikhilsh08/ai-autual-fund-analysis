@@ -1,6 +1,9 @@
 import { formatDuration, formatIstDate, formatIstDateTime, formatIstTime } from "@/lib/ist";
 import { MMF_V10_CHECKOUT_PATH } from "@/lib/landing/v10";
 import { MMF_COPY } from "@/lib/mmf-copy";
+import { escapeHtml, landingEventsScript, trackingNoscript, trackingTags } from "@/lib/landing/tracking";
+
+export { escapeHtml };
 
 export interface LandingBatch {
   id: string;
@@ -33,16 +36,6 @@ export class LandingRenderError extends Error {}
 const TOKEN_RE = /\{(price|class date|booking close date|session duration|total duration)\}/;
 const SESSIONS_PER_BATCH = 2; // Day 1 and Day 2
 const SUPPORT_SCRIPT = '<script src="/mmf/support.js"></script>';
-const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"];
-
-export function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
 
 const inr = (rupees: number) => new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(rupees);
 
@@ -78,72 +71,22 @@ function headSnippet(cfg: LandingConfig, priceRupees: number | null): string {
     "<script>window.__resources={};</script>",
   );
 
-  const item = JSON.stringify({
-    contentIds: [cfg.courseId],
-    contentName: MMF_COPY.contentName,
-    value: priceRupees ?? 0,
-    currency: "INR",
-  });
-
-  if (cfg.pixelId) {
-    parts.push(`<!-- Meta Pixel -->
-<script>
-!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-fbq('init','${escapeHtml(cfg.pixelId)}');
-fbq('track','PageView');
-</script>`);
-  }
-
-  if (cfg.gtmId) {
-    parts.push(`<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${escapeHtml(cfg.gtmId)}');</script>`);
-  }
-
-  if (cfg.gaId && !cfg.ga4ViaGtm) {
-    parts.push(`<!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=${escapeHtml(cfg.gaId)}"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${escapeHtml(cfg.gaId)}');</script>`);
-  }
-
-  if (cfg.clarityId) {
-    parts.push(`<!-- Microsoft Clarity -->
-<script>(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","${escapeHtml(cfg.clarityId)}");</script>`);
-  }
-
-  // UTM capture (same sessionStorage keys as components/analytics/UTMCapture.tsx)
-  // and ViewContent / view_item. InitiateCheckout fires on /checkout.
-  parts.push(`<script>
-(function(){try{var p=new URLSearchParams(location.search);${JSON.stringify(UTM_KEYS)}.forEach(function(k){var v=p.get(k);if(v)sessionStorage.setItem(k,v);});}catch(e){}
-var item=${item};
-if(typeof fbq==='function'){fbq('track','ViewContent',{content_ids:item.contentIds,content_type:'product',content_name:item.contentName,value:item.value,currency:item.currency});}
-var ga={currency:item.currency,value:item.value,items:item.contentIds.map(function(id){return {item_id:id,item_name:item.contentName,price:item.value};})};
-${cfg.ga4ViaGtm ? "window.dataLayer=window.dataLayer||[];window.dataLayer.push({event:'view_item',ecommerce:ga});" : "if(typeof gtag==='function'){gtag('event','view_item',ga);}"}
-// AddToCart / add_to_cart: once per page view, when the visitor clicks the
-// button that goes to checkout. Listens on the document because support.js
-// re-renders the page.
-var added=false;
-document.addEventListener('click',function(e){
-var a=e.target&&e.target.closest?e.target.closest('a[data-checkout]'):null;
-if(!a||added)return;added=true;
-if(typeof fbq==='function'){fbq('track','AddToCart',{content_ids:item.contentIds,content_type:'product',content_name:item.contentName,value:item.value,currency:item.currency});}
-${cfg.ga4ViaGtm ? "window.dataLayer=window.dataLayer||[];window.dataLayer.push({event:'add_to_cart',ecommerce:ga});" : "if(typeof gtag==='function'){gtag('event','add_to_cart',ga);}"}
-},true);
-})();
-</script>`);
+  // Pixel, GTM, GA4, Clarity, then UTM capture, ViewContent and AddToCart.
+  // InitiateCheckout fires on the checkout page.
+  parts.push(...trackingTags(cfg));
+  parts.push(
+    landingEventsScript(cfg, {
+      contentIds: [cfg.courseId],
+      contentName: MMF_COPY.contentName,
+      value: priceRupees ?? 0,
+      currency: "INR",
+    }),
+  );
 
   return parts.join("\n");
 }
 
-function bodyNoscript(cfg: LandingConfig): string {
-  const parts: string[] = [];
-  if (cfg.gtmId) {
-    parts.push(`<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=${escapeHtml(cfg.gtmId)}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>`);
-  }
-  if (cfg.pixelId) {
-    parts.push(`<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${escapeHtml(cfg.pixelId)}&ev=PageView&noscript=1" alt=""></noscript>`);
-  }
-  return parts.join("\n");
-}
+const bodyNoscript = (cfg: LandingConfig): string => trackingNoscript(cfg);
 
 export function renderLanding(template: string, batch: LandingBatch | null, cfg: LandingConfig): string {
   if (!template.includes(SUPPORT_SCRIPT)) throw new LandingRenderError("template is missing the support.js tag");

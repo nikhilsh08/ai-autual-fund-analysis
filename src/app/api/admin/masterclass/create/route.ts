@@ -17,6 +17,10 @@ export async function POST(req: Request) {
             tcCourseUrl, startDate, maxSeats, categoryId,
             staticRoute, visibility,duration,content,
         } = body;
+        // Sold in batches (a workshop landing page such as /v10 or /v20). Batch
+        // courses register buyers with Zoho Webinar, not TrainerCentral, so the
+        // TrainerCentral course ID is optional for them.
+        const useBatches = body.useBatches === true;
         let slug = title.trim().toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
 
         let uniqueSlug = slug;
@@ -31,8 +35,8 @@ export async function POST(req: Request) {
         console.log(title,price,tcCourseId,categoryId)
 
         // Validation
-        if (!title || !price || !tcCourseId || !categoryId) {
-            console.log("Missing required fields", !title || !price || !tcCourseId || !categoryId)
+        if (!title || !price || (!tcCourseId && !useBatches) || !categoryId) {
+            console.log("Missing required fields", !title || !price || (!tcCourseId && !useBatches) || !categoryId)
             return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
         }
         console.log(staticRoute, "static route")
@@ -48,8 +52,12 @@ export async function POST(req: Request) {
                 thumbnail,
                 type: type as CourseType || "RECORDED",
                 slug,
-                tcCourseId,
+                // tcCourseId is required and unique in the schema; batch courses
+                // without one get a placeholder (TrainerCentral is skipped for them
+                // in payment.action.ts).
+                tcCourseId: tcCourseId || `batch-${slug}`,
                 tcCourseUrl,
+                useBatches,
                 startDate: startDate ? new Date(startDate) : undefined,
                 maxSeats: maxSeats ? parseInt(maxSeats) : undefined,
                 categoryId,

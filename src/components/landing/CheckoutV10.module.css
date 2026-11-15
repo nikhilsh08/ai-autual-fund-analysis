@@ -5,17 +5,18 @@
    --mmf-playfair (next/font). */
 
 .wrap {
-  max-width: 1320px;
+  max-width: 1080px;
   margin: 0 auto;
 }
 
 .back {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   min-height: 44px;
-  font-size: 18px;
-  color: #7C766A;
+  font-size: 15px;
+  font-weight: 500;
+  color: #6F695E;
 }
 .back:hover {
   color: #2E6B4A;
@@ -29,10 +30,11 @@
   align-items: start;
   margin-top: clamp(14px, 2vw, 26px);
 }
-@media (min-width: 920px) {
+/* Two columns from tablet portrait (iPad 768px+): form left, order summary right */
+@media (min-width: 768px) {
   .grid {
-    grid-template-columns: 1fr 1fr;
-    gap: clamp(32px, 5vw, 72px);
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+    gap: clamp(20px, 3.4vw, 48px);
   }
   .summary {
     position: sticky;
@@ -47,9 +49,79 @@
     display: none;
   }
 }
-@media (max-width: 919px) {
+/* iPad portrait: equal columns so the pay button stays on one line */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .pay {
+    font-size: 16px;
+    padding: 12px 16px;
+  }
+  .summary {
+    top: 84px;
+  }
+}
+@media (max-width: 767px) {
   .leftCol {
     display: contents;
+  }
+  /* The compact order line at the top already shows what is being bought */
+  .summary .item {
+    display: none;
+  }
+  .summary > .h {
+    font-size: 19px;
+  }
+}
+
+/* ---------- Phone: what you are buying, above the form ---------- */
+.mobileItem {
+  display: none;
+}
+@media (max-width: 767px) {
+  .mobileItem {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 6px;
+    background: #FDFCF9;
+    border: 1px solid #EAE3D5;
+    border-radius: 16px;
+    padding: 12px 14px;
+  }
+  .mobileItem img {
+    flex: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    object-fit: cover;
+  }
+  .mobileItemBody {
+    flex: 1;
+    min-width: 0;
+  }
+  .mobileItemTitle {
+    font-family: var(--mmf-archivo), sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: #151109;
+  }
+  .mobileItemMeta {
+    margin-top: 2px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #6F695E;
+  }
+  .mobileItemPrice {
+    flex: none;
+    font-family: var(--mmf-archivo), sans-serif;
+    font-weight: 800;
+    font-size: 19px;
+    letter-spacing: -0.02em;
+    color: #151109;
   }
 }
 
@@ -62,24 +134,24 @@
   background: #E2EDE3;
   border: 1px solid #C6DAC9;
   color: #2E6B4A;
-  font-size: 15.5px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
   border-radius: 999px;
-  padding: 7px 16px;
+  padding: 6px 14px;
 }
 
 /* ---------- Cards ---------- */
 .card {
   background: #FDFCF9;
   border: 1px solid #EAE3D5;
-  border-radius: 28px;
+  border-radius: 20px;
   box-shadow: 0 1px 2px rgba(21, 17, 9, 0.04), 0 12px 32px -18px rgba(21, 17, 9, 0.18);
 }
 .form {
-  padding: clamp(24px, 3.4vw, 44px);
+  padding: clamp(20px, 3.2vw, 36px);
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 .summary {
   padding: clamp(22px, 2.6vw, 34px);
@@ -103,9 +175,9 @@
 }
 .label {
   display: block;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #4B463D;
 }
@@ -114,7 +186,7 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 .iwrap {
   position: relative;
@@ -128,13 +200,13 @@
 }
 .input {
   width: 100%;
-  min-height: 56px;
+  min-height: 54px;
   border: 1px solid #E4DCCB;
-  border-radius: 14px;
+  border-radius: 12px;
   background: #F1ECE1;
   padding: 14px 16px 14px 52px;
   font: inherit;
-  font-size: 16.5px;
+  font-size: 16px; /* 16px or more stops iPhone Safari zooming into the field */
   color: #151109;
   transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
 }
@@ -234,6 +306,7 @@
   flex: 1;
   min-width: 0;
   min-height: 48px;
+  font-size: 16px;
   padding: 10px 16px 10px 18px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -242,7 +315,7 @@
   flex: none;
   min-height: 48px;
   padding: 0 22px;
-  border-radius: 14px;
+  border-radius: 12px;
   border: none;
   background: #13432B;
   color: #fff;
@@ -326,19 +399,19 @@
 /* ---------- Pay button ---------- */
 .pay {
   width: 100%;
-  min-height: 56px;
+  min-height: 58px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: 12px;
   background: #13432B;
   color: #FBF9F4;
   font-family: var(--mmf-archivo), sans-serif;
   font-weight: 600;
-  font-size: 18px;
+  font-size: 17.5px;
   letter-spacing: -0.01em;
   border: none;
-  border-radius: 14px;
+  border-radius: 999px;
   padding: 12px 24px;
   cursor: pointer;
   transition: background 0.18s, opacity 0.18s, transform 0.18s;
@@ -418,7 +491,7 @@
   gap: 12px;
   transition: transform 0.3s;
 }
-@media (max-width: 919px) {
+@media (max-width: 767px) {
   .sticky {
     display: flex;
   }
@@ -443,7 +516,7 @@
   min-height: 48px;
   font-size: 16px;
   padding: 10px 24px;
-  border-radius: 12px;
+  border-radius: 999px;
 }
 
 /* ---------- Nothing on sale ---------- */

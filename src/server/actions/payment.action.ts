@@ -16,6 +16,7 @@ import { dataBasePrisma } from "@/lib/dbPrisma";
 import { enrollUserInTrainerCentral } from "@/lib/trainer-central";
 import { sendMetaCAPIPurchaseEvent } from "@/lib/meta-capi";
 import { processBatchRegistrationForOrder } from "@/lib/batches/registration";
+import { LANDING_SOURCES, isLandingSource } from "@/lib/landing/sources";
 
 // --- CASHFREE SDK CONFIGURATION ---
 const isProduction = process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === "PRODUCTION";
@@ -52,8 +53,9 @@ export const createCashfreeOrder = async (
     utmTerm?: string;
     utmContent?: string;
   },
-  // "mmf-v10" when the buyer came from the v10 landing page. Carried in the
-  // return URL so the callback can send them to that page's own thank-you.
+  // "mmf-v10" / "mpf-v20" when the buyer came from that landing page (see
+  // lib/landing/sources.ts). Carried in the return URL so the callback can
+  // send them to that page's own thank-you.
   landingSource?: string
 ) => {
   try {
@@ -86,7 +88,7 @@ export const createCashfreeOrder = async (
         customer_email: customerDetails.email,
       },
       order_meta: {
-        return_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/callback?order_id=${orderId}${landingSource === "mmf-v10" ? "&src=mmf-v10" : ""}`,
+        return_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/callback?order_id=${orderId}${isLandingSource(landingSource) ? `&src=${landingSource}` : ""}`,
       },
     };
 
@@ -179,7 +181,9 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
             bundle: true
           }
         },
-        lead: true
+        lead: true,
+        // Name for the Meta CAPI Purchase when the buyer is a returning user.
+        user: { select: { name: true } }
       }
     });
 
@@ -240,7 +244,7 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
       });
       if (freshOrder?.status === "PAID") {
         console.log(`[verify] Order ${orderId} already PAID — skipping duplicate`);
-        return { success: true, data: localOrder, status: "PAID" };
+        return { success: true, data: localOrder, status: "PAID", duplicate: true };
       }
 
       // --- TRANSACTION STEP 1: UPDATE ORDER STATUS ---
@@ -399,6 +403,14 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
       }
     } // end while
 
+    // Another call (webhook or callback) already confirmed this order: its
+    // follow-up steps (enrolment, Meta CAPI, coupon count) ran there. Running
+    // them again would count the coupon twice.
+    if (result?.duplicate) {
+      const { duplicate: _duplicate, ...rest } = result;
+      return rest;
+    }
+
     // ========================================================================
     // POST-TRANSACTION: EXTERNAL API CALLS
     // ========================================================================
@@ -446,7 +458,9 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
       try {
         const email = localOrder.guestEmail || localOrder.lead?.email;
         const phone = localOrder.guestPhone || localOrder.lead?.phone;
-        const name = localOrder.lead?.name || "Guest User";
+        // Lead name, then the account name; no placeholder (a fake name would
+        // be hashed and sent to Meta, lowering match quality).
+        const name = localOrder.lead?.name || localOrder.user?.name || undefined;
 
         await sendMetaCAPIPurchaseEvent({
           orderId: localOrder.orderId ?? localOrder.id,
@@ -463,6 +477,14 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
           utmSource: localOrder.utmSource || undefined,
           utmMedium: localOrder.utmMedium || undefined,
           utmCampaign: localOrder.utmCampaign || undefined,
+          // Captured from the buyer's browser at payment start (initiate route).
+          fbp: localOrder.metaFbp || undefined,
+          fbc: localOrder.metaFbc || undefined,
+          clientIpAddress: localOrder.clientIp || undefined,
+          clientUserAgent: localOrder.clientUserAgent || undefined,
+          eventSourceUrl: isLandingSource(localOrder.landingSource)
+            ? `${process.env.NEXT_PUBLIC_APP_URL}${LANDING_SOURCES[localOrder.landingSource].landing}`
+            : undefined,
         });
       } catch (err) {
         // Non-critical - never block payment confirmation

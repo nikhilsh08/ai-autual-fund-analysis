@@ -9,6 +9,28 @@ const nextConfig: NextConfig = {
   // time; make sure the file ships with the serverless function on Vercel.
   outputFileTracingIncludes: {
     "/v10": ["./src/landing/**/*"],
+    "/v20": ["./src/landing/**/*"],
+    "/v20/checkout": ["./src/landing/**/*"],
+    "/v20/thank-you": ["./src/landing/**/*"],
+    "/v30": ["./src/landing/**/*"],
+    "/v30/checkout": ["./src/landing/**/*"],
+    "/v30/thank-you": ["./src/landing/**/*"],
+    "/v30/refund-policy": ["./src/landing/**/*"],
+  },
+  // v20 static files, from the designer's _headers: images and the smooth-
+  // scroll script are cached for a year (rename a file when it changes). The
+  // v20 pages themselves are dynamic and set their own Cache-Control, because
+  // they carry the live price, dates and seats.
+  async headers() {
+    const immutable = [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }];
+    return [
+      { source: "/mpf/assets/:path*", headers: immutable },
+      { source: "/mpf/lenis.min.js", headers: immutable },
+      // v30 (designer build v28): images, self-hosted fonts and lenis.min.js.
+      { source: "/mpf30/assets/:path*", headers: immutable },
+      { source: "/mpf30/fonts/:path*", headers: immutable },
+      { source: "/mpf30/lenis.min.js", headers: immutable },
+    ];
   },
   images: {
     remotePatterns: [
