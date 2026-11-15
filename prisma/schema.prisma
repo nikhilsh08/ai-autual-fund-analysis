@@ -226,6 +226,13 @@ model Course {
   useBatches Boolean @default(false)
   batches    Batch[]
 
+  // Workshop landing page this course is sold on: "v10", "v20" or "v30"
+  // (Admin -> Masterclasses -> "Workshop landing page"). One course per
+  // page. "none" = explicitly unlinked; null = never set (the two courses
+  // that existed before this field are found by slug, see
+  // lib/landing/course-link.ts).
+  landingPage String?
+
   // Live Metadata
   startDate DateTime?
   duration  String?

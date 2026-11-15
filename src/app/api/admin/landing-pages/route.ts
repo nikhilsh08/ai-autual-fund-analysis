@@ -3,7 +3,8 @@ import { siteConfig } from "@/config/seo";
 import { verifyAdmin } from "@/lib/auth-admin";
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import { getCurrentBatch } from "@/lib/batches/current";
-import { LANDING_SOURCES, type LandingSource } from "@/lib/landing/sources";
+import { getLandingCourse } from "@/lib/landing/course-link";
+import { LANDING_SOURCES, type LandingPageKey, type LandingSource } from "@/lib/landing/sources";
 
 export const dynamic = "force-dynamic";
 
@@ -20,8 +21,9 @@ const EVENTS = {
 type Status = "live" | "no_batch_on_sale" | "course_missing" | "course_unpublished" | "not_sold_in_batches";
 
 // GET /api/admin/landing-pages — one row per workshop landing page (v10,
-// v20, v30): whether it is selling, the batch on sale, orders it brought in,
-// and which tracking tags are configured. Secrets are reported as set / not
+// v20, v30): the course linked to it (each page has its own), whether it is
+// selling, the batch on sale, orders it brought in, and which tracking tags
+// are configured. Secrets are reported as set / not
 // set only.
 export async function GET(req: Request) {
     const admin = await verifyAdmin(req);
@@ -45,16 +47,13 @@ export async function GET(req: Request) {
         }),
     ]);
 
-    const courseCache = new Map<string, Awaited<ReturnType<typeof loadCourse>>>();
-    async function courseFor(slug: string) {
-        if (!courseCache.has(slug)) courseCache.set(slug, await loadCourse(slug));
-        return courseCache.get(slug)!;
-    }
+    const loaded = new Map<LandingSource, Awaited<ReturnType<typeof loadCourse>>>();
+    for (const key of keys) loaded.set(key, await loadCourse(LANDING_SOURCES[key].page));
 
     const pages = [];
     for (const key of keys) {
         const page = LANDING_SOURCES[key];
-        const c = await courseFor(page.courseSlug);
+        const c = loaded.get(key) ?? null;
 
         let status: Status = "live";
         if (!c) status = "course_missing";
@@ -72,9 +71,10 @@ export async function GET(req: Request) {
             url: `${siteConfig.url}${page.landing}`,
             paths: { landing: page.landing, checkout: page.checkout, thankYou: page.thankYou },
             status,
-            course: c ? { id: c.course.id, title: c.course.title, slug: page.courseSlug } : null,
-            // Pages selling the same course share its batches and seats.
-            sharesCourseWith: keys.filter((k) => k !== key && LANDING_SOURCES[k].courseSlug === page.courseSlug),
+            page: page.page,
+            course: c ? { id: c.course.id, title: c.course.title, slug: c.course.slug } : null,
+            // Each page has its own course, so this is normally empty.
+            sharesCourseWith: c ? keys.filter((k) => k !== key && loaded.get(k)?.course.id === c.course.id) : [],
             batchOnSale: c?.batch
                 ? {
                       id: c.batch.id,
@@ -118,11 +118,8 @@ export async function GET(req: Request) {
     });
 }
 
-async function loadCourse(slug: string) {
-    const course = await dataBasePrisma.course.findUnique({
-        where: { slug },
-        select: { id: true, title: true, isPublished: true, useBatches: true },
-    });
+async function loadCourse(page: LandingPageKey) {
+    const course = await getLandingCourse(page);
     if (!course) return null;
     const batch = course.useBatches ? await getCurrentBatch(course.id) : null;
     const paidSeats = batch

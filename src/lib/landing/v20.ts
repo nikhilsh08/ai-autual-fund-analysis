@@ -1,6 +1,6 @@
 // Shared by the v20 landing route (Master Personal Finance with AI), its
-// checkout route and its thank-you route.
-export const MPF_V20_COURSE_SLUG = "master-personal-finance-with-ai";
+// checkout route and its thank-you route. The course is the one linked to
+// /v20 in the admin panel (lib/landing/course-link.ts).
 export const MPF_V20_LANDING_PATH = "/v20";
 export const MPF_V20_CHECKOUT_PATH = "/v20/checkout";
 export const MPF_V20_THANK_YOU_PATH = "/v20/thank-you";

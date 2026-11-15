@@ -4,11 +4,11 @@ import { MPF_V20_LANDING_PATH } from "@/lib/landing/v20";
 import {
     cashfreeMode,
     getV20BatchOnSale,
-    getV20Course,
+    getPageCourse,
     htmlResponse,
     isDevPreview,
     loadV20Template,
-    previewMpfBatch,
+    previewBatchFor,
     v20Common,
 } from "@/lib/landing/v20-data";
 
@@ -25,7 +25,7 @@ export async function GET(req: Request) {
     const template = loadV20Template("mpf-v20-checkout.html");
 
     if (isDevPreview(url.searchParams.get("preview"))) {
-        const p = await previewMpfBatch();
+        const p = await previewBatchFor("v20");
         if (!p.batch) return NextResponse.redirect(new URL("/v20?preview=1#seat", url), 307);
         const html = renderV20Checkout(template, p.batch, v20Common(p.courseId ?? "preview"), {
             ...HOOKS,
@@ -35,7 +35,7 @@ export async function GET(req: Request) {
         return htmlResponse(html, "no-store");
     }
 
-    const course = await getV20Course();
+    const course = await getPageCourse("v20");
     if (!course || !course.isPublished) return new NextResponse("Not found", { status: 404 });
 
     const batch = await getV20BatchOnSale(course);

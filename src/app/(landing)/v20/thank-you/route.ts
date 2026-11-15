@@ -6,7 +6,7 @@ import {
     isDevPreview,
     loadThankYouOrder,
     loadV20Template,
-    previewMpfBatch,
+    previewBatchFor,
     toV20Batch,
     v20Common,
 } from "@/lib/landing/v20-data";
@@ -30,7 +30,7 @@ export async function GET(req: Request) {
     if (isDevPreview(url.searchParams.get("preview"))) {
         const state = (["paid", "verifying", "failed"] as const).find((s) => s === url.searchParams.get("state")) ?? "paid";
         const links = url.searchParams.get("links") !== "0";
-        const p = await previewMpfBatch();
+        const p = await previewBatchFor("v20");
         if (!p.batch) return NextResponse.redirect(new URL("/v20?preview=1", url), 307);
         const order: V20Order = {
             state,

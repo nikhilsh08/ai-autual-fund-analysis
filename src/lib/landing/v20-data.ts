@@ -7,7 +7,8 @@ import { getCurrentBatch } from "@/lib/batches/current";
 import { computeBatchTimes, nextDay1Dates } from "@/lib/batches/schedule";
 import { groupLinkFor } from "@/lib/batches/messaging";
 import { trackingConfigFromEnv } from "@/lib/landing/tracking";
-import { MPF_V20_COURSE_SLUG } from "@/lib/landing/v20";
+import { getLandingCourse } from "@/lib/landing/course-link";
+import type { LandingPageKey } from "@/lib/landing/sources";
 import type { V20Batch, V20Common } from "@/lib/landing/render-v20";
 
 // The v20 and v30 page files are read once per server process. After editing
@@ -46,12 +47,9 @@ export const isDevPreview = (value: string | null) => value === "1" && process.e
 export const htmlResponse = (html: string, cacheControl: string) =>
   new NextResponse(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": cacheControl } });
 
-export async function getV20Course() {
-  return dataBasePrisma.course.findUnique({
-    where: { slug: MPF_V20_COURSE_SLUG },
-    select: { id: true, price: true, isPublished: true, useBatches: true },
-  });
-}
+// The course linked to a landing page in the admin panel (Masterclasses ->
+// "Workshop landing page"). Each page has its own course and batches.
+export const getPageCourse = (page: LandingPageKey) => getLandingCourse(page);
 
 export function toV20Batch(b: {
   id: string;
@@ -148,11 +146,8 @@ export interface PreviewData {
   fallbackDurationMinutes: number | null;
 }
 
-export async function previewBatchFor(courseSlug: string, now: Date = new Date()): Promise<PreviewData> {
-  const course = await dataBasePrisma.course.findUnique({
-    where: { slug: courseSlug },
-    select: { id: true, price: true },
-  });
+export async function previewBatchFor(page: LandingPageKey, now: Date = new Date()): Promise<PreviewData> {
+  const course = await getLandingCourse(page);
   if (!course) return { courseId: null, batch: null, fallbackPriceRupees: null, fallbackDurationMinutes: null };
 
   const onSale = await getCurrentBatch(course.id, now);
@@ -190,6 +185,3 @@ export async function previewBatchFor(courseSlug: string, now: Date = new Date()
   }
   return { ...fallback, batch: null };
 }
-
-// Same, for the v20 / v30 course.
-export const previewMpfBatch = () => previewBatchFor(MPF_V20_COURSE_SLUG);

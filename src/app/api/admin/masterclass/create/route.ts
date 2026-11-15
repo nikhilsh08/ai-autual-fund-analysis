@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import { verifyAdmin } from "@/lib/auth-admin";
 import { CourseType } from "@prisma/client";
+import { getLandingCourse } from "@/lib/landing/course-link";
+import { isLandingPageKey } from "@/lib/landing/sources";
 
 export async function POST(req: Request) {
     const admin = await verifyAdmin(req);
@@ -20,7 +22,22 @@ export async function POST(req: Request) {
         // Sold in batches (a workshop landing page such as /v10 or /v20). Batch
         // courses register buyers with Zoho Webinar, not TrainerCentral, so the
         // TrainerCentral course ID is optional for them.
-        const useBatches = body.useBatches === true;
+        // Workshop landing page link ("v10" | "v20" | "v30"): one course per
+        // page. A linked course is always sold in batches.
+        const landingPage = isLandingPageKey(body.landingPage) ? body.landingPage : null;
+        const useBatches = body.useBatches === true || landingPage !== null;
+        if (!title || typeof title !== "string") {
+            return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
+        }
+        if (landingPage) {
+            const taken = await getLandingCourse(landingPage);
+            if (taken) {
+                return NextResponse.json(
+                    { message: `/${landingPage} is already linked to "${taken.title}". Unlink it there first (set its landing page to None).` },
+                    { status: 409 },
+                );
+            }
+        }
         let slug = title.trim().toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
 
         let uniqueSlug = slug;
@@ -58,6 +75,7 @@ export async function POST(req: Request) {
                 tcCourseId: tcCourseId || `batch-${slug}`,
                 tcCourseUrl,
                 useBatches,
+                landingPage,
                 startDate: startDate ? new Date(startDate) : undefined,
                 maxSeats: maxSeats ? parseInt(maxSeats) : undefined,
                 categoryId,

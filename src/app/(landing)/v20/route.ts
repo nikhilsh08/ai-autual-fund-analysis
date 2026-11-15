@@ -3,26 +3,27 @@ import { dataBasePrisma } from "@/lib/dbPrisma";
 import { renderV20Landing } from "@/lib/landing/render-v20";
 import {
     getV20BatchOnSale,
-    getV20Course,
+    getPageCourse,
     htmlResponse,
     isDevPreview,
     loadV20Template,
     paidSeats,
-    previewMpfBatch,
+    previewBatchFor,
     v20Common,
 } from "@/lib/landing/v20-data";
 
 export const dynamic = "force-dynamic";
 
-// GET /v20 — Master Personal Finance with AI. Price, dates, start time and
-// language come from the batch on sale (Admin → Batches); the seat line from
-// paid bookings. Development only: /v20?preview=1 renders sample values.
+// GET /v20 — Master Personal Finance with AI. Sells the course linked to it
+// in the admin panel (Masterclasses → "Workshop landing page: /v20"). Price,
+// dates, start time and language come from the batch on sale (Admin →
+// Batches); the seat line from paid bookings. Development only: /v20?preview=1.
 export async function GET(req: Request) {
     const template = loadV20Template("mpf-v20.html");
 
     if (isDevPreview(new URL(req.url).searchParams.get("preview"))) {
         // Every value from the admin panel (see previewBatchFor).
-        const p = await previewMpfBatch();
+        const p = await previewBatchFor("v20");
         const html = renderV20Landing(
             template,
             {
@@ -41,7 +42,7 @@ export async function GET(req: Request) {
     let fallbackDuration: number | null = null;
 
     try {
-        const course = await getV20Course();
+        const course = await getPageCourse("v20");
         if (!course || !course.isPublished) return new NextResponse("Not found", { status: 404 });
         courseId = course.id;
         fallbackPrice = course.price;

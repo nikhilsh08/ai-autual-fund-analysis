@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { verifyAdmin } from "@/lib/auth-admin";
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import { istYmd } from "@/lib/ist";
-import { LANDING_PATH_BY_COURSE_SLUG } from "@/lib/landing/sources";
+import { landingPageByCourseId } from "@/lib/landing/course-link";
 import { AdminError, batchSettingsSchema, settingsPreview, upsertBatchSettings } from "@/lib/batches/admin";
 
 export const dynamic = "force-dynamic";
@@ -22,11 +22,16 @@ export async function GET(req: Request) {
         select: { id: true, title: true, slug: true },
     });
 
+    const pageByCourse = await landingPageByCourseId();
+
     return NextResponse.json({
         success: true,
         settings: settings.map(present),
-        // landingPath: the page this course's batches are sold on (/v10, /v20), or null.
-        courses: courses.map((c) => ({ ...c, landingPath: LANDING_PATH_BY_COURSE_SLUG[c.slug] ?? null })),
+        // landingPath: the page this course's batches are sold on (/v10, /v20, /v30), or null.
+        courses: courses.map((c) => {
+            const page = pageByCourse.get(c.id);
+            return { ...c, landingPath: page ? `/${page}` : null };
+        }),
     });
 }
 
