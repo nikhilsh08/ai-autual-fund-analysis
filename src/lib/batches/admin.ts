@@ -125,18 +125,28 @@ export async function patchBatch(id: string, input: z.infer<typeof batchPatchSch
   return dataBasePrisma.batch.update({ where: { id }, data });
 }
 
-export async function openBatch(id: string, now: Date = new Date()) {
+// opts.force ("Open anyway" in the admin panel): opens a batch that still has
+// no Zoho webinar keys or WhatsApp link. Buyers are then NOT registered for
+// the sessions automatically until the keys are added (the messages job
+// retries). Price, booking close and status rules are never skipped.
+export async function openBatch(id: string, now: Date = new Date(), opts: { force?: boolean } = {}) {
   const batch = await dataBasePrisma.batch.findUnique({ where: { id } });
   if (!batch) throw new AdminError("Batch not found", 404);
   const settings = await dataBasePrisma.batchSettings.findUnique({ where: { courseId: batch.courseId } });
 
-  const problems: string[] = [];
-  if (!(batch.priceRupees > 0)) problems.push("price must be greater than 0");
-  if (!batch.zohoWebinarKeyDay1 || !batch.zohoWebinarKeyDay2) problems.push("both Zoho webinar keys are required");
-  if (!batch.whatsappGroupLink && !settings?.defaultWhatsappGroupLink) problems.push("a WhatsApp group link is required");
-  if (batch.bookingCloseAt.getTime() <= now.getTime()) problems.push("booking close time has already passed");
-  if (batch.status === "COMPLETED") problems.push("a completed batch cannot be reopened");
-  if (problems.length > 0) throw new AdminError(`Cannot open: ${problems.join("; ")}`);
+  const hard: string[] = [];
+  const soft: string[] = [];
+  if (!(batch.priceRupees > 0)) hard.push("price must be greater than 0");
+  if (!batch.zohoWebinarKeyDay1 || !batch.zohoWebinarKeyDay2) soft.push("both Zoho webinar keys are required");
+  if (!batch.whatsappGroupLink && !settings?.defaultWhatsappGroupLink) soft.push("a WhatsApp group link is required");
+  if (batch.bookingCloseAt.getTime() <= now.getTime()) hard.push("booking close time has already passed");
+  if (batch.status === "COMPLETED") hard.push("a completed batch cannot be reopened");
+
+  const problems = opts.force ? hard : [...hard, ...soft];
+  if (problems.length > 0) {
+    // canForce: only the Zoho / WhatsApp setup is missing, so "Open anyway" is allowed.
+    throw new AdminError(`Cannot open: ${problems.join("; ")}`, 400, hard.length === 0);
+  }
 
   return dataBasePrisma.batch.update({ where: { id }, data: { status: "OPEN" } });
 }
@@ -318,7 +328,7 @@ export function settingsPreview(settings: { anchorDay1Date: Date; cadenceDays: n
 }
 
 export class AdminError extends Error {
-  constructor(message: string, public status = 400) {
+  constructor(message: string, public status = 400, public canForce = false) {
     super(message);
   }
 }

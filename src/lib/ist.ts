@@ -84,6 +84,17 @@ export function formatIstDateTime(date: Date): string {
   return `${formatIstDate(date)}, ${formatIstTime(date)} IST`;
 }
 
+// "22 Nov" (the short form the v20 landing page uses)
+export function formatIstShortDate(date: Date): string {
+  const p = toIstParts(date);
+  return `${p.day} ${MONTHS[p.month - 1].slice(0, 3)}`;
+}
+
+// "21 Nov, 11:59 PM IST"
+export function formatIstShortDateTime(date: Date): string {
+  return `${formatIstShortDate(date)}, ${formatIstTime(date)} IST`;
+}
+
 // 120 -> "2 hours", 90 -> "1 hour 30 minutes", 45 -> "45 minutes"
 export function formatDuration(minutes: number): string {
   const hours = Math.floor(minutes / 60);

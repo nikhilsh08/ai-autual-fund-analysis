@@ -61,7 +61,8 @@ describe("landing renderer (spec 5.2, 11)", () => {
     expect(html).toContain("window.__resources={}");
 
     for (const phrase of FORBIDDEN) expect(html).not.toContain(phrase);
-    expect(html).toContain("50 seats per batch");
+    expect(html).not.toContain("50 seats per batch");
+    expect(html).toMatch(/class="abar">Live workshop · Starts Saturday, 21 November 2026<\/div>/);
     expect(html).toContain("2-day live workshop + 5 guides");
     expect(html).toContain("Your personal join link is shown on the confirmation page after payment");
   });

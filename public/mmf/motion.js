@@ -5,7 +5,14 @@
 (function () {
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var root = document.documentElement;
-  if (!reduce) root.classList.add('mmf-anim', 'p3d');
+  /* 3D level path on every screen size. Visitors who ask for reduced motion get all six levels as cards. */
+  var p3dQuery = window.matchMedia('(min-height: 420px)');
+  if (!reduce) root.classList.add('mmf-anim');
+  function setP3d() {
+    var on = !reduce && p3dQuery.matches;
+    root.classList.toggle('p3d', on);
+    paths.forEach(function (p) { if (on) { p.active = -1; p.lastF = -1; renderPath(p, true); } else clearPath(p); });
+  }
   var lenis = null, hasIO = 'IntersectionObserver' in window;
 
   function startLenis() {
@@ -67,7 +74,11 @@
         if (lenis) lenis.scrollTo(y); else window.scrollTo({ top: y, behavior: 'smooth' });
       });
     });
-    paths.push(p); track(el); renderPath(p, true);
+    paths.push(p); track(el); if (root.classList.contains('p3d')) renderPath(p, true);
+  }
+  function clearPath(p) {
+    p.texts.forEach(function (tx) { tx.style.opacity = ''; tx.style.transform = ''; tx.style.pointerEvents = ''; tx.removeAttribute('aria-hidden'); });
+    p.active = -1; p.lastF = -1;
   }
   function renderPath(p, force) {
     var N = p.coins.length, step = 360 / N;
@@ -161,6 +172,52 @@
     sync();
   }
 
+  /* Phone sticky bar: shown once the hero button has scrolled away, hidden again while the price card is on screen */
+  var heroOut = false, priceIn = false, barReady = false;
+  var sio = hasIO ? new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      if (e.target.hasAttribute('data-herocta')) heroOut = !e.isIntersecting && e.boundingClientRect.top < 0;
+      else priceIn = e.isIntersecting;
+    });
+    tick();
+  }, { rootMargin: '0px 0px -10% 0px' }) : null;
+
+  /* Two cards side by side in 3D (Who it's for, Agenda) on phones: the card off to the side is turned
+     away and smaller, and the tabs above show which card is in front. */
+  var swipeQuery = window.matchMedia('(max-width: 759px)');
+  var swipes = [];
+  function initSwipe(el) {
+    if (el.__s) return; el.__s = true;
+    var tr = el.querySelector('[data-strack]'); if (!tr) return;
+    var w = { el: el, tr: tr, cards: [].slice.call(tr.children), pills: [].slice.call(el.querySelectorAll('[data-spill]')), q: false, active: -1 };
+    w.pills.forEach(function (p, i) {
+      p.addEventListener('click', function () {
+        var c = w.cards[i]; if (!c) return;
+        var pad = parseFloat(getComputedStyle(tr).paddingLeft) || 0;
+        tr.scrollTo({ left: c.offsetLeft - tr.offsetLeft - pad, behavior: reduce ? 'auto' : 'smooth' });
+      });
+    });
+    tr.addEventListener('scroll', function () { if (!w.q) { w.q = true; requestAnimationFrame(function () { w.q = false; renderSwipe(w); }); } }, { passive: true });
+    swipes.push(w); renderSwipe(w);
+  }
+  function renderSwipe(w) {
+    var on = swipeQuery.matches, tr = w.tr;
+    var pad = parseFloat(getComputedStyle(tr).paddingLeft) || 0, best = 0, bd = 1e9;
+    w.cards.forEach(function (c, i) {
+      var step = c.offsetWidth + 12;
+      var d = on ? (c.offsetLeft - tr.offsetLeft - pad - tr.scrollLeft) / step : 0;
+      if (Math.abs(d) < bd) { bd = Math.abs(d); best = i; }
+      if (!on || reduce) { c.style.transform = ''; c.style.opacity = ''; return; }
+      var a = Math.max(-1.2, Math.min(1.2, d));
+      c.style.transformOrigin = a > 0 ? 'left center' : 'right center';
+      c.style.transform = 'rotateY(' + (-a * 34).toFixed(2) + 'deg) scale(' + (1 - Math.abs(a) * 0.1).toFixed(3) + ')';
+      c.style.opacity = (1 - Math.min(1, Math.abs(a)) * 0.35).toFixed(3);
+    });
+    if (best !== w.active) { w.active = best; w.pills.forEach(function (p, i) { p.classList.toggle('on', i === best); }); }
+  }
+  function onSwipeQuery() { swipes.forEach(renderSwipe); }
+  if (swipeQuery.addEventListener) swipeQuery.addEventListener('change', onSwipeQuery); else if (swipeQuery.addListener) swipeQuery.addListener(onSwipeQuery);
+
   /* One scroll loop */
   var nav = null, bar = null, navOn = null, barOn = null, queued = false;
   function frame() {
@@ -168,7 +225,7 @@
     var y = window.scrollY;
     if (!nav) nav = document.querySelector('[data-nav]');
     if (!bar) bar = document.querySelector('[data-sticky]');
-    var n = y > 10, b = y > 640;
+    var n = y > 10, b = barReady ? (heroOut && !priceIn) : y > 640;
     if (nav && n !== navOn) { navOn = n; nav.classList.toggle('scrolled', n); }
     if (bar && b !== barOn) { barOn = b; bar.classList.toggle('show', b); }
     if (root.classList.contains('p3d')) paths.forEach(function (p) { if (visible.has(p.el)) renderPath(p); });
@@ -186,11 +243,15 @@
     document.querySelectorAll('[data-qsec]').forEach(initRows);
     document.querySelectorAll('[data-agenda]').forEach(initAgenda);
     document.querySelectorAll('[data-guides]').forEach(initGuides);
+    document.querySelectorAll('[data-swipe3d]').forEach(initSwipe);
+    document.querySelectorAll('[data-herocta]:not([data-sw]),[data-pricecard]:not([data-sw])').forEach(function (el) { el.setAttribute('data-sw', '1'); if (sio) { sio.observe(el); barReady = true; } });
     document.querySelectorAll('[data-mq]:not([data-mw])').forEach(function (m) { m.setAttribute('data-mw', '1'); if (mio) mio.observe(m); });
     tick();
   }
   window.addEventListener('scroll', tick, { passive: true });
-  window.addEventListener('resize', function () { paths.forEach(function (p) { p.lastF = -1; }); tick(); });
+  if (p3dQuery.addEventListener) p3dQuery.addEventListener('change', setP3d); else if (p3dQuery.addListener) p3dQuery.addListener(setP3d);
+  setP3d();
+  window.addEventListener('resize', function () { paths.forEach(function (p) { p.lastF = -1; }); swipes.forEach(renderSwipe); tick(); });
   startLenis();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scan); else scan();
   /* Pick up late-rendered sections, then stop */

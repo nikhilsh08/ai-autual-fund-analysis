@@ -7,6 +7,8 @@ import { dataBasePrisma } from '@/lib/dbPrisma';
 import { z } from 'zod';
 import { applyCoupon, couponAppliesTo, roundRupees } from '@/lib/pricing';
 import { isOnSale } from '@/lib/batches/schedule';
+import { isLandingSource } from '@/lib/landing/sources';
+import { metaMatchFromRequest } from '@/lib/meta-capi';
 
 const batchFieldsSchema = z.object({
     batchId: z.string().min(1).optional(),
@@ -180,6 +182,10 @@ export async function POST(req: Request) {
                 couponId: couponId,
                 status: 'PENDING',
                 whatsappOptIn: batch ? whatsappOptIn : false,
+                // Which workshop landing page sold it (admin → Landing pages).
+                landingSource: isLandingSource(landingSource) ? landingSource : null,
+                // Meta CAPI match keys for the server-side Purchase event.
+                ...metaMatchFromRequest(req),
                 // Individual course items
                 items: courseIdArray.length > 0 ? {
                     create: courses.map((c) => ({
@@ -209,6 +215,8 @@ export async function POST(req: Request) {
     } catch (error: any) {
         console.error("Checkout Error Detailed:", JSON.stringify(error, null, 2));
         console.error("Checkout Error Message:", error.message);
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        // Details stay in the server log; the browser gets a generic message
+        // (database or Cashfree internals must not reach the page).
+        return NextResponse.json({ success: false, error: "payment_start_failed" }, { status: 500 });
     }
 }

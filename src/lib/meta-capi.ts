@@ -40,6 +40,39 @@ export interface MetaCAPIPurchasePayload {
   clientIpAddress?: string;  // Optional: improves match quality
   clientUserAgent?: string;  // Optional: improves match quality
   fbclid?: string;           // Optional: Facebook Click ID from fbclid URL param
+  fbp?: string;              // Optional: the _fbp cookie the browser pixel set
+  fbc?: string;              // Optional: the _fbc cookie (preferred over fbclid)
+  eventSourceUrl?: string;   // Optional: page the buyer bought from
+}
+
+// The match keys a server event needs, read from the buyer's own request
+// (the payment-start call, which is same-origin, so the pixel's first-party
+// cookies come with it). Stored on the order and sent with Purchase later.
+export function metaMatchFromRequest(req: Request): {
+  metaFbp: string | null;
+  metaFbc: string | null;
+  clientIp: string | null;
+  clientUserAgent: string | null;
+} {
+  const cookies = new Map(
+    (req.headers.get("cookie") || "")
+      .split(";")
+      .map((part) => part.trim().split("="))
+      .filter((kv) => kv.length >= 2)
+      .map(([k, ...v]) => {
+        let value = v.join("=");
+        try { value = decodeURIComponent(value); } catch { /* keep raw */ }
+        return [k, value] as [string, string];
+      }),
+  );
+  const forwarded = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const clip = (v: string | null | undefined, n: number) => (v ? v.slice(0, n) : null);
+  return {
+    metaFbp: clip(cookies.get("_fbp"), 200),
+    metaFbc: clip(cookies.get("_fbc"), 500),
+    clientIp: clip(forwarded || req.headers.get("x-real-ip"), 64),
+    clientUserAgent: clip(req.headers.get("user-agent"), 500),
+  };
 }
 
 // --- HELPER: SHA-256 HASH ---
@@ -53,15 +86,13 @@ function sha256Hash(value: string): string {
 }
 
 // --- HELPER: NORMALIZE PHONE ---
-// Meta expects phone in E.164 format (+91XXXXXXXXXX) without spaces/dashes
+// Meta expects the phone as digits only, with the country code and no "+"
+// (e.g. 919876543210), before hashing.
 function normalizePhone(phone: string): string {
-  // Remove all non-digit characters except leading +
-  const cleaned = phone.replace(/[^\d+]/g, "");
-  // Add +91 if it's a 10-digit Indian number without country code
-  if (/^\d{10}$/.test(cleaned)) {
-    return `+91${cleaned}`;
-  }
-  return cleaned;
+  let digits = phone.replace(/\D/g, "").replace(/^0+/, "");
+  // A 10-digit Indian mobile without the country code.
+  if (/^\d{10}$/.test(digits)) digits = `91${digits}`;
+  return digits;
 }
 
 // ============================================================================
@@ -105,8 +136,13 @@ export async function sendMetaCAPIPurchaseEvent(
   if (payload.clientUserAgent) {
     userData.client_user_agent = payload.clientUserAgent;
   }
-  if (payload.fbclid) {
+  if (payload.fbc) {
+    userData.fbc = payload.fbc;
+  } else if (payload.fbclid) {
     userData.fbc = `fb.1.${Date.now()}.${payload.fbclid}`;
+  }
+  if (payload.fbp) {
+    userData.fbp = payload.fbp;
   }
 
   // --- BUILD CUSTOM DATA ---
@@ -135,6 +171,9 @@ export async function sendMetaCAPIPurchaseEvent(
     user_data: userData,
     custom_data: customData,
   };
+  if (payload.eventSourceUrl) {
+    eventData.event_source_url = payload.eventSourceUrl;
+  }
 
   // --- BUILD API REQUEST ---
   const apiUrl = `https://graph.facebook.com/v21.0/${pixelId}/events`;

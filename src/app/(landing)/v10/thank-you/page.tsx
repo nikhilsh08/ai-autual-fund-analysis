@@ -9,6 +9,10 @@ import AutoRefresh from "@/components/checkout/AutoRefresh";
 import type { WorkshopBooking } from "@/components/checkout/useWorkshopBooking";
 import V10Shell from "@/components/landing/V10Shell";
 import WorkshopThankYouV10, { OrderMeta, ThankYouCard } from "@/components/landing/WorkshopThankYouV10";
+import { formatIstDate, formatIstTime } from "@/lib/ist";
+import type { V20Batch } from "@/lib/landing/render-v20";
+import { MMF_V10_COURSE_SLUG } from "@/lib/landing/v10";
+import { previewBatchFor } from "@/lib/landing/v20-data";
 import { MMF_COPY } from "@/lib/mmf-copy";
 import s from "@/components/landing/ThankYouV10.module.css";
 
@@ -40,24 +44,24 @@ const LANDING = "/v10";
 const THANK_YOU = `${LANDING}/thank-you`;
 const SUPPORT = "mailto:support@cashflowcrew.in";
 
-// Development-only preview with sample data, never reading the database:
+// Development-only preview. Every date, time and length comes from the
+// admin panel (previewBatchFor: batch on sale, next batch, or Batch
+// settings), formatted exactly as GET /api/orders/[orderId]/booking does:
 //   /v10/thank-you?preview=workshop            join links pending
 //   /v10/thank-you?preview=workshop&links=1    join links ready
 //   /v10/thank-you?preview=workshop&state=pending | failed
-function previewBooking(withLinks: boolean): WorkshopBooking {
-    const day1 = new Date("2026-11-21T06:00:00.000Z"); // Sat 21 Nov 2026, 11:30 IST
-    const day2 = new Date("2026-11-22T06:00:00.000Z");
+function previewBooking(batch: V20Batch, withLinks: boolean): WorkshopBooking {
     return {
         status: "PAID",
         isBatchOrder: true,
         batch: {
-            id: "preview",
-            day1Date: "Saturday, 21 November 2026",
-            day2Date: "Sunday, 22 November 2026",
-            startTime: "11:30 AM",
-            durationMinutes: 120,
-            day1StartAt: day1.toISOString(),
-            day2StartAt: day2.toISOString(),
+            id: batch.id,
+            day1Date: formatIstDate(batch.day1StartAt),
+            day2Date: formatIstDate(batch.day2StartAt),
+            startTime: formatIstTime(batch.day1StartAt),
+            durationMinutes: batch.durationMinutes,
+            day1StartAt: batch.day1StartAt.toISOString(),
+            day2StartAt: batch.day2StartAt.toISOString(),
         },
         zohoState: withLinks ? "REGISTERED" : "PENDING",
         joinLinkDay1: withLinks ? "https://example.com/join/day1" : null,
@@ -114,6 +118,8 @@ export default async function WorkshopThankYouPage({
 
     if (preview === "workshop" && process.env.NODE_ENV !== "production") {
         const previewId = "ORDER_PREVIEW_0000";
+        const { batch } = await previewBatchFor(MMF_V10_COURSE_SLUG);
+        if (!batch) redirect(`${LANDING}?preview=1`);
         return (
             <V10Shell className={fontClass}>
                 {state === "pending" ? (
@@ -121,7 +127,7 @@ export default async function WorkshopThankYouPage({
                 ) : state === "failed" ? (
                     <Failed orderId={previewId} />
                 ) : (
-                    <WorkshopThankYouV10 orderId={previewId} initialBooking={previewBooking(links === "1")} />
+                    <WorkshopThankYouV10 orderId={previewId} initialBooking={previewBooking(batch, links === "1")} />
                 )}
             </V10Shell>
         );

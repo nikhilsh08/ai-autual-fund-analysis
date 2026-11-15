@@ -4,9 +4,8 @@ export const MMF_COPY = {
   contentName: "Master Mutual Funds workshop",
 
   landing: {
-    // C2 — announcement bar. Back to "50 seats per batch" at the owner's
-    // request (12 Nov 2026); the site does not enforce a seat limit.
-    bar: "50 seats per batch",
+    // C2 — announcement bar: "Live workshop · Starts {class date}" only. Price and
+    // "50 seats per batch" removed at the owner's request (15 Nov 2026).
     // C3 — mobile sticky bar (replaces "{N} of 50 seats left")
     sticky: "2-day live workshop + 5 guides",
     // C4 — FAQ, device question

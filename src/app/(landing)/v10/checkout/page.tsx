@@ -7,6 +7,7 @@ import { getCurrentBatch } from "@/lib/batches/current";
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import { formatIstDate, formatIstDateTime } from "@/lib/ist";
 import { MMF_V10_COURSE_SLUG, MMF_V10_LANDING_PATH } from "@/lib/landing/v10";
+import { previewBatchFor } from "@/lib/landing/v20-data";
 import { MMF_COPY } from "@/lib/mmf-copy";
 import s from "@/components/landing/CheckoutV10.module.css";
 
@@ -35,26 +36,27 @@ const playfair = Playfair_Display({
     display: "swap",
 });
 
-const rupees = (n: number) => new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(n);
-
-const announcementLine = (classDate: string, priceRupees: number) =>
-    // Same line as the landing page's announcement bar.
-    `Live workshop · Starts ${classDate} · ₹${rupees(priceRupees)} · ${MMF_COPY.landing.bar}`;
+const announcementLine = (classDate: string) =>
+    // Same line as the landing page's announcement bar (one line: no price, no seat count).
+    `Live workshop · Starts ${classDate}`;
 
 export default async function WorkshopCheckoutPage({ searchParams }: { searchParams: Promise<{ preview?: string }> }) {
     const fontClass = `${archivo.variable} ${playfair.variable}`;
 
-    // Development-only preview with sample data, never reading the database:
+    // Development-only preview; date, close time and price from the admin
+    // panel (previewBatchFor, read only):
     //   /v10/checkout?preview=1
     // Paying from it is refused by the server, because the sample batch does not exist.
     const { preview } = await searchParams;
     if (preview && process.env.NODE_ENV !== "production") {
-        const classDate = "Saturday, 21 November 2026";
+        const { batch, courseId } = await previewBatchFor(MMF_V10_COURSE_SLUG);
+        if (!batch) redirect(`${MMF_V10_LANDING_PATH}?preview=1#seat`);
+        const classDate = formatIstDate(batch.day1StartAt);
         return (
-            <V10Shell className={fontClass} variant="checkout" announcement={announcementLine(classDate, 1999)}>
+            <V10Shell className={fontClass} variant="checkout" announcement={announcementLine(classDate)}>
                 <CheckoutV10
-                    courseId="preview"
-                    batch={{ id: "preview", priceRupees: 1999, classDate, bookingCloseText: "Friday, 20 November 2026, 11:59 PM IST" }}
+                    courseId={courseId ?? "preview"}
+                    batch={{ id: "preview", priceRupees: batch.priceRupees, classDate, bookingCloseText: formatIstDateTime(batch.bookingCloseAt) }}
                 />
             </V10Shell>
         );
@@ -87,7 +89,7 @@ export default async function WorkshopCheckoutPage({ searchParams }: { searchPar
     const classDate = formatIstDate(batch.day1StartAt);
 
     return (
-        <V10Shell className={fontClass} variant="checkout" announcement={announcementLine(classDate, batch.priceRupees)}>
+        <V10Shell className={fontClass} variant="checkout" announcement={announcementLine(classDate)}>
             <CheckoutV10
                 courseId={course.id}
                 batch={{

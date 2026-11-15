@@ -48,6 +48,25 @@ export async function PATCH(
             if (field in body) updateData[field] = Boolean(body[field]);
         }
 
+        // Sold in batches: changed only when a real true/false is sent, so an
+        // older admin form that does not know the field cannot switch it off.
+        if (typeof body.useBatches === "boolean") {
+            updateData.useBatches = body.useBatches;
+            if (!body.useBatches) {
+                // Turning it off while a batch is on sale would take the workshop
+                // landing page (/v10, /v20) off sale without warning.
+                const openBatches = await dataBasePrisma.batch.count({ where: { courseId: masterclassId, status: "OPEN" } });
+                if (openBatches > 0) {
+                    return NextResponse.json(
+                        { message: "This course has an open batch. Close it in Batches before turning off 'Sold in batches'." },
+                        { status: 409 },
+                    );
+                }
+            }
+        }
+        // An empty TrainerCentral ID would break the unique index; keep the old one.
+        if ("tcCourseId" in updateData && !updateData.tcCourseId) delete updateData.tcCourseId;
+
         if ("price" in body) updateData.price = parseFloat(body.price);
         if ("originalPrice" in body) updateData.originalPrice = body.originalPrice ? parseFloat(body.originalPrice) : null;
         if ("maxSeats" in body) updateData.maxSeats = body.maxSeats ? parseInt(body.maxSeats) : null;

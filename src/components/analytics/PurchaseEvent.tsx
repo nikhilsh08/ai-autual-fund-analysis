@@ -33,8 +33,17 @@ export default function PurchaseEvent({
         if (firedRef.current) return;
         firedRef.current = true;
 
-        // GA4 Purchase Event
-        if (typeof (window as any).gtag !== "undefined") {
+        // GA4 Purchase Event. When the GTM container owns GA4 (layout.tsx does
+        // not load gtag then), push to the dataLayer like lib/analytics/track.ts.
+        if (process.env.NEXT_PUBLIC_GA4_VIA_GTM === "true") {
+            const w = window as any;
+            w.dataLayer = w.dataLayer || [];
+            w.dataLayer.push({ ecommerce: null });
+            w.dataLayer.push({
+                event: "purchase",
+                ecommerce: { transaction_id: transactionId, value: amount, currency, items },
+            });
+        } else if (typeof (window as any).gtag !== "undefined") {
             (window as any).gtag("event", "purchase", {
                 transaction_id: transactionId,
                 value: amount,
