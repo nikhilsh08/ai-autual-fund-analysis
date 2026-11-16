@@ -1,6 +1,14 @@
 import type { NextConfig } from "next";
 
+// The site's own address: Cashfree returns the buyer to it after payment, and
+// canonical links and the admin panel's landing page links are built from it.
+// NEXT_PUBLIC_APP_URL wins when it is set. When it is not, a deployment on
+// Render uses the address Render gives the service (RENDER_EXTERNAL_URL), so
+// a test deployment never sends buyers to another site.
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.RENDER_EXTERNAL_URL;
+
 const nextConfig: NextConfig = {
+  ...(appUrl ? { env: { NEXT_PUBLIC_APP_URL: appUrl } } : {}),
   // Development only: lets the dev server's live-reload connection work when
   // the local site is shared through a VS Code port-forward link. Without it
   // Next.js blocks that connection and React pages keep reloading.

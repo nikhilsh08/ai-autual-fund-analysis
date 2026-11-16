@@ -10,6 +10,8 @@ export function middleware(request: NextRequest) {
         "https://ai-mutual-fund-analysis.vercel.app",
         "https://admin-cashflowcrew-othh.vercel.app",
         "https://admin-cashflowcrew.vercel.app",
+        // The admin panel hosted on Render (testing before go-live).
+        "https://admin-cashflowcrew.onrender.com",
         process.env.ADMIN_PANNEL_URL
     ];
 
