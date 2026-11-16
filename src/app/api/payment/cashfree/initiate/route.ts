@@ -9,6 +9,7 @@ import { isOnSale } from '@/lib/batches/schedule';
 import { LANDING_SOURCES, isLandingSource, type LandingPageKey } from '@/lib/landing/sources';
 import { landingPageOfCourse, seatLimitForPage } from '@/lib/landing/course-link';
 import { metaMatchFromRequest } from '@/lib/meta-capi';
+import { sameSiteOrigin } from '@/lib/request-origin';
 
 const batchFieldsSchema = z.object({
     batchId: z.string().min(1).optional(),
@@ -215,7 +216,10 @@ export async function POST(req: Request) {
         });
 
         // 7. Cashfree Initiation
-        const cashfreeRes = await createCashfreeOrder(orderId, finalAmount, { name, email, phone }, utmParams, orderSource ?? undefined);
+        const cashfreeRes = await createCashfreeOrder(orderId, finalAmount, { name, email, phone }, utmParams, orderSource ?? undefined,
+            // After paying, the buyer returns to the site they are on.
+            sameSiteOrigin(req) ?? undefined,
+        );
 
         if (!cashfreeRes.success) throw new Error(cashfreeRes.error);
 

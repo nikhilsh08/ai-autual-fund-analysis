@@ -77,7 +77,10 @@ export const createCashfreeOrder = async (
   // "mmf-v10" / "mpf-v20" when the buyer came from that landing page (see
   // lib/landing/sources.ts). Carried in the return URL so the callback can
   // send them to that page's own thank-you.
-  landingSource?: string
+  landingSource?: string,
+  // The site address the buyer is on (from the checkout request). Cashfree
+  // returns them there. Falls back to NEXT_PUBLIC_APP_URL.
+  returnBase?: string
 ) => {
   try {
     // --- STEP 1: SAVE UTM TRACKING DATA TO DATABASE ---
@@ -109,7 +112,7 @@ export const createCashfreeOrder = async (
         customer_email: customerDetails.email,
       },
       order_meta: {
-        return_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/callback?order_id=${orderId}${isLandingSource(landingSource) ? `&src=${landingSource}` : ""}`,
+        return_url: `${returnBase || process.env.NEXT_PUBLIC_APP_URL}/payment/callback?order_id=${orderId}${isLandingSource(landingSource) ? `&src=${landingSource}` : ""}`,
       },
     };
 

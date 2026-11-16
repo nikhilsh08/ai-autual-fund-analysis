@@ -4,6 +4,7 @@ import { verifyAdmin } from "@/lib/auth-admin";
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import { getCurrentBatch } from "@/lib/batches/current";
 import { getLandingCourse } from "@/lib/landing/course-link";
+import { requestSiteOrigin } from "@/lib/request-origin";
 import { LANDING_SEATS_PER_BATCH, LANDING_SOURCES, type LandingPageKey, type LandingSource } from "@/lib/landing/sources";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +30,9 @@ export async function GET(req: Request) {
     if (!admin) return NextResponse.json({ message: "Access denied" }, { status: 403 });
 
     const keys = Object.keys(LANDING_SOURCES) as LandingSource[];
+    // The admin panel calls this site's API, so the page links it shows open
+    // the pages on this same site (the live domain, or a test deployment).
+    const siteUrl = requestSiteOrigin(req) ?? siteConfig.url;
     const since30 = new Date(Date.now() - 30 * DAY_MS);
 
     const [allTime, last30] = await Promise.all([
@@ -72,7 +76,7 @@ export async function GET(req: Request) {
         pages.push({
             key,
             name: page.name,
-            url: `${siteConfig.url}${page.landing}`,
+            url: `${siteUrl}${page.landing}`,
             paths: { landing: page.landing, checkout: page.checkout, thankYou: page.thankYou },
             status,
             page: page.page,

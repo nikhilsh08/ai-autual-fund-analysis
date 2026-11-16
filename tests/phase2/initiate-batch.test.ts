@@ -163,4 +163,24 @@ describe("POST /api/payment/cashfree/initiate — landing page, seats and buyer 
     });
     expect(prisma.order.create.mock.calls[0][0].data).toMatchObject({ userId: "u1", leadId: "lead1" });
   });
+
+  it("tells Cashfree to return the buyer to the site they are on", async () => {
+    const call = (headers: Record<string, string>) =>
+      POST(
+        new Request("http://localhost/api/payment/cashfree/initiate", {
+          method: "POST",
+          headers: { "content-type": "application/json", ...headers },
+          body: JSON.stringify({ name: "Asha", email: "asha@example.com", phone: "9876543210", courseIds: ["c1"], batchId: "b1" }),
+        }),
+      );
+
+    // The checkout page of a test deployment calls its own API.
+    await call({ origin: "https://cashflowcrew-v10.onrender.com", "x-forwarded-host": "cashflowcrew-v10.onrender.com" });
+    expect(vi.mocked(createCashfreeOrder).mock.calls[0][5]).toBe("https://cashflowcrew-v10.onrender.com");
+
+    // A call from another website cannot choose the return address.
+    vi.mocked(createCashfreeOrder).mockClear();
+    await call({ origin: "https://evil.example", "x-forwarded-host": "cashflowcrew-v10.onrender.com" });
+    expect(vi.mocked(createCashfreeOrder).mock.calls[0][5]).toBeUndefined();
+  });
 });
