@@ -18,6 +18,18 @@ export function middleware(request: NextRequest) {
     // Dynamic headers based on what the client requests, plus defaults
     const defaultHeaders = "Content-Type, Authorization, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Date, X-Api-Version, x-uploadthing-package, x-uploadthing-version, x-uploadthing-fe-package, b3, traceparent, uploadthing-hook";
 
+    // Admin writes are accepted only from the admin panel or from this site.
+    // The admin session cookie is SameSite=None (the panel is on another
+    // domain), so without this check any website an admin visits could send a
+    // POST carrying that cookie: close the batch on sale, create a coupon.
+    // Requests with no Origin header (scripts, server-to-server) carry no
+    // browser cookie and are left to the route's own admin check.
+    const isAdminWrite =
+        request.nextUrl.pathname.startsWith("/api/admin/") && !["GET", "HEAD", "OPTIONS"].includes(request.method);
+    if (isAdminWrite && origin && !isAllowedOrigin && origin !== request.nextUrl.origin) {
+        return NextResponse.json({ message: "Access denied" }, { status: 403 });
+    }
+
     // Handle preflight requests
     if (request.method === "OPTIONS") {
         const response = new NextResponse(null, { status: 200 });
