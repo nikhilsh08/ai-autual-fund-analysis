@@ -41,13 +41,16 @@ export const LEGACY_COURSE_SLUG: Partial<Record<LandingPageKey, string>> = {
   v20: "master-personal-finance-with-ai",
 };
 
-// Seats sold per batch. /v20 and /v30 say "Only 50 seats per batch" and count
-// down, so their checkout stops at 50 paid bookings (the designer's
-// BACKEND.md, section 2). /v10 makes no seat promise and has no limit.
+// Paid bookings a batch may take, per page; null = no limit. No page has a
+// limit (owner decision, 16 Nov 2026): bookings are never refused for seats
+// and no page counts seats down. Putting a number here for a page makes its
+// checkout stop at that many paid bookings and its seat line count down. The
+// /v20 and /v30 wording says 50, so any other number needs their templates
+// changed too.
 export const LANDING_SEATS_PER_BATCH: Record<LandingPageKey, number | null> = {
   v10: null,
-  v20: 50,
-  v30: 50,
+  v20: null,
+  v30: null,
 };
 
 export function isLandingSource(value: unknown): value is LandingSource {

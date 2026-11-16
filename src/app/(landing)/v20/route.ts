@@ -11,13 +11,17 @@ import {
     previewBatchFor,
     v20Common,
 } from "@/lib/landing/v20-data";
+import { seatLimitForPage } from "@/lib/landing/course-link";
 
 export const dynamic = "force-dynamic";
+
+// Paid bookings a /v20 batch may take; null = no limit (lib/landing/sources.ts).
+const SEAT_LIMIT = seatLimitForPage("v20");
 
 // GET /v20 — Master Personal Finance with AI. Sells the course linked to it
 // in the admin panel (Masterclasses → "Workshop landing page: /v20"). Price,
 // dates, start time and language come from the batch on sale (Admin →
-// Batches); the seat line from paid bookings. Development only: /v20?preview=1.
+// Batches). Development only: /v20?preview=1.
 export async function GET(req: Request) {
     const template = loadV20Template("mpf-v20.html");
 
@@ -31,6 +35,7 @@ export async function GET(req: Request) {
                 fallbackPriceRupees: p.fallbackPriceRupees,
                 fallbackDurationMinutes: p.fallbackDurationMinutes,
                 paidSeats: p.batch && p.batch.id !== "preview" ? await paidSeats(p.batch.id) : 0,
+                seatLimit: SEAT_LIMIT,
             },
             v20Common(p.courseId ?? "preview"),
         );
@@ -64,6 +69,7 @@ export async function GET(req: Request) {
                 fallbackPriceRupees: fallbackPrice,
                 fallbackDurationMinutes: fallbackDuration,
                 paidSeats: batch ? await paidSeats(batch.id) : 0,
+                seatLimit: SEAT_LIMIT,
             },
             v20Common(course.id),
         );
@@ -74,7 +80,7 @@ export async function GET(req: Request) {
         try {
             const html = renderV20Landing(
                 template,
-                { batch: null, fallbackPriceRupees: fallbackPrice, fallbackDurationMinutes: fallbackDuration, paidSeats: 0 },
+                { batch: null, fallbackPriceRupees: fallbackPrice, fallbackDurationMinutes: fallbackDuration, paidSeats: 0, seatLimit: SEAT_LIMIT },
                 v20Common(courseId),
             );
             // Served after an error: never cache it, so the real page returns at once.

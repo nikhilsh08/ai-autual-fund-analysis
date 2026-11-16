@@ -139,18 +139,14 @@ describe("POST /api/payment/cashfree/initiate — landing page, seats and buyer 
     expect(vi.mocked(createCashfreeOrder).mock.calls[0][4]).toBeUndefined();
   });
 
-  it("stops at 50 paid seats on /v20 and /v30, and has no limit on /v10", async () => {
-    prisma.orderItem.count.mockResolvedValue(50);
-    const full = await post({ batchId: "b1", landingSource: "mpf-v20" });
-    expect(full.status).toBe(409);
-    expect(await full.json()).toMatchObject({ error: "batch_full" });
-    expect(prisma.order.create).not.toHaveBeenCalled();
-
-    prisma.orderItem.count.mockResolvedValue(49);
+  it("has no seat limit on /v10, /v20 or /v30", async () => {
+    prisma.orderItem.count.mockResolvedValue(500);
     expect((await post({ batchId: "b1", landingSource: "mpf-v20" })).status).toBe(200);
 
+    prisma.course.findMany.mockResolvedValue([{ ...workshop, landingPage: "v30", slug: "mpf-30" }]);
+    expect((await post({ batchId: "b1", landingSource: "mpf-v30" })).status).toBe(200);
+
     prisma.course.findMany.mockResolvedValue([{ ...workshop, landingPage: "v10", slug: "mmf" }]);
-    prisma.orderItem.count.mockResolvedValue(500);
     expect((await post({ batchId: "b1", landingSource: "mmf-v10" })).status).toBe(200);
   });
 

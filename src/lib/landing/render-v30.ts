@@ -18,6 +18,7 @@ import { formatIstShortDate, formatIstShortDateTime } from "@/lib/ist";
 import { MMF_COPY } from "@/lib/mmf-copy";
 import {
   SCHEMA_DEFAULT_DURATION_MINUTES,
+  applySeatLimit,
   fillSessionLength,
   v20StartTime,
   type V20Batch,
@@ -122,8 +123,11 @@ export interface V30LandingData {
   batch: V30Batch | null;
   // Used for the price when nothing is on sale (batch settings, then course price).
   fallbackPriceRupees: number | null;
-  // Paid bookings for the batch on sale (shared with /v20: same batches).
+  // Paid bookings for the batch on sale.
   paidSeats: number;
+  // Paid bookings this page's batches may take (sources.ts); null or absent
+  // = no limit.
+  seatLimit?: number | null;
   // Session length when nothing is on sale (batch settings).
   fallbackDurationMinutes?: number | null;
 }
@@ -134,9 +138,10 @@ export function renderV30Landing(template: string, data: V30LandingData, common:
 
   const { batch } = data;
   const priceRupees = batch ? batch.priceRupees : data.fallbackPriceRupees;
-  const seatsLeft = batch ? Math.max(0, MPF_V30_SEATS_PER_BATCH - data.paidSeats) : MPF_V30_SEATS_PER_BATCH;
+  const seats = applySeatLimit(template, !!batch, data.seatLimit, data.paidSeats);
+  const seatsLeft = seats.seatsLeft;
 
-  let html = template.replace(
+  let html = seats.html.replace(
     MPF_MARKER,
     `window.MPF=${scriptJson({ seatsLeft, startTime: batch ? v20StartTime(batch) : "", language: batch?.language ?? "" })};`,
   );

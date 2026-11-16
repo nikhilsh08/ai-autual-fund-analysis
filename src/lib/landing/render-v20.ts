@@ -63,6 +63,24 @@ function must(html: string, marker: string, what: string): void {
 // Same start time on both days, e.g. "10:00 AM IST".
 export const v20StartTime = (batch: V20Batch) => `${formatIstTime(batch.day1StartAt)} IST`;
 
+// The sentence in the /v20 and /v30 price cards that promises a seat limit.
+// Shown only when the page has one.
+const SEAT_LIMIT_SENTENCE = "Each batch is limited to 50 attendees, so that questions can be answered live.";
+
+// The seat number given to the page's script, and the page text to go with it.
+// No limit (the default): the page's own default number, so it shows its fixed
+// line and never counts down, and the seat-limit sentence is taken out. With
+// a limit: seats left, so the page counts down once 15 or fewer remain.
+export function applySeatLimit(
+  html: string,
+  hasBatch: boolean,
+  seatLimit: number | null | undefined,
+  paidSeats: number,
+): { html: string; seatsLeft: number } {
+  if (seatLimit == null) return { html: html.replace(SEAT_LIMIT_SENTENCE, ""), seatsLeft: MPF_V20_SEATS_PER_BATCH };
+  return { html, seatsLeft: hasBatch ? Math.max(0, seatLimit - paidSeats) : seatLimit };
+}
+
 // Mirrors `durationMinutes @default(120)` in prisma/schema.prisma. Used only
 // when neither a batch nor the batch settings give a session length.
 export const SCHEMA_DEFAULT_DURATION_MINUTES = 120;
@@ -127,6 +145,9 @@ export interface V20LandingData {
   fallbackPriceRupees: number | null;
   // Paid bookings for the batch on sale.
   paidSeats: number;
+  // Paid bookings this page's batches may take (sources.ts); null or absent
+  // = no limit.
+  seatLimit?: number | null;
   // Session length when nothing is on sale (batch settings).
   fallbackDurationMinutes?: number | null;
 }
@@ -137,9 +158,10 @@ export function renderV20Landing(template: string, data: V20LandingData, common:
 
   const { batch } = data;
   const priceRupees = batch ? batch.priceRupees : data.fallbackPriceRupees;
-  const seatsLeft = batch ? Math.max(0, MPF_V20_SEATS_PER_BATCH - data.paidSeats) : MPF_V20_SEATS_PER_BATCH;
+  const seats = applySeatLimit(template, !!batch, data.seatLimit, data.paidSeats);
+  const seatsLeft = seats.seatsLeft;
 
-  let html = template.replace(
+  let html = seats.html.replace(
     LANDING_MPF_MARKER,
     `window.MPF = ${scriptJson({
       seatsLeft,

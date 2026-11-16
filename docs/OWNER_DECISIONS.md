@@ -7,7 +7,7 @@ Every blank answer in Part 3 of the brief was filled with the brief's own recomm
 | D1 | Ad landing URL | `https://www.cashflowcrew.in/master-mutual-funds` (confirmed) | — |
 | D2 | Live sessions tool | Zoho Webinar (confirmed) | — |
 | D2 | Zoho data centre | `in` | env `ZW_DC` (`in` or `com`) |
-| D2 | Max attendees per webinar | `/v10`: not enforced by the site (no seat limit). `/v20` and `/v30`: 50 paid seats per batch, as their pages say and the designer's BACKEND.md requires; at 50 the page shows "Booking for the next batch opens soon" and payment is refused with `batch_full` (16 Nov 2026). | `LANDING_SEATS_PER_BATCH` in `src/lib/landing/sources.ts` |
+| D2 | Max attendees per webinar | No seat limit on `/v10`, `/v20` or `/v30` (owner, 16 Nov 2026): bookings are never refused for seats and no page counts seats down. `/v20` and `/v30` still print "Only 50 seats per batch" (as `/v10` prints "50 seats per batch"); the sentence "Each batch is limited to 50 attendees" is taken out. Setting a number for a page brings back the countdown and the refusal (`batch_full`) for that page. | `LANDING_SEATS_PER_BATCH` in `src/lib/landing/sources.ts` |
 | D2 | Webinars per batch | Two one-time webinars (Saturday key, Sunday key); `instanceId` optional for recurring series | Admin → Batch → Zoho keys |
 | D2 | Who creates the webinar | Staff, in Zoho, then paste both keys in admin before opening the batch (the daily job alerts if an OPEN batch lacks keys) | — |
 | D2 | Zoho confirmation/reminder emails | `sendMail=true` | env `ZW_SEND_MAIL=false` to turn off |

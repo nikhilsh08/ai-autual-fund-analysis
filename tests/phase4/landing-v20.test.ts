@@ -53,9 +53,21 @@ describe("v20 landing renderer", () => {
     expect(html).toContain('src="/mpf/lenis.min.js"');
   });
 
-  it("sets window.MPF from the batch and real bookings, with Filling fast off", () => {
+  it("has no seat limit: the seat line never counts down and no limit is promised", () => {
     const html = renderV20Landing(landing, { batch, fallbackPriceRupees: null, paidSeats: 37 }, common);
+    // 50 is the page's own default: it shows its fixed line, not "13 of 50 seats left".
+    expect(mpfOf(html)).toEqual({ seatsLeft: 50, startTime: "10:00 AM IST", language: "English", fillingFast: false });
+    expect(html).not.toContain("limited to 50 attendees");
+    // Far past 50 bookings the page still does not count down.
+    expect(mpfOf(renderV20Landing(landing, { batch, fallbackPriceRupees: null, paidSeats: 400 }, common)).seatsLeft).toBe(50);
+    // The same with nothing on sale.
+    expect(renderV20Landing(landing, { batch: null, fallbackPriceRupees: 2499, paidSeats: 0 }, common)).not.toContain("limited to 50 attendees");
+  });
+
+  it("with a seat limit set for the page, counts down from real bookings", () => {
+    const html = renderV20Landing(landing, { batch, fallbackPriceRupees: null, paidSeats: 37, seatLimit: 50 }, common);
     expect(mpfOf(html)).toEqual({ seatsLeft: 13, startTime: "10:00 AM IST", language: "English", fillingFast: false });
+    expect(html).toContain("limited to 50 attendees");
   });
 
   it("adds Pixel, GTM, GA4, Clarity, ViewContent and AddToCart with the course ID", () => {
