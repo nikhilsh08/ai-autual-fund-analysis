@@ -41,6 +41,15 @@ export const LEGACY_COURSE_SLUG: Partial<Record<LandingPageKey, string>> = {
   v20: "master-personal-finance-with-ai",
 };
 
+// Seats sold per batch. /v20 and /v30 say "Only 50 seats per batch" and count
+// down, so their checkout stops at 50 paid bookings (the designer's
+// BACKEND.md, section 2). /v10 makes no seat promise and has no limit.
+export const LANDING_SEATS_PER_BATCH: Record<LandingPageKey, number | null> = {
+  v10: null,
+  v20: 50,
+  v30: 50,
+};
+
 export function isLandingSource(value: unknown): value is LandingSource {
   return typeof value === "string" && Object.prototype.hasOwnProperty.call(LANDING_SOURCES, value);
 }

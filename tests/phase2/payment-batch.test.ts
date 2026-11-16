@@ -35,6 +35,7 @@ vi.mock("@/lib/batches/registration", () => ({ processBatchRegistrationForOrder:
 
 import { enrollUserInTrainerCentral } from "@/lib/trainer-central";
 import { processBatchRegistrationForOrder } from "@/lib/batches/registration";
+import { sendMetaCAPIPurchaseEvent } from "@/lib/meta-capi";
 import { verifyCashfreePayment } from "@/server/actions/payment.action";
 
 function order(item: Record<string, unknown>) {
@@ -105,5 +106,62 @@ describe("verifyCashfreePayment — batch orders (spec 3.3)", () => {
     expect(enrollUserInTrainerCentral).toHaveBeenCalledWith("RECORDED", "asha@example.com", "Asha Rao", "tc-rec");
     expect(tx.batchRegistration.upsert).not.toHaveBeenCalled();
     expect(processBatchRegistrationForOrder).not.toHaveBeenCalled();
+  });
+
+  it("returns only what the callback page needs, never the order, lead or user", async () => {
+    prisma.order.findUnique.mockResolvedValue({ ...order(workshopItem), landingSource: "mpf-v30" });
+
+    const result = await verifyCashfreePayment("ORDER_CF_1");
+
+    expect(result).toEqual({
+      success: true,
+      status: "PAID",
+      data: { orderId: "ORDER_CF_1", isBatchOrder: true, landingSource: "mpf-v30" },
+    });
+    expect(JSON.stringify(result)).not.toContain("asha@example.com");
+  });
+
+  it("sends the Meta Purchase before the slower Zoho step, with the landing page as its source", async () => {
+    prisma.order.findUnique.mockResolvedValue({ ...order(workshopItem), landingSource: "mpf-v20" });
+
+    await verifyCashfreePayment("ORDER_CF_1");
+
+    expect(sendMetaCAPIPurchaseEvent).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(sendMetaCAPIPurchaseEvent).mock.calls[0][0]).toMatchObject({
+      orderId: "ORDER_CF_1",
+      amount: 1999,
+      currency: "INR",
+      email: "asha@example.com",
+      name: "Asha Rao",
+      eventSourceUrl: expect.stringMatching(/\/v20$/),
+    });
+    expect(vi.mocked(sendMetaCAPIPurchaseEvent).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(processBatchRegistrationForOrder).mock.invocationCallOrder[0],
+    );
+  });
+
+  it("registers the buyer under the name typed at checkout, not the account name", async () => {
+    prisma.order.findUnique.mockResolvedValue(order(workshopItem));
+    tx.user.findUnique.mockResolvedValue({ id: "u9", email: "asha@example.com", name: "Site Admin" });
+
+    await verifyCashfreePayment("ORDER_CF_1");
+
+    expect(tx.batchRegistration.upsert.mock.calls[0][0].create.name).toBe("Asha Rao");
+  });
+
+  it("reports a paid order as paid when this call lost the race with the webhook", async () => {
+    const local = order(workshopItem);
+    prisma.order.findUnique
+      .mockResolvedValueOnce(local)
+      .mockResolvedValueOnce({ id: "o1", orderId: "ORDER_CF_1", status: "PAID", landingSource: "mmf-v10", items: [{ batchId: "b1" }] });
+    prisma.$transaction.mockRejectedValueOnce(Object.assign(new Error("write conflict"), { code: "P2028" }));
+
+    const result = await verifyCashfreePayment("ORDER_CF_1");
+
+    expect(result).toEqual({
+      success: true,
+      status: "PAID",
+      data: { orderId: "ORDER_CF_1", isBatchOrder: true, landingSource: "mmf-v10" },
+    });
   });
 });

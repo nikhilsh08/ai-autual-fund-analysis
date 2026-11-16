@@ -2,7 +2,13 @@
 // ("v10" | "v20" | "v30"), set in Admin -> Masterclasses -> "Workshop landing
 // page". One course per page; each page has its own batches, price and seats.
 import { dataBasePrisma } from "@/lib/dbPrisma";
-import { LANDING_PAGES, LEGACY_COURSE_SLUG, type LandingPageKey } from "@/lib/landing/sources";
+import {
+  LANDING_PAGES,
+  LANDING_SEATS_PER_BATCH,
+  LEGACY_COURSE_SLUG,
+  isLandingPageKey,
+  type LandingPageKey,
+} from "@/lib/landing/sources";
 
 const SELECT = {
   id: true,
@@ -40,6 +46,25 @@ export async function getLandingCourse(page: LandingPageKey): Promise<LandingCou
   const legacy = await dataBasePrisma.course.findUnique({ where: { slug }, select: SELECT });
   return legacy && !legacy.landingPage ? legacy : null;
 }
+
+// The page one course is linked to (same rules as getLandingCourse), or null.
+export async function landingPageOfCourse(course: {
+  id: string;
+  slug?: string | null;
+  landingPage?: string | null;
+}): Promise<LandingPageKey | null> {
+  if (isLandingPageKey(course.landingPage)) return course.landingPage;
+  if (course.landingPage) return null; // "none": explicitly unlinked
+  const page = LANDING_PAGES.find((p) => LEGACY_COURSE_SLUG[p] !== undefined && LEGACY_COURSE_SLUG[p] === course.slug);
+  if (!page) return null;
+  // Found by slug only while no other course has taken the page.
+  const holder = await getLandingCourse(page);
+  return holder?.id === course.id ? page : null;
+}
+
+// Paid bookings a batch of this course may take, or null for no limit.
+export const seatLimitForPage = (page: LandingPageKey | null): number | null =>
+  page ? LANDING_SEATS_PER_BATCH[page] : null;
 
 // All three links at once: page -> course (or null).
 export async function getLandingLinks(): Promise<Record<LandingPageKey, LandingCourse | null>> {

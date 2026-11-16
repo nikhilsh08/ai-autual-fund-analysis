@@ -18,6 +18,9 @@ export function isZohoWebinarConfigured(): boolean {
 let cachedToken: string | null = null;
 let tokenExpiresAt = 0;
 
+// A hung Zoho call must not hold up payment confirmation.
+const ZOHO_TIMEOUT_MS = 15_000;
+
 async function getAccessToken(): Promise<string> {
     if (cachedToken && Date.now() < tokenExpiresAt) return cachedToken;
 
@@ -27,7 +30,7 @@ async function getAccessToken(): Promise<string> {
         client_secret: process.env.ZW_CLIENT_SECRET!,
         grant_type: "refresh_token",
     });
-    const response = await axios.post(authUrl(), params);
+    const response = await axios.post(authUrl(), params, { timeout: ZOHO_TIMEOUT_MS });
     cachedToken = response.data.access_token as string;
     tokenExpiresAt = Date.now() + 55 * 60 * 1000;
     return cachedToken;
@@ -54,10 +57,12 @@ function extractJoinLink(data: unknown, email: string): string | null {
     const candidates: ZohoRegistrant[] = Array.isArray(d)
         ? d
         : ((d?.registrant as ZohoRegistrant[]) ?? (d?.registrants as ZohoRegistrant[]) ?? []);
-    const match =
-        candidates.find((r) => r.email?.toLowerCase() === email.toLowerCase() && r.joinLink) ??
-        candidates.find((r) => r.joinLink);
-    return match?.joinLink ?? null;
+    const own = candidates.find((r) => r.email?.toLowerCase() === email.toLowerCase() && r.joinLink);
+    if (own?.joinLink) return own.joinLink;
+    // A reply to registering ONE person may omit the email. A list of several
+    // registrants without a match must never give this buyer someone else's link.
+    const only = candidates.length === 1 && !candidates[0].email ? candidates[0] : undefined;
+    return only?.joinLink ?? null;
 }
 
 export interface RegisterInput {
@@ -81,7 +86,7 @@ export async function registerAttendee(input: RegisterInput): Promise<string> {
     const response = await axios.post(
         url,
         { registrant: [{ email: input.email, firstName, lastName }] },
-        { headers: { Authorization: `Zoho-oauthtoken ${token}`, "Content-Type": "application/json" } },
+        { headers: { Authorization: `Zoho-oauthtoken ${token}`, "Content-Type": "application/json" }, timeout: ZOHO_TIMEOUT_MS },
     );
 
     const link = extractJoinLink(response.data, input.email);
@@ -99,6 +104,7 @@ async function findExistingJoinLink(webinarKey: string, email: string, token: st
     try {
         const response = await axios.get(`${apiBase()}/registration/${webinarKey}`, {
             headers: { Authorization: `Zoho-oauthtoken ${token}` },
+            timeout: ZOHO_TIMEOUT_MS,
         });
         return extractJoinLink(response.data, email);
     } catch {

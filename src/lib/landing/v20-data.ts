@@ -7,7 +7,7 @@ import { getCurrentBatch } from "@/lib/batches/current";
 import { computeBatchTimes, nextDay1Dates } from "@/lib/batches/schedule";
 import { groupLinkFor } from "@/lib/batches/messaging";
 import { trackingConfigFromEnv } from "@/lib/landing/tracking";
-import { getLandingCourse } from "@/lib/landing/course-link";
+import { getLandingCourse, landingPageOfCourse, seatLimitForPage } from "@/lib/landing/course-link";
 import type { LandingPageKey } from "@/lib/landing/sources";
 import type { V20Batch, V20Common } from "@/lib/landing/render-v20";
 
@@ -71,10 +71,21 @@ export function toV20Batch(b: {
   };
 }
 
-export async function getV20BatchOnSale(course: { id: string; useBatches: boolean }): Promise<V20Batch | null> {
+// The batch a /v20 or /v30 visitor can book right now. A batch that has sold
+// all its seats is not on sale: the page then shows "Booking for the next
+// batch opens soon" and the checkout sends the buyer back to it.
+export async function getV20BatchOnSale(course: {
+  id: string;
+  useBatches: boolean;
+  slug?: string | null;
+  landingPage?: string | null;
+}): Promise<V20Batch | null> {
   if (!course.useBatches) return null;
   const batch = await getCurrentBatch(course.id);
-  return batch ? toV20Batch(batch) : null;
+  if (!batch) return null;
+  const seatLimit = seatLimitForPage(await landingPageOfCourse(course));
+  if (seatLimit !== null && (await paidSeats(batch.id)) >= seatLimit) return null;
+  return toV20Batch(batch);
 }
 
 export type ThankYouState = "paid" | "verifying" | "failed";
@@ -117,7 +128,7 @@ export async function loadThankYouOrder(orderId: string) {
     batch: batchItem.batch,
     courseId: batchItem.courseId ?? batchItem.batch.courseId,
     orderId: order.orderId ?? orderId,
-    name: order.user?.name || order.lead?.name || "",
+    name: order.lead?.name || order.user?.name || "",
     email: order.guestEmail || order.user?.email || "",
     amountRupees: order.totalAmount,
     joinDay1: registration?.joinLinkDay1 ?? null,

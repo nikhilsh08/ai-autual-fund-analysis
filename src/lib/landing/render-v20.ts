@@ -199,6 +199,7 @@ function checkoutConfigScript(batch: V20Batch, common: V20Common, hooks: V20Chec
     cashfreeMode: hooks.cashfreeMode,
     source: MPF_V20_SOURCE,
     closedMessage: MMF_COPY.landing.nothingOnSale,
+    fullMessage: `This batch is full. ${MMF_COPY.landing.nothingOnSale}`,
   };
   if (hooks.preview) return `window.MPF = ${scriptJson({ startTime: cfg.startTime, gstPercent: cfg.gstPercent })};`;
 
@@ -224,6 +225,7 @@ function checkoutConfigScript(batch: V20Batch, common: V20Common, hooks: V20Chec
   }
   // The initiate route answers with short error codes for the batch rules.
   function payError(code) {
+    if (code === 'batch_full') return c.fullMessage;
     if (code === 'batch_not_on_sale' || code === 'batch_required') return c.closedMessage;
     if (typeof code === 'string' && /coupon|minimum order/i.test(code)) return code + '.';
     return GENERIC;

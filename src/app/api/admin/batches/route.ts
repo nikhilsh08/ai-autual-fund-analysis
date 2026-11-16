@@ -27,6 +27,9 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, batch }, { status: 201 });
     } catch (error) {
         if (error instanceof AdminError) return NextResponse.json({ message: error.message }, { status: error.status });
+        if ((error as { code?: string })?.code === "P2002") {
+            return NextResponse.json({ message: "This course already has a batch on that Saturday at that time." }, { status: 409 });
+        }
         console.error("[admin:batches] create failed", error);
         return NextResponse.json({ message: "Server error" }, { status: 500 });
     }

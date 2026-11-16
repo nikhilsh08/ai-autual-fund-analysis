@@ -9,6 +9,6 @@ export const MPF_V20_THANK_YOU_PATH = "/v20/thank-you";
 export const MPF_V20_SOURCE = "mpf-v20";
 export const MPF_V20_CONTENT_NAME = "Master Personal Finance with AI workshop";
 // The page says "Only 50 seats per batch" and counts down from 50 once 15 or
-// fewer are left. The count comes from paid bookings; checkout does not stop
-// at 50 (same as v10, see OWNER_DECISIONS D2).
+// fewer are left. The count comes from paid bookings, and checkout stops at
+// 50 (LANDING_SEATS_PER_BATCH in sources.ts; /v10 has no limit).
 export const MPF_V20_SEATS_PER_BATCH = 50;

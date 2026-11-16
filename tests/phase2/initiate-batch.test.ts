@@ -3,7 +3,8 @@ import { istToUtc } from "@/lib/ist";
 
 const prisma = vi.hoisted(() => ({
   bundle: { findMany: vi.fn() },
-  course: { findMany: vi.fn() },
+  course: { findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn() },
+  orderItem: { count: vi.fn() },
   batch: { findUnique: vi.fn() },
   coupon: { findUnique: vi.fn() },
   user: { findUnique: vi.fn() },
@@ -108,5 +109,58 @@ describe("POST /api/payment/cashfree/initiate — batch course (spec 3.2)", () =
     });
     const res = await post({ batchId: "b1", couponCode: "B2ONLY" });
     expect(res.status).toBe(400);
+  });
+});
+
+describe("POST /api/payment/cashfree/initiate — landing page, seats and buyer identity", () => {
+  // A course linked to /v20 in the admin panel (50 seats per batch).
+  const v20Course = { ...workshop, landingPage: "v20", slug: "mpf" };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    prisma.course.findMany.mockResolvedValue([v20Course]);
+    prisma.batch.findUnique.mockResolvedValue(openBatch);
+    prisma.user.findUnique.mockResolvedValue(null);
+    prisma.lead.upsert.mockResolvedValue({ id: "lead1" });
+    prisma.order.create.mockResolvedValue({});
+    prisma.orderItem.count.mockResolvedValue(0);
+  });
+
+  it("records the landing page only when it is the page the course is linked to", async () => {
+    expect((await post({ batchId: "b1", landingSource: "mpf-v20" })).status).toBe(200);
+    expect(prisma.order.create.mock.calls[0][0].data.landingSource).toBe("mpf-v20");
+    expect(vi.mocked(createCashfreeOrder).mock.calls[0][4]).toBe("mpf-v20");
+
+    vi.mocked(createCashfreeOrder).mockClear();
+    prisma.order.create.mockClear();
+    // A /v20 seat sent as /v30 is not counted for /v30.
+    expect((await post({ batchId: "b1", landingSource: "mpf-v30" })).status).toBe(200);
+    expect(prisma.order.create.mock.calls[0][0].data.landingSource).toBeNull();
+    expect(vi.mocked(createCashfreeOrder).mock.calls[0][4]).toBeUndefined();
+  });
+
+  it("stops at 50 paid seats on /v20 and /v30, and has no limit on /v10", async () => {
+    prisma.orderItem.count.mockResolvedValue(50);
+    const full = await post({ batchId: "b1", landingSource: "mpf-v20" });
+    expect(full.status).toBe(409);
+    expect(await full.json()).toMatchObject({ error: "batch_full" });
+    expect(prisma.order.create).not.toHaveBeenCalled();
+
+    prisma.orderItem.count.mockResolvedValue(49);
+    expect((await post({ batchId: "b1", landingSource: "mpf-v20" })).status).toBe(200);
+
+    prisma.course.findMany.mockResolvedValue([{ ...workshop, landingPage: "v10", slug: "mmf" }]);
+    prisma.orderItem.count.mockResolvedValue(500);
+    expect((await post({ batchId: "b1", landingSource: "mmf-v10" })).status).toBe(200);
+  });
+
+  it("keeps the typed name on a lead for every order, also when the email already has an account", async () => {
+    prisma.user.findUnique.mockResolvedValue({ id: "u1", email: "asha@example.com" });
+    expect((await post({ batchId: "b1" })).status).toBe(200);
+    expect(prisma.lead.upsert.mock.calls[0][0]).toMatchObject({
+      where: { email: "asha@example.com" },
+      create: { name: "Asha", phone: "9876543210" },
+    });
+    expect(prisma.order.create.mock.calls[0][0].data).toMatchObject({ userId: "u1", leadId: "lead1" });
   });
 });

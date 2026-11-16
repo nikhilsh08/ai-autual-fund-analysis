@@ -4,11 +4,10 @@ import { verifyAdmin } from "@/lib/auth-admin";
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import { getCurrentBatch } from "@/lib/batches/current";
 import { getLandingCourse } from "@/lib/landing/course-link";
-import { LANDING_SOURCES, type LandingPageKey, type LandingSource } from "@/lib/landing/sources";
+import { LANDING_SEATS_PER_BATCH, LANDING_SOURCES, type LandingPageKey, type LandingSource } from "@/lib/landing/sources";
 
 export const dynamic = "force-dynamic";
 
-const SEATS_PER_BATCH = 50;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 // Browser events each page fires (server-side: Meta CAPI Purchase for all).
@@ -18,7 +17,7 @@ const EVENTS = {
     thankYou: ["PageView", "Purchase / purchase (eventID = order ID)"],
 };
 
-type Status = "live" | "no_batch_on_sale" | "course_missing" | "course_unpublished" | "not_sold_in_batches";
+type Status = "live" | "batch_full" | "no_batch_on_sale" | "course_missing" | "course_unpublished" | "not_sold_in_batches";
 
 // GET /api/admin/landing-pages — one row per workshop landing page (v10,
 // v20, v30): the course linked to it (each page has its own), whether it is
@@ -61,6 +60,11 @@ export async function GET(req: Request) {
         else if (!c.course.useBatches) status = "not_sold_in_batches";
         else if (!c.batch) status = "no_batch_on_sale";
 
+        // /v20 and /v30 stop at 50 paid seats per batch; /v10 has no limit (null).
+        const seatLimit = LANDING_SEATS_PER_BATCH[page.page];
+        const seatsLeft = c?.batch && seatLimit !== null ? Math.max(0, seatLimit - c.paidSeats) : null;
+        if (status === "live" && seatsLeft === 0) status = "batch_full";
+
         const rows = allTime.filter((r) => r.landingSource === key);
         const paid = rows.find((r) => r.status === "PAID");
         const recent = last30.find((r) => r.landingSource === key);
@@ -84,7 +88,8 @@ export async function GET(req: Request) {
                       bookingCloseAt: c.batch.bookingCloseAt,
                       priceRupees: c.batch.priceRupees,
                       paidSeats: c.paidSeats,
-                      seatsLeft: Math.max(0, SEATS_PER_BATCH - c.paidSeats),
+                      seatLimit,
+                      seatsLeft,
                   }
                 : null,
             orders: {

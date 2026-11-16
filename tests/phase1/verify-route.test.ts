@@ -17,11 +17,11 @@ const post = (body: unknown) =>
   );
 
 describe("POST /api/payment/cashfree/verify (N2)", () => {
-  it("returns only success and status, never the order or lead", async () => {
+  it("returns only success and status, nothing else about the order", async () => {
     vi.mocked(verifyCashfreePayment).mockResolvedValue({
       success: true,
       status: "PAID",
-      data: { orderId: "ORD1", lead: { email: "buyer@example.com", phone: "9999999999" } },
+      data: { orderId: "ORD1", isBatchOrder: true, landingSource: "mpf-v20" },
     });
 
     const res = await post({ orderId: "ORD1" });
@@ -34,7 +34,6 @@ describe("POST /api/payment/cashfree/verify (N2)", () => {
     vi.mocked(verifyCashfreePayment).mockResolvedValue({
       success: false,
       status: "FAILED",
-      data: { lead: { email: "buyer@example.com" } },
       error: "nope",
     });
 

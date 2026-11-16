@@ -194,6 +194,8 @@ export async function sendMetaCAPIPurchaseEvent(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
+      // Payment confirmation waits on this call; never let it hang.
+      signal: AbortSignal.timeout(8000),
     });
 
     const result = await response.json();
