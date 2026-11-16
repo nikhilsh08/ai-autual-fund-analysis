@@ -306,13 +306,14 @@
 
   /* ============ 06 Instructor ============ */
   .bio{display:grid;grid-template-columns:1fr;gap:clamp(24px,4vw,56px);margin-top:clamp(28px,4vw,48px);align-items:start}
-  .bio-photo{width:100%;max-width:220px;border-radius:16px;overflow:hidden;border:1px solid var(--line);aspect-ratio:4/5;box-shadow:0 20px 40px -28px rgba(21,17,9,.45)}
+  .bio-photo{width:100%;max-width:220px;margin-inline:auto;border-radius:16px;overflow:hidden;border:1px solid var(--line);aspect-ratio:4/5;box-shadow:0 20px 40px -28px rgba(21,17,9,.45)}
   .bio-photo img{width:100%;height:100%;object-fit:cover;display:block}
   .bio-text{display:flex;flex-direction:column;gap:16px}
   .bio-text p{margin:0}
   .bio-text b{color:var(--ink)}
   .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
   .chip{display:inline-flex;align-items:center;min-height:40px;font-family:var(--fh);font-size:13.5px;font-weight:600;color:var(--g);background:#fff;border:1px solid var(--line2);border-radius:999px;padding:8px 16px}
+  @media(max-width:359px){.chips{gap:8px}.chip{font-size:13px;padding:8px 13px}}
   @media(min-width:720px){.bio{grid-template-columns:240px 1fr}.bio-photo{max-width:none;position:sticky;top:96px}}
   @media(min-width:1024px){.bio{grid-template-columns:300px 1fr}}
 
@@ -724,7 +725,7 @@
         <p>Part of that job was explaining risk to colleagues who were not finance specialists, in language they could act on. In this workshop, I do the same for investors in India who want to make their own investment decisions.</p>
         <p>Many fund comparisons online rank funds by past returns alone. In this workshop, you learn <mark>the checks a risk analyst runs first</mark>: how far a fund can fall, what the fund costs, and whether the fund holds the same stocks as your other funds.</p>
         <p>I manage my own money with these checks. I built a research system, using AI to write the code, that calculates each figure from the portfolios fund houses publish every month, and I verify each figure before I use it.</p>
-        <div data-chips="1" class="chips"><span class="chip">Master's in Finance</span><span class="chip">Former risk analyst, Goldman Sachs</span><span class="chip">2× founder</span><span class="chip">600+ past attendees</span></div>
+        <div data-chips="1" class="chips"><span class="chip">Master's in Finance</span><span class="chip">2× founder</span><span class="chip">600+ past attendees</span></div>
         <p class="note" style="font-size:12.5px">Goldman Sachs is named only to describe my past employment. Goldman Sachs is not connected with this workshop and does not endorse it.</p>
       </div>
     </div>
