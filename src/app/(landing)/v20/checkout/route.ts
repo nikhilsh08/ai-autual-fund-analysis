@@ -9,6 +9,7 @@ import {
     isDevPreview,
     loadV20Template,
     previewBatchFor,
+    redirectTo,
     v20Common,
 } from "@/lib/landing/v20-data";
 
@@ -26,7 +27,7 @@ export async function GET(req: Request) {
 
     if (isDevPreview(url.searchParams.get("preview"))) {
         const p = await previewBatchFor("v20");
-        if (!p.batch) return NextResponse.redirect(new URL("/v20?preview=1#seat", url), 307);
+        if (!p.batch) return redirectTo("/v20?preview=1#seat");
         const html = renderV20Checkout(template, p.batch, v20Common(p.courseId ?? "preview"), {
             ...HOOKS,
             cashfreeMode: "sandbox",
@@ -39,7 +40,7 @@ export async function GET(req: Request) {
     if (!course || !course.isPublished) return new NextResponse("Not found", { status: 404 });
 
     const batch = await getV20BatchOnSale(course);
-    if (!batch) return NextResponse.redirect(new URL(`${MPF_V20_LANDING_PATH}#seat`, url), 307);
+    if (!batch) return redirectTo(`${MPF_V20_LANDING_PATH}#seat`);
 
     const html = renderV20Checkout(template, batch, v20Common(course.id), { ...HOOKS, cashfreeMode: cashfreeMode() });
     return htmlResponse(html, "no-store");

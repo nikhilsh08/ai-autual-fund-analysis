@@ -47,6 +47,13 @@ export const isDevPreview = (value: string | null) => value === "1" && process.e
 export const htmlResponse = (html: string, cacheControl: string) =>
   new NextResponse(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": cacheControl } });
 
+// Sends the visitor to another page of this site, given as a path. A path
+// cannot name the wrong host. Behind a host's proxy (Render) req.url is the
+// app's internal address (https://localhost:10000/...), so a full address
+// built from it sends the visitor to a page that does not exist.
+export const redirectTo = (path: string) =>
+  new NextResponse(null, { status: 307, headers: { Location: path, "Cache-Control": "no-store" } });
+
 // The course linked to a landing page in the admin panel (Masterclasses ->
 // "Workshop landing page"). Each page has its own course and batches.
 export const getPageCourse = (page: LandingPageKey) => getLandingCourse(page);

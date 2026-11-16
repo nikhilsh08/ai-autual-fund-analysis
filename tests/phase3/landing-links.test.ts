@@ -21,6 +21,8 @@ import { GET as v10Route } from "@/app/(landing)/v10/route";
 import { GET as v20Route } from "@/app/(landing)/v20/route";
 import { GET as v30Route } from "@/app/(landing)/v30/route";
 import { GET as v30Checkout } from "@/app/(landing)/v30/checkout/route";
+import { GET as v20ThankYou } from "@/app/(landing)/v20/thank-you/route";
+import { GET as v30ThankYou } from "@/app/(landing)/v30/thank-you/route";
 import { GET as landingPagesRoute } from "@/app/api/admin/landing-pages/route";
 import { GET as batchSettingsRoute } from "@/app/api/admin/batch-settings/route";
 import { POST as createCourse } from "@/app/api/admin/masterclass/create/route";
@@ -190,6 +192,18 @@ describe("each page shows its own course's batch", () => {
     const v20 = await (await v20Route(get("/v20"))).text();
     expect(v20).toContain("opens soon");
     expect(v20).not.toContain('data-checkout="1">');
+  });
+
+  it("sends a visitor back with a path, never the host's internal address", async () => {
+    // Behind Render's proxy the address a route sees is https://localhost:10000/...
+    const internal = (path: string) => new Request(`https://localhost:10000${path}`);
+    expect((await v20ThankYou(internal("/v20/thank-you"))).headers.get("location")).toBe("/v20");
+    expect((await v30ThankYou(internal("/v30/thank-you"))).headers.get("location")).toBe("/v30");
+
+    batches = [];
+    const res = await v30Checkout(internal("/v30/checkout"));
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe("/v30#seat");
   });
 
   it("admin Landing pages lists three pages with three different courses and batches", async () => {
