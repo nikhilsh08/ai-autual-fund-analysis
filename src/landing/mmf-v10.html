@@ -306,14 +306,23 @@
 
   /* ============ 06 Instructor ============ */
   .bio{display:grid;grid-template-columns:1fr;gap:clamp(24px,4vw,56px);margin-top:clamp(28px,4vw,48px);align-items:start}
-  .bio-photo{width:100%;max-width:220px;margin-inline:auto;border-radius:16px;overflow:hidden;border:1px solid var(--line);aspect-ratio:4/5;box-shadow:0 20px 40px -28px rgba(21,17,9,.45)}
+  .bio-photo{width:100%;max-width:220px;border-radius:16px;overflow:hidden;border:1px solid var(--line);aspect-ratio:4/5;box-shadow:0 20px 40px -28px rgba(21,17,9,.45)}
   .bio-photo img{width:100%;height:100%;object-fit:cover;display:block}
   .bio-text{display:flex;flex-direction:column;gap:16px}
   .bio-text p{margin:0}
   .bio-text b{color:var(--ink)}
-  .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
-  .chip{display:inline-flex;align-items:center;min-height:40px;font-family:var(--fh);font-size:13.5px;font-weight:600;color:var(--g);background:#fff;border:1px solid var(--line2);border-radius:999px;padding:8px 16px}
-  @media(max-width:359px){.chips{gap:8px}.chip{font-size:13px;padding:8px 13px}}
+  .chips{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+  .chip{display:flex;align-items:center;justify-content:center;text-align:center;min-height:54px;font-family:var(--fh);font-size:13.5px;font-weight:600;line-height:1.3;color:var(--g);background:#fff;border:1px solid var(--line2);border-radius:14px;padding:10px 12px}
+  /* An odd number of chips: the last one fills the row, so the grid has no empty box */
+  .chip:last-child:nth-child(odd){grid-column:1/-1}
+  /* Phones: instructor heading, photo and closing line centred on the screen; the bio paragraphs stay left-aligned for reading */
+  @media(max-width:719px){
+    #instructor .shead{align-items:center;text-align:center;margin-left:auto;margin-right:auto}
+    #instructor .bio-photo{justify-self:center;max-width:240px}
+    #instructor .bio-text>.note{text-align:center}
+    #instructor .bridge{text-align:center}
+    #instructor .bridge::before{margin:0 auto 16px}
+  }
   @media(min-width:720px){.bio{grid-template-columns:240px 1fr}.bio-photo{max-width:none;position:sticky;top:96px}}
   @media(min-width:1024px){.bio{grid-template-columns:300px 1fr}}
 
