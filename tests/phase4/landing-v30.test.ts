@@ -75,7 +75,17 @@ describe("v30 landing", () => {
     expect(html).toContain("/mpf30/fonts/newsreader-roman.woff2");
     expect(html).toContain('"/mpf30/lenis.min.js"');
     expect(html).toContain('href="/v30/refund-policy"');
+    // No seat limit: 50 is the page's own default, so it shows its fixed line
+    // and never counts down, and no limit is promised.
+    expect(jsonAfter(html, "MPF")).toEqual({ seatsLeft: 50, startTime: "10:00 AM IST", language: "English" });
+    expect(html).not.toContain("limited to 50 attendees");
+    expectScriptsParse(html);
+  });
+
+  it("with a seat limit set for the page, counts down from real bookings", () => {
+    const html = renderV30Landing(landing, { batch, fallbackPriceRupees: null, paidSeats: 37, seatLimit: 50 }, common);
     expect(jsonAfter(html, "MPF")).toEqual({ seatsLeft: 13, startTime: "10:00 AM IST", language: "English" });
+    expect(html).toContain("limited to 50 attendees");
     expectScriptsParse(html);
   });
 

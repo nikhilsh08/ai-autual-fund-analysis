@@ -11,7 +11,6 @@ import V10Shell from "@/components/landing/V10Shell";
 import WorkshopThankYouV10, { OrderMeta, ThankYouCard } from "@/components/landing/WorkshopThankYouV10";
 import { formatIstDate, formatIstTime } from "@/lib/ist";
 import type { V20Batch } from "@/lib/landing/render-v20";
-import { MMF_V10_COURSE_SLUG } from "@/lib/landing/v10";
 import { previewBatchFor } from "@/lib/landing/v20-data";
 import { MMF_COPY } from "@/lib/mmf-copy";
 import s from "@/components/landing/ThankYouV10.module.css";
@@ -118,7 +117,7 @@ export default async function WorkshopThankYouPage({
 
     if (preview === "workshop" && process.env.NODE_ENV !== "production") {
         const previewId = "ORDER_PREVIEW_0000";
-        const { batch } = await previewBatchFor(MMF_V10_COURSE_SLUG);
+        const { batch } = await previewBatchFor("v10");
         if (!batch) redirect(`${LANDING}?preview=1`);
         return (
             <V10Shell className={fontClass}>

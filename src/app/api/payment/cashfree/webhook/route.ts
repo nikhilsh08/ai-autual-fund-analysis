@@ -31,8 +31,11 @@ export async function POST(req: Request) {
                 .update(data)
                 .digest('base64');
 
-            if (computedSignature !== signature) {
-                console.error("Invalid Webhook Signature. Computed:", computedSignature, "Received:", signature);
+            const expected = Buffer.from(computedSignature);
+            const received = Buffer.from(signature);
+            if (expected.length !== received.length || !crypto.timingSafeEqual(expected, received)) {
+                // Never log the computed signature: it is the valid one for this body.
+                console.error("Invalid Webhook Signature");
                 return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
             }
         } catch (err) {
@@ -41,7 +44,10 @@ export async function POST(req: Request) {
         }
 
         const data = JSON.parse(rawBody);
-        const orderId = data.data.order.order_id;
+        const orderId = data?.data?.order?.order_id;
+        // Events that carry no order (for example a dashboard test ping) are
+        // acknowledged, so Cashfree does not keep retrying them.
+        if (!orderId) return NextResponse.json({ status: "ignored" }, { status: 200 });
 
         console.log(`🔔 Webhook received for Order: ${orderId}`);
 

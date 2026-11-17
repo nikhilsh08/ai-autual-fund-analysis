@@ -28,11 +28,32 @@ const cashfree = new Cashfree(
 cashfree.XApiVersion = "2023-08-01";
 
 // --- TYPE DEFINITIONS ---
+// verifyCashfreePayment is a server action: any browser that knows an order ID
+// can call it. It therefore returns only what the payment callback page needs,
+// never the order, lead or user record.
+export interface PaymentVerificationData {
+  orderId: string;
+  // A workshop (batch) seat, as opposed to a recorded course.
+  isBatchOrder: boolean;
+  // The landing page stored on the order when the payment started.
+  landingSource: string | null;
+}
+
 export interface PaymentVerificationResult {
   success: boolean;
-  data?: any;
+  data?: PaymentVerificationData;
   status?: string;
   error?: string;
+}
+
+function publicOrderData(
+  order: { id: string; orderId?: string | null; landingSource?: string | null; items?: Array<{ batchId?: string | null }> },
+): PaymentVerificationData {
+  return {
+    orderId: order.orderId ?? order.id,
+    isBatchOrder: Boolean(order.items?.some((item) => item.batchId)),
+    landingSource: isLandingSource(order.landingSource) ? order.landingSource : null,
+  };
 }
 
 
@@ -56,7 +77,10 @@ export const createCashfreeOrder = async (
   // "mmf-v10" / "mpf-v20" when the buyer came from that landing page (see
   // lib/landing/sources.ts). Carried in the return URL so the callback can
   // send them to that page's own thank-you.
-  landingSource?: string
+  landingSource?: string,
+  // The site address the buyer is on (from the checkout request). Cashfree
+  // returns them there. Falls back to NEXT_PUBLIC_APP_URL.
+  returnBase?: string
 ) => {
   try {
     // --- STEP 1: SAVE UTM TRACKING DATA TO DATABASE ---
@@ -88,7 +112,7 @@ export const createCashfreeOrder = async (
         customer_email: customerDetails.email,
       },
       order_meta: {
-        return_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/callback?order_id=${orderId}${isLandingSource(landingSource) ? `&src=${landingSource}` : ""}`,
+        return_url: `${returnBase || process.env.NEXT_PUBLIC_APP_URL}/payment/callback?order_id=${orderId}${isLandingSource(landingSource) ? `&src=${landingSource}` : ""}`,
       },
     };
 
@@ -195,7 +219,7 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
     // Return success immediately to avoid deadlock on the same row.
     if (localOrder.status === "PAID") {
       console.log(`[verify] Order ${orderId} already PAID — skipping duplicate processing`);
-      return { success: true, data: localOrder, status: "PAID" };
+      return { success: true, data: publicOrderData(localOrder), status: "PAID" };
     }
 
 
@@ -244,7 +268,7 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
       });
       if (freshOrder?.status === "PAID") {
         console.log(`[verify] Order ${orderId} already PAID — skipping duplicate`);
-        return { success: true, data: localOrder, status: "PAID", duplicate: true };
+        return { success: true, data: publicOrderData(localOrder), status: "PAID", duplicate: true };
       }
 
       // --- TRANSACTION STEP 1: UPDATE ORDER STATUS ---
@@ -303,7 +327,8 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
               create: {
                 batchId: item.batchId,
                 orderId: localOrder.id,
-                name: user.name || localOrder.lead?.name || "Attendee",
+                // The name typed at checkout (lead), then the account name.
+                name: localOrder.lead?.name || user.name || "Attendee",
                 email: user.email,
                 phone: localOrder.guestPhone || localOrder.lead?.phone || "",
                 whatsappOptIn: Boolean(localOrder.whatsappOptIn),
@@ -386,7 +411,7 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
       }
 
       // Return transaction result
-      return { success: true, data: localOrder, status: internalStatus };
+      return { success: true, data: publicOrderData(localOrder), status: internalStatus };
         }, { timeout: 15000 }); // <-- END OF TRANSACTION BLOCK
 
         break; // Success — exit retry loop
@@ -418,40 +443,10 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
     // external API calls without risking transaction timeout
     // ========================================================================
 
-    // --- STEP 4: PROCESS TRAINER CENTRAL ENROLLMENTS ---
-    // Now that database is updated, enroll users in courses via external API
-    // We use delay() between calls to respect rate limits (avoid 429 errors)
-    for (const task of enrollmentTasks) {
-      try {
-        console.log(`Attempting TC enrollment${task.isBundle ? ' (from bundle)' : ''} for ${task.email} -> ${task.tcCourseId} (${task.type})`);
-
-        // Call Trainer Central API to enroll user in course
-        // This grants them access to course content on Zoho platform
-        await enrollUserInTrainerCentral(
-          task.type,
-          task.email,
-          task.name,
-          task.tcCourseId
-        );
-
-        // Rate-limiting delay: wait 2 seconds before next enrollment
-        // Prevents hitting Zoho API rate limits (typically 100 req/min)
-        await delay(1000);
-      } catch (err) {
-        // Log error but don't throw - we don't want to fail payment verification
-        // Admin can manually enroll users if this fails
-        console.error(`Failed to enroll in TC for course ${task.courseTitle}${task.isBundle ? ' (bundle)' : ''}`, err);
-      }
-    }
-
-    // --- STEP 4b: ZOHO WEBINAR REGISTRATION + WHATSAPP CONFIRMATION ---
-    // Each step records its own failure; the messages job retries later.
-    for (const orderDbId of new Set(batchOrderDbIds)) {
-      await processBatchRegistrationForOrder(orderDbId);
-    }
-
-    // --- STEP 5: SEND META CONVERSIONS API PURCHASE EVENT ---
-    // Server-side event ensures tracking works even if user closes browser
+    // --- STEP 4 (FIRST): SEND META CONVERSIONS API PURCHASE EVENT ---
+    // Sent before the slower steps below (TrainerCentral, Zoho, WhatsApp): this
+    // call is the only one that sends it, so nothing slow or failing may come
+    // first. Server-side event ensures tracking works even if user closes browser
     // before landing on /order-status (where the client-side pixel fires).
     // Uses orderId as event_id so Meta deduplicates with the browser pixel.
     if (internalStatus === "PAID") {
@@ -492,6 +487,38 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
       }
     }
 
+    // --- STEP 4a: PROCESS TRAINER CENTRAL ENROLLMENTS ---
+    // Now that database is updated, enroll users in courses via external API
+    // We use delay() between calls to respect rate limits (avoid 429 errors)
+    for (const task of enrollmentTasks) {
+      try {
+        console.log(`Attempting TC enrollment${task.isBundle ? ' (from bundle)' : ''} for ${task.email} -> ${task.tcCourseId} (${task.type})`);
+
+        // Call Trainer Central API to enroll user in course
+        // This grants them access to course content on Zoho platform
+        await enrollUserInTrainerCentral(
+          task.type,
+          task.email,
+          task.name,
+          task.tcCourseId
+        );
+
+        // Rate-limiting delay: wait 2 seconds before next enrollment
+        // Prevents hitting Zoho API rate limits (typically 100 req/min)
+        await delay(1000);
+      } catch (err) {
+        // Log error but don't throw - we don't want to fail payment verification
+        // Admin can manually enroll users if this fails
+        console.error(`Failed to enroll in TC for course ${task.courseTitle}${task.isBundle ? ' (bundle)' : ''}`, err);
+      }
+    }
+
+    // --- STEP 4b: ZOHO WEBINAR REGISTRATION + WHATSAPP CONFIRMATION ---
+    // Each step records its own failure; the messages job retries later.
+    for (const orderDbId of new Set(batchOrderDbIds)) {
+      await processBatchRegistrationForOrder(orderDbId);
+    }
+
     // --- STEP 6: UPDATE COUPON USAGE COUNT ---
     // Increment coupon usage counter (done outside transaction to avoid locking)
     // If this fails, it's not critical - the payment already succeeded
@@ -516,6 +543,21 @@ export const verifyCashfreePayment = async (orderId: string): Promise<PaymentVer
     // --- ERROR HANDLING ---
     // Log the full error for debugging, return generic message to client
     console.error("Verification Error:", error);
+    // The webhook and the browser's return can confirm the same order at the
+    // same moment. If this call lost that race (or failed after the other one
+    // committed), the order is paid: say so, or the buyer sees "Payment
+    // Failed" and may pay twice.
+    try {
+      const confirmed = await dataBasePrisma.order.findUnique({
+        where: { orderId },
+        select: { id: true, orderId: true, status: true, landingSource: true, items: { select: { batchId: true } } },
+      });
+      if (confirmed?.status === "PAID") {
+        return { success: true, data: publicOrderData(confirmed), status: "PAID" };
+      }
+    } catch (rereadError) {
+      console.error("Verification re-read failed:", rereadError);
+    }
     return { success: false, error: "Verification failed" };
   }
 };

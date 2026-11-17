@@ -5,12 +5,13 @@ import { siteConfig } from "@/config/seo";
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import { getCurrentBatch } from "@/lib/batches/current";
 import { renderLanding, type LandingConfig } from "@/lib/landing/render";
-import { MMF_V10_COURSE_SLUG } from "@/lib/landing/v10";
+import { getLandingCourse } from "@/lib/landing/course-link";
 import { isDevPreview, previewBatchFor } from "@/lib/landing/v20-data";
 
 export const dynamic = "force-dynamic";
 
-const SLUG = MMF_V10_COURSE_SLUG;
+// The course linked to /v10 in the admin panel (Masterclasses → "Workshop landing page").
+const PAGE = "v10" as const;
 const TEMPLATE_PATH = path.join(process.cwd(), "src", "landing", "mmf-v10.html");
 
 let templateCache: string | null = null;
@@ -53,7 +54,7 @@ export async function GET(req: Request) {
     // Development only: /v10?preview=1. Every value from the admin panel
     // (previewBatchFor: batch on sale, next batch, or Batch settings).
     if (isDevPreview(new URL(req.url).searchParams.get("preview"))) {
-        const p = await previewBatchFor(SLUG);
+        const p = await previewBatchFor(PAGE);
         const html = renderLanding(
             template,
             p.batch,
@@ -67,10 +68,7 @@ export async function GET(req: Request) {
     let fallbackDuration = SCHEMA_DEFAULT_DURATION_MINUTES;
 
     try {
-        const course = await dataBasePrisma.course.findUnique({
-            where: { slug: SLUG },
-            select: { id: true, price: true, isPublished: true, useBatches: true },
-        });
+        const course = await getLandingCourse(PAGE);
         if (!course || !course.isPublished) {
             return new NextResponse("Not found", { status: 404 });
         }

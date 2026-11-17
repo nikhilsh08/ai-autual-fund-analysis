@@ -6,7 +6,8 @@ import V10Shell from "@/components/landing/V10Shell";
 import { getCurrentBatch } from "@/lib/batches/current";
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import { formatIstDate, formatIstDateTime } from "@/lib/ist";
-import { MMF_V10_COURSE_SLUG, MMF_V10_LANDING_PATH } from "@/lib/landing/v10";
+import { getLandingCourse } from "@/lib/landing/course-link";
+import { MMF_V10_LANDING_PATH } from "@/lib/landing/v10";
 import { previewBatchFor } from "@/lib/landing/v20-data";
 import { MMF_COPY } from "@/lib/mmf-copy";
 import s from "@/components/landing/CheckoutV10.module.css";
@@ -49,7 +50,7 @@ export default async function WorkshopCheckoutPage({ searchParams }: { searchPar
     // Paying from it is refused by the server, because the sample batch does not exist.
     const { preview } = await searchParams;
     if (preview && process.env.NODE_ENV !== "production") {
-        const { batch, courseId } = await previewBatchFor(MMF_V10_COURSE_SLUG);
+        const { batch, courseId } = await previewBatchFor("v10");
         if (!batch) redirect(`${MMF_V10_LANDING_PATH}?preview=1#seat`);
         const classDate = formatIstDate(batch.day1StartAt);
         return (
@@ -62,10 +63,7 @@ export default async function WorkshopCheckoutPage({ searchParams }: { searchPar
         );
     }
 
-    const course = await dataBasePrisma.course.findUnique({
-        where: { slug: MMF_V10_COURSE_SLUG },
-        select: { id: true, isPublished: true, useBatches: true },
-    });
+    const course = await getLandingCourse("v10");
     if (!course || !course.isPublished) notFound();
     // Not sold in batches: the main site's checkout handles it.
     if (!course.useBatches) redirect(`/checkout?courseId=${encodeURIComponent(course.id)}`);

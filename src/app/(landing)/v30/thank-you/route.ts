@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { renderV30ThankYou, type V30Order } from "@/lib/landing/render-v30";
 import { MPF_V30_LANDING_PATH } from "@/lib/landing/v30";
 import {
@@ -6,7 +5,8 @@ import {
     isDevPreview,
     loadThankYouOrder,
     loadV20Template,
-    previewMpfBatch,
+    previewBatchFor,
+    redirectTo,
     toV20Batch,
     v20Common,
 } from "@/lib/landing/v20-data";
@@ -28,8 +28,8 @@ export async function GET(req: Request) {
         const asked = url.searchParams.get("state");
         const state = asked === "pending" || asked === "verifying" ? "verifying" : asked === "failed" ? "failed" : "paid";
         const links = url.searchParams.get("links") !== "0";
-        const p = await previewMpfBatch();
-        if (!p.batch) return NextResponse.redirect(new URL("/v30?preview=1", url), 307);
+        const p = await previewBatchFor("v30");
+        if (!p.batch) return redirectTo("/v30?preview=1");
         const order: V30Order = {
             state,
             orderId: "ORDER_PREVIEW_0000",
@@ -48,14 +48,14 @@ export async function GET(req: Request) {
     }
 
     const orderId = url.searchParams.get("order_id");
-    const landing = () => NextResponse.redirect(new URL(MPF_V30_LANDING_PATH, url), 307);
+    const landing = () => redirectTo(MPF_V30_LANDING_PATH);
     if (!orderId) return landing();
 
     const found = await loadThankYouOrder(orderId);
     if (found.kind === "missing") return landing();
     // Course orders keep the main site's confirmation page.
     if (found.kind === "not-batch") {
-        return NextResponse.redirect(new URL(`/order-status?order_id=${encodeURIComponent(orderId)}`, url), 307);
+        return redirectTo(`/order-status?order_id=${encodeURIComponent(orderId)}`);
     }
 
     const order: V30Order = {

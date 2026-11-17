@@ -11,8 +11,10 @@ const CallbackContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const orderId = searchParams.get('order_id');
-    // Set by createCashfreeOrder when the buyer came from the v10 landing page.
-    const landingSource = searchParams.get('src');
+    // Set by createCashfreeOrder when the buyer came from a workshop landing
+    // page. Used only for the "Try Again" link; a paid order is forwarded by
+    // the landing page stored on the order (returned by the server).
+    const urlSource = searchParams.get('src');
 
     const [status, setStatus] = useState<'VERIFYING' | 'SUCCESS' | 'FAILED'>('VERIFYING');
     const [message, setMessage] = useState('Verifying your payment...');
@@ -34,9 +36,8 @@ const CallbackContent = () => {
                     // Workshop (batch) orders from the v10 landing page get that page's own
                     // thank-you; the old landing page and everything else keep /order-status.
                     // Both fire the client-side Meta Pixel Purchase event.
-                    const isBatchOrder = Boolean(
-                        result.data?.items?.some((item: { batchId?: string | null }) => item.batchId),
-                    );
+                    const isBatchOrder = Boolean(result.data?.isBatchOrder);
+                    const landingSource = result.data?.landingSource;
                     const destination = isBatchOrder && isLandingSource(landingSource)
                         ? `${LANDING_SOURCES[landingSource].thankYou}?order_id=${encodeURIComponent(orderId)}`
                         : `/order-status?order_id=${encodeURIComponent(orderId)}`;
@@ -72,7 +73,7 @@ const CallbackContent = () => {
                             <CheckCircle className="w-8 h-8 text-green-600" />
                         </div>
                         <h2 className="text-2xl font-semibold text-zinc-900 mb-2">Payment Successful!</h2>
-                        <p className="text-zinc-500 mb-8">Your order has been confirmed. Redirecting you to dashboard...</p>
+                        <p className="text-zinc-500 mb-8">Your order has been confirmed. Taking you to your confirmation page...</p>
                         <Button onClick={() => router.push('/')} className="w-full">
                             Go to home page
                         </Button>
@@ -87,10 +88,10 @@ const CallbackContent = () => {
                         <h2 className="text-2xl font-semibold text-zinc-900 mb-2">Payment Failed</h2>
                         <p className="text-zinc-500 mb-8">{message}</p>
                         <div className="flex gap-3">
-                            <Button variant="outline" onClick={() => router.push(isLandingSource(landingSource) ? LANDING_SOURCES[landingSource].checkout : '/checkout')} className="w-full">
+                            <Button variant="outline" onClick={() => router.push(isLandingSource(urlSource) ? LANDING_SOURCES[urlSource].checkout : '/checkout')} className="w-full">
                                 Try Again
                             </Button>
-                            <Button variant="ghost" onClick={() => router.push('/support')} className="w-full">
+                            <Button variant="ghost" onClick={() => router.push('/contact-us')} className="w-full">
                                 Contact Support
                             </Button>
                         </div>
