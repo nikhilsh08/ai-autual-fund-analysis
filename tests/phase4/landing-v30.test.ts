@@ -96,7 +96,9 @@ describe("v30 landing", () => {
     expect(html).toContain("gtag/js?id=G-TEST");
     expect(html).toContain("clarity.ms/tag/");
     expect(html).toContain("'ViewContent'");
-    expect(html).toContain('<link rel="canonical" href="https://www.cashflowcrew.in/v30">');
+    // The address the page is advertised on, not the /v30 route behind it.
+    expect(html).toContain('<link rel="canonical" href="https://www.cashflowcrew.in/personalfinance2">');
+    expect(html).toContain('<meta property="og:url" content="https://www.cashflowcrew.in/personalfinance2">');
   });
 
   it("removes the checkout button when nothing is on sale", () => {

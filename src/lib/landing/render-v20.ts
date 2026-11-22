@@ -16,6 +16,7 @@ import {
   MPF_V20_SEATS_PER_BATCH,
   MPF_V20_SOURCE,
 } from "@/lib/landing/v20";
+import { LANDING_PUBLIC_PATH } from "@/lib/landing/sources";
 import {
   checkoutEventsScript,
   escapeHtml,
@@ -183,7 +184,8 @@ export function renderV20Landing(template: string, data: V20LandingData, common:
   html = fillSessionLength(html, batch?.durationMinutes ?? data.fallbackDurationMinutes ?? SCHEMA_DEFAULT_DURATION_MINUTES);
 
   const head = [
-    ...headExtras(common, MPF_V20_LANDING_PATH, true),
+    // Canonical and og:url name the address the page is advertised on.
+    ...headExtras(common, LANDING_PUBLIC_PATH.v20, true),
     ...trackingTags(common.tracking),
     landingEventsScript(common.tracking, {
       contentIds: [common.courseId],

@@ -79,7 +79,9 @@ describe("v20 landing renderer", () => {
     expect(html).toContain("'ViewContent'");
     expect(html).toContain("'AddToCart'");
     expect(html).toContain('"contentIds":["course20"]');
-    expect(html).toContain('<link rel="canonical" href="https://www.cashflowcrew.in/v20">');
+    // The address the page is advertised on, not the /v20 route behind it.
+    expect(html).toContain('<link rel="canonical" href="https://www.cashflowcrew.in/personalfinance1">');
+    expect(html).toContain('<meta property="og:url" content="https://www.cashflowcrew.in/personalfinance1">');
     expect(html.indexOf("fbq('init'")).toBeLessThan(html.indexOf("</head>"));
   });
 

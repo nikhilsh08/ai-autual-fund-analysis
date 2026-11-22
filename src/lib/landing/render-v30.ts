@@ -33,6 +33,7 @@ import {
   MPF_V30_SOURCE,
   MPF_V30_STATIC,
 } from "@/lib/landing/v30";
+import { LANDING_PUBLIC_PATH } from "@/lib/landing/sources";
 import {
   escapeHtml,
   landingEventsScript,
@@ -156,9 +157,10 @@ export function renderV30Landing(template: string, data: V30LandingData, common:
   const minutes = batch?.durationMinutes ?? data.fallbackDurationMinutes ?? SCHEMA_DEFAULT_DURATION_MINUTES;
   html = fillSessionLength(rewritePaths(fillTokens(html, batch, priceRupees)), minutes);
 
-  const url = `${common.siteUrl}${MPF_V30_LANDING_PATH}`;
+  // Canonical and og:url name the address the page is advertised on.
+  const url = `${common.siteUrl}${LANDING_PUBLIC_PATH.v30}`;
   const head = [
-    canonical(common, MPF_V30_LANDING_PATH),
+    canonical(common, LANDING_PUBLIC_PATH.v30),
     `<meta property="og:title" content="Master Personal Finance with AI — 2-day live workshop">`,
     `<meta property="og:description" content="${fillSessionLength(escapeHtml(DESCRIPTION), minutes)}">`,
     `<meta property="og:url" content="${escapeHtml(url)}">`,

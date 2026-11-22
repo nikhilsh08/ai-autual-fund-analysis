@@ -6,6 +6,7 @@ import { dataBasePrisma } from "@/lib/dbPrisma";
 import { getCurrentBatch } from "@/lib/batches/current";
 import { renderLanding, type LandingConfig } from "@/lib/landing/render";
 import { getLandingCourse } from "@/lib/landing/course-link";
+import { LANDING_PUBLIC_PATH } from "@/lib/landing/sources";
 import { isDevPreview, previewBatchFor } from "@/lib/landing/v20-data";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +30,8 @@ const SCHEMA_DEFAULT_DURATION_MINUTES = 120;
 function config(courseId: string, fallbackPriceRupees: number | null, fallbackDurationMinutes: number): LandingConfig {
     return {
         courseId,
-        canonicalUrl: `${siteConfig.url}/v10`,
+        // The address the page is advertised on (lib/landing/sources.ts).
+        canonicalUrl: `${siteConfig.url}${LANDING_PUBLIC_PATH[PAGE]}`,
         title: TITLE,
         description: DESCRIPTION,
         ogImage: siteConfig.ogImage,

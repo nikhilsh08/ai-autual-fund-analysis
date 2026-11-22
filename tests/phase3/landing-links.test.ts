@@ -162,6 +162,8 @@ describe("each page shows its own course's batch", () => {
 
     expect(v10).toContain("₹411");
     expect(v10).toContain("9:15 AM");
+    // The canonical address is the one the page is advertised on.
+    expect(v10).toMatch(/<link rel="canonical" href="[^"]*\/personalfinance">/);
     expect(v10).not.toContain("2,222");
     expect(v10).not.toContain("3,333");
 

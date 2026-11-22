@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { LANDING_PAGES, LANDING_PUBLIC_PATH } from "./src/lib/landing/sources";
 
 // The site's own address: Cashfree returns the buyer to it after payment, and
 // canonical links and the admin panel's landing page links are built from it.
@@ -24,6 +25,13 @@ const nextConfig: NextConfig = {
     "/v30/checkout": ["./src/landing/**/*"],
     "/v30/thank-you": ["./src/landing/**/*"],
     "/v30/refund-policy": ["./src/landing/**/*"],
+  },
+  // The addresses the workshop pages are advertised on (/personalfinance,
+  // /personalfinance1, /personalfinance2) show the /v10, /v20 and /v30 pages
+  // without changing the address in the browser. The list is in
+  // src/lib/landing/sources.ts.
+  async rewrites() {
+    return LANDING_PAGES.map((page) => ({ source: LANDING_PUBLIC_PATH[page], destination: `/${page}` }));
   },
   // v20 static files, from the designer's _headers: images and the smooth-
   // scroll script are cached for a year (rename a file when it changes). The

@@ -62,3 +62,16 @@ export function isLandingPageKey(value: unknown): value is LandingPageKey {
 }
 
 export const landingPath = (page: LandingPageKey) => `/${page}`;
+
+// The address each page is advertised on. It shows the same page as /v10,
+// /v20 or /v30: next.config.ts serves it from that route without changing
+// the address in the browser. The booking, thank-you and refund pages stay on
+// the /v10, /v20 and /v30 addresses, which keep working as before.
+//
+// To move a page to another address, change it here; nothing else needs
+// editing. Keep each address a single path segment that no other page uses.
+export const LANDING_PUBLIC_PATH: Record<LandingPageKey, string> = {
+  v10: "/personalfinance",
+  v20: "/personalfinance1",
+  v30: "/personalfinance2",
+};
