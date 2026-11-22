@@ -39,8 +39,7 @@ export const v20Common = (courseId: string): V20Common => ({
 
 // Must match the server's Cashfree environment (payment.action.ts), or the
 // payment window rejects the session.
-export const cashfreeMode = (): "production" | "sandbox" =>
-  process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === "PRODUCTION" ? "production" : "sandbox";
+export { cashfreeMode } from "@/lib/cashfree-env";
 
 export const isDevPreview = (value: string | null) => value === "1" && process.env.NODE_ENV !== "production";
 

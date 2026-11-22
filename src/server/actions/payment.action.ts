@@ -17,9 +17,10 @@ import { enrollUserInTrainerCentral } from "@/lib/trainer-central";
 import { sendMetaCAPIPurchaseEvent } from "@/lib/meta-capi";
 import { processBatchRegistrationForOrder } from "@/lib/batches/registration";
 import { LANDING_SOURCES, isLandingSource } from "@/lib/landing/sources";
+import { isCashfreeProduction } from "@/lib/cashfree-env";
 
 // --- CASHFREE SDK CONFIGURATION ---
-const isProduction = process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === "PRODUCTION";
+const isProduction = isCashfreeProduction();
 const cashfree = new Cashfree(
   isProduction ? CFEnvironment.PRODUCTION : CFEnvironment.SANDBOX,
   process.env.CASHFREE_APP_ID!,

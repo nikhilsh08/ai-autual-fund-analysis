@@ -1,5 +1,6 @@
 "use client";
 import { load } from '@cashfreepayments/cashfree-js';
+import { cashfreeMode } from '@/lib/cashfree-env';
 
 let cashfreeInstance: any = null;
 
@@ -9,7 +10,7 @@ export const initializeCashfree = async () => {
       cashfreeInstance = await load({
         // Must be the same setting the server creates the order with
         // (payment.action.ts), or the payment window rejects the session.
-        mode: process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'PRODUCTION' ? 'production' : 'sandbox',
+        mode: cashfreeMode(),
       });
     }
     return cashfreeInstance;
