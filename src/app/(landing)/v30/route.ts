@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { dataBasePrisma } from "@/lib/dbPrisma";
+import { nextCycleDay1 } from "@/lib/batches/schedule";
 import { renderV30Landing } from "@/lib/landing/render-v30";
 import {
     getV20BatchOnSale,
@@ -45,6 +46,8 @@ export async function GET(req: Request) {
     let courseId = "";
     let fallbackPrice: number | null = null;
     let fallbackDuration: number | null = null;
+    // Day 1 of the next batch on the cycle: names the weekdays when nothing is on sale.
+    let fallbackDay1: Date | null = null;
 
     try {
         const course = await getPageCourse("v30");
@@ -56,10 +59,11 @@ export async function GET(req: Request) {
         if (!batch) {
             const settings = await dataBasePrisma.batchSettings.findUnique({
                 where: { courseId: course.id },
-                select: { defaultPriceRupees: true, durationMinutes: true },
+                select: { defaultPriceRupees: true, durationMinutes: true, anchorDay1Date: true, cadenceDays: true },
             });
             fallbackPrice = settings?.defaultPriceRupees ?? course.price;
             fallbackDuration = settings?.durationMinutes ?? null;
+            fallbackDay1 = nextCycleDay1(settings);
         }
 
         const html = renderV30Landing(
@@ -68,6 +72,7 @@ export async function GET(req: Request) {
                 batch,
                 fallbackPriceRupees: fallbackPrice,
                 fallbackDurationMinutes: fallbackDuration,
+                fallbackDay1,
                 paidSeats: batch ? await paidSeats(batch.id) : 0,
                 seatLimit: SEAT_LIMIT,
             },
@@ -80,7 +85,7 @@ export async function GET(req: Request) {
         try {
             const html = renderV30Landing(
                 template,
-                { batch: null, fallbackPriceRupees: fallbackPrice, fallbackDurationMinutes: fallbackDuration, paidSeats: 0, seatLimit: SEAT_LIMIT },
+                { batch: null, fallbackPriceRupees: fallbackPrice, fallbackDurationMinutes: fallbackDuration, fallbackDay1, paidSeats: 0, seatLimit: SEAT_LIMIT },
                 v20Common(courseId),
             );
             // Served after an error: never cache it, so the real page returns at once.

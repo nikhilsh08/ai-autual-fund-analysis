@@ -55,7 +55,7 @@ const CheckoutContent = () => {
   const requestedBatchId = searchParams.get('batchId');
   // Which landing page sent the buyer here; decides the thank-you page after payment.
   const landingSource = searchParams.get('src');
-  const [batch, setBatch] = useState<{ id: string; priceRupees: number; day1Date: string; startTime: string; durationMinutes: number } | null>(null);
+  const [batch, setBatch] = useState<{ id: string; priceRupees: number; day1Date: string; day2Date: string; startTime: string; durationMinutes: number } | null>(null);
   const [batchUnavailable, setBatchUnavailable] = useState(false);
   const [whatsappOptIn, setWhatsappOptIn] = useState(false);
   const checkoutTracked = useRef(false);
@@ -406,7 +406,7 @@ const CheckoutContent = () => {
 
               {batch && (
                 <p className="text-sm text-ink-secondary bg-cream-dark border border-border rounded-xl px-4 py-3" data-testid="batch-line">
-                  {MMF_COPY.checkout.batchLine(batch.day1Date, batch.startTime, formatDuration(batch.durationMinutes))}
+                  {MMF_COPY.checkout.batchLine(batch.day1Date, batch.day2Date, batch.startTime, formatDuration(batch.durationMinutes))}
                 </p>
               )}
               {batchUnavailable && (

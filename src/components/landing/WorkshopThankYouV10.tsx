@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { CalendarPlus, Check, MessageCircle, Video, X } from "lucide-react";
-import { MMF_COPY, withoutWeekday } from "@/lib/mmf-copy";
+import { MMF_COPY, weekdayOf, withoutWeekday } from "@/lib/mmf-copy";
 import { formatDuration } from "@/lib/ist";
 import { googleCalendarUrl, useWorkshopBooking, type WorkshopBooking } from "@/components/checkout/useWorkshopBooking";
 import s from "./ThankYouV10.module.css";
@@ -120,24 +120,24 @@ export default function WorkshopThankYouV10({ orderId, initialBooking }: { order
     const timeLine = batch ? `${batch.startTime} IST · ${formatDuration(batch.durationMinutes)}` : "";
 
     return (
-        <ThankYouCard tone="paid" title={t.T1} lead={batch ? t.T2(withoutWeekday(batch.day1Date), withoutWeekday(batch.day2Date), batch.startTime, formatDuration(batch.durationMinutes)) : undefined}>
+        <ThankYouCard tone="paid" title={t.T1} lead={batch ? t.T2(batch.day1Date, batch.day2Date, batch.startTime, formatDuration(batch.durationMinutes)) : undefined}>
             {batch && (
                 <>
                     <p className={s.cardLabel}>Your two sessions</p>
                     <div className={s.days}>
                         <DayTile
-                            eyebrow="Day 1 · Saturday"
+                            eyebrow={`Day 1 · ${weekdayOf(batch.day1Date)}`}
                             date={withoutWeekday(batch.day1Date)}
                             time={timeLine}
                             href={linksReady ? (booking?.joinLinkDay1 ?? null) : null}
-                            label={t.T3_DAY1}
+                            label={t.T3(weekdayOf(batch.day1Date))}
                         />
                         <DayTile
-                            eyebrow="Day 2 · Sunday"
+                            eyebrow={`Day 2 · ${weekdayOf(batch.day2Date)}`}
                             date={withoutWeekday(batch.day2Date)}
                             time={timeLine}
                             href={linksReady ? (booking?.joinLinkDay2 ?? null) : null}
-                            label={t.T3_DAY2}
+                            label={t.T3(weekdayOf(batch.day2Date))}
                         />
                     </div>
                 </>
@@ -172,7 +172,7 @@ export default function WorkshopThankYouV10({ orderId, initialBooking }: { order
                                 rel="noopener noreferrer"
                                 href={googleCalendarUrl(`${MMF_COPY.contentName} — Day 1`, batch.day1StartAt, batch.durationMinutes, t.T7)}
                             >
-                                Google Calendar — Saturday
+                                Google Calendar — {weekdayOf(batch.day1Date)}
                             </a>
                             <a
                                 className={s.chip}
@@ -180,7 +180,7 @@ export default function WorkshopThankYouV10({ orderId, initialBooking }: { order
                                 rel="noopener noreferrer"
                                 href={googleCalendarUrl(`${MMF_COPY.contentName} — Day 2`, batch.day2StartAt, batch.durationMinutes, t.T7)}
                             >
-                                Google Calendar — Sunday
+                                Google Calendar — {weekdayOf(batch.day2Date)}
                             </a>
                         </div>
                     </details>

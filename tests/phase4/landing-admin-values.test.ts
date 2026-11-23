@@ -89,6 +89,72 @@ describe("admin-panel values on every workshop page", () => {
     });
   });
 
+  // The top bar and every "both days + start time" line (owner, 23 Nov 2026)
+  // take their values from the batch as well. Change the day, the time or the
+  // price in Admin → Batches and all three pages change with it; nothing is
+  // typed into the page files.
+  it("top bar on every landing page: both days, the start time and the price are the batch's own", () => {
+    // A second batch nobody would type by accident. Day 2 is deliberately NOT
+    // the day after day 1, to show that both days are read from the batch.
+    const other = {
+      ...batch,
+      id: "batchY",
+      priceRupees: 4321,
+      day1StartAt: istToUtc("2027-01-12", "18:45"), // Tuesday
+      day2StartAt: istToUtc("2027-01-14", "18:45"), // Thursday
+      bookingCloseAt: istToUtc("2027-01-11", "18:45"),
+    };
+    const v10Config = {
+      courseId: "c1",
+      canonicalUrl: "https://www.cashflowcrew.in/v10",
+      title: "t",
+      description: "d",
+      ga4ViaGtm: false,
+      fallbackPriceRupees: null,
+      fallbackDurationMinutes: 120,
+    };
+    const pages = (b: typeof batch) => ({
+      v10: renderLanding(read("mmf-v10.html"), b, v10Config),
+      v20: renderV20Landing(read("mpf-v20.html"), { batch: b, fallbackPriceRupees: null, paidSeats: 0 }, common),
+      v30: renderV30Landing(read("mpf-v30.html"), { batch: b, fallbackPriceRupees: null, paidSeats: 0 }, common),
+    });
+    const barOf = (html: string) => /<div class="a?bar">.*?<\/div>/s.exec(html)![0];
+
+    const first = pages(batch);
+    const second = pages(other);
+
+    for (const page of ["v10", "v20", "v30"] as const) {
+      const bar1 = barOf(first[page]);
+      const bar2 = barOf(second[page]);
+
+      // Batch 1: Saturday 5 and Sunday 6 December, ₹3,456.
+      expect(bar1, page).toContain("Saturday <b>5 Dec</b> and Sunday <b>6 Dec</b>");
+      expect(bar1, page).toContain("<b>₹3,456</b>");
+      // Batch 2: Tuesday 12 and Thursday 14 January, ₹4,321.
+      expect(bar2, page).toContain("Tuesday <b>12 Jan</b> and Thursday <b>14 Jan</b>");
+      expect(bar2, page).toContain("Tue <b>12 Jan</b> – Thu <b>14 Jan</b>");
+      expect(bar2, page).toContain("<b>₹4,321</b>");
+
+      // Nothing of batch 1 is left anywhere on a page that shows batch 2.
+      const whole = withoutComments(second[page]);
+      for (const old of ["5 Dec", "6 Dec", "3,456", "7:15 PM", "Saturday", "Sunday"]) {
+        expect(whole, `${page}: "${old}" left from the other batch`).not.toContain(old);
+      }
+      expect(whole, page).toContain("12 Jan");
+      expect(whole, page).toContain("14 Jan");
+      expect(whole, page).toContain("4,321");
+    }
+
+    // The start time reaches each page as a value it prints wherever the days
+    // are named: /v10 through its startTime prop, /v20 and /v30 through window.MPF.
+    expect(second.v10).toContain("&quot;default&quot;:&quot;6:45 PM&quot;");
+    expect(barOf(second.v10)).toContain("{{ timeComma }}");
+    for (const page of ["v20", "v30"] as const) {
+      expect(second[page], page).toContain('"startTime":"6:45 PM IST"');
+      expect(barOf(second[page]), page).toContain('<span data-if="hasStart">, <span data-val="startTime"></span></span>');
+    }
+  });
+
   it("nothing on sale: price and session length come from batch settings, never a typed default", () => {
     const v30 = renderV30Landing(
       read("mpf-v30.html"),

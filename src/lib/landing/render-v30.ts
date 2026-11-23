@@ -34,6 +34,7 @@ import {
   MPF_V30_STATIC,
 } from "@/lib/landing/v30";
 import { LANDING_PUBLIC_PATH } from "@/lib/landing/sources";
+import { daysOnPage, fillWeekdays } from "@/lib/landing/weekdays";
 import {
   escapeHtml,
   landingEventsScript,
@@ -131,6 +132,9 @@ export interface V30LandingData {
   seatLimit?: number | null;
   // Session length when nothing is on sale (batch settings).
   fallbackDurationMinutes?: number | null;
+  // Day 1 of the next batch on the cycle (batch settings). Names the two
+  // weekdays when nothing is on sale; absent, the page keeps its own words.
+  fallbackDay1?: Date | null;
 }
 
 export function renderV30Landing(template: string, data: V30LandingData, common: V30Common): string {
@@ -139,7 +143,9 @@ export function renderV30Landing(template: string, data: V30LandingData, common:
 
   const { batch } = data;
   const priceRupees = batch ? batch.priceRupees : data.fallbackPriceRupees;
-  const seats = applySeatLimit(template, !!batch, data.seatLimit, data.paidSeats);
+  // The two weekdays first, while the page file holds no batch or buyer value.
+  const page = fillWeekdays(template, daysOnPage(batch, data.fallbackDay1));
+  const seats = applySeatLimit(page, !!batch, data.seatLimit, data.paidSeats);
   const seatsLeft = seats.seatsLeft;
 
   let html = seats.html.replace(
@@ -205,7 +211,7 @@ export function renderV30Checkout(template: string, batch: V30Batch, common: V30
     landingSource: MPF_V30_SOURCE,
     preview: !!hooks.preview,
   };
-  let html = template
+  let html = fillWeekdays(template, batch)
     .replace(MPF_MARKER, startTimeOnly(batch))
     .replace(CHECKOUT_MARKER_RE, `window.MPF_CHECKOUT=${scriptJson(cfg)}`);
   // Clarity must not record what buyers type (OWNER_DECISIONS D8).
@@ -280,7 +286,8 @@ export function renderV30ThankYou(
     preview: !!hooks.preview,
   };
 
-  let html = template
+  // The two weekdays first: the buyer's name goes in next and must stay as typed.
+  let html = fillWeekdays(template, batch)
     .replace(MPF_MARKER, startTimeOnly(batch))
     .replace(ORDER_MARKER_RE, `window.MPF_ORDER=${scriptJson(mpfOrder)}`)
     // Name, email and order ID are on screen: keep them out of Clarity.

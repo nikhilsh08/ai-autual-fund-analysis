@@ -152,7 +152,7 @@ export function paidSeats(batchId: string): Promise<number> {
 // admin panel, in this order:
 //   1. the batch on sale (Batches, status OPEN),
 //   2. the next upcoming batch, even a DRAFT (Batches),
-//   3. the next Saturday on the cycle in Batch settings, with its default
+//   3. the next day 1 on the cycle in Batch settings, with its default
 //      start time, duration, booking close, price and language.
 // With none of these, batch is null and the page shows its "booking opens
 // soon" state with the course price, exactly as the live page would.

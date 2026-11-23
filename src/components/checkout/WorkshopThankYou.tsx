@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { CalendarPlus, CheckCircle2, MessageCircle, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { MMF_COPY, withoutWeekday } from "@/lib/mmf-copy";
+import { MMF_COPY, weekdayOf } from "@/lib/mmf-copy";
 import { formatDuration } from "@/lib/ist";
 
 interface Booking {
@@ -87,7 +87,7 @@ export default function WorkshopThankYou({ orderId, initialBooking }: { orderId:
                 <h1 className="text-2xl font-bold text-ink">{t.T1}</h1>
                 {batch && (
                     <p className="text-ink-secondary">
-                        {t.T2(withoutWeekday(batch.day1Date), withoutWeekday(batch.day2Date), batch.startTime, formatDuration(batch.durationMinutes))}
+                        {t.T2(batch.day1Date, batch.day2Date, batch.startTime, formatDuration(batch.durationMinutes))}
                     </p>
                 )}
             </div>
@@ -97,12 +97,12 @@ export default function WorkshopThankYou({ orderId, initialBooking }: { orderId:
                     <>
                         <a href={booking.joinLinkDay1 ?? "#"} target="_blank" rel="noopener noreferrer" className="block">
                             <Button className="w-full h-12 rounded-xl text-base bg-ink text-cream hover:bg-ink/90" size="lg">
-                                <Video className="mr-2 w-4 h-4" /> {t.T3_DAY1}
+                                <Video className="mr-2 w-4 h-4" /> {t.T3(batch ? weekdayOf(batch.day1Date) : "Day 1")}
                             </Button>
                         </a>
                         <a href={booking.joinLinkDay2 ?? "#"} target="_blank" rel="noopener noreferrer" className="block">
                             <Button className="w-full h-12 rounded-xl text-base bg-ink text-cream hover:bg-ink/90" size="lg">
-                                <Video className="mr-2 w-4 h-4" /> {t.T3_DAY2}
+                                <Video className="mr-2 w-4 h-4" /> {t.T3(batch ? weekdayOf(batch.day2Date) : "Day 2")}
                             </Button>
                         </a>
                     </>
@@ -135,7 +135,7 @@ export default function WorkshopThankYou({ orderId, initialBooking }: { orderId:
                                 rel="noopener noreferrer"
                                 href={googleCalendarUrl(`${MMF_COPY.contentName} — Day 1`, batch.day1StartAt, batch.durationMinutes, t.T7)}
                             >
-                                Google Calendar — Saturday
+                                Google Calendar — {weekdayOf(batch.day1Date)}
                             </a>
                             <a
                                 className="underline"
@@ -143,7 +143,7 @@ export default function WorkshopThankYou({ orderId, initialBooking }: { orderId:
                                 rel="noopener noreferrer"
                                 href={googleCalendarUrl(`${MMF_COPY.contentName} — Day 2`, batch.day2StartAt, batch.durationMinutes, t.T7)}
                             >
-                                Google Calendar — Sunday
+                                Google Calendar — {weekdayOf(batch.day2Date)}
                             </a>
                         </div>
                     </details>

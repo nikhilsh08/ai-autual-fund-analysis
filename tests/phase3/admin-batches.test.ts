@@ -18,6 +18,7 @@ import { GET as listRoute, POST as createRoute } from "@/app/api/admin/batches/r
 import { POST as openRoute } from "@/app/api/admin/batches/[id]/open/route";
 import { PATCH as patchRoute } from "@/app/api/admin/batches/[id]/route";
 import { GET as guestsRoute } from "@/app/api/admin/batches/[id]/guests/route";
+import { PUT as settingsPutRoute } from "@/app/api/admin/batch-settings/route";
 import { csvCell, toCsv } from "@/lib/batches/csv";
 
 const admin = { id: "admin1", email: "admin@cashflowcrew.in", role: "ADMIN" } as never;
@@ -76,12 +77,46 @@ describe("admin batch routes (spec 8.1)", () => {
     expect(data.bookingCloseAt.toISOString()).toBe("2026-11-20T13:30:00.000Z");
   });
 
-  it("refuses a day 1 that is not a Saturday", async () => {
-    const res = await createRoute(
-      json("/api/admin/batches", "POST", { courseId: "c1", day1Date: "2026-11-22", startTimeIst: "19:00", priceRupees: 1999, closeHoursBefore: 24 }),
+  it("accepts a day 1 on any day of the week; day 2 is the day after", async () => {
+    prisma.batchSettings.findUnique.mockResolvedValue(null);
+    prisma.batch.findFirst.mockResolvedValue(null);
+    prisma.batch.create.mockImplementation(async ({ data }: { data: Record<string, unknown> }) => ({ id: "new", ...data }));
+
+    // 22 November 2026 is a Sunday, 25 November 2026 a Wednesday.
+    for (const [day1Date, day2Date] of [["2026-11-22", "2026-11-23"], ["2026-11-25", "2026-11-26"]]) {
+      prisma.batch.create.mockClear();
+      const res = await createRoute(
+        json("/api/admin/batches", "POST", { courseId: "c1", day1Date, startTimeIst: "19:00", priceRupees: 1999, closeHoursBefore: 24 }),
+      );
+      expect(res.status).toBe(201);
+      const { data } = prisma.batch.create.mock.calls[0][0];
+      expect(data.day1StartAt).toEqual(istToUtc(day1Date, "19:00"));
+      expect(data.day2StartAt).toEqual(istToUtc(day2Date, "19:00"));
+    }
+  });
+
+  it("moves an existing batch to a weekday", async () => {
+    prisma.batch.findUnique.mockResolvedValue(draft);
+    // 6 January 2099 is a Tuesday.
+    const res = await patchRoute(json("/api/admin/batches/b1", "PATCH", { day1Date: "2099-01-06" }), ctx("b1"));
+    expect(res.status).toBe(200);
+    const { data } = prisma.batch.update.mock.calls[0][0];
+    expect(data.day1StartAt).toEqual(istToUtc("2099-01-06", "19:00"));
+    expect(data.day2StartAt).toEqual(istToUtc("2099-01-07", "19:00"));
+  });
+
+  it("saves a batch cycle that starts on a weekday and previews that weekday", async () => {
+    prisma.batchSettings.upsert.mockImplementation(async ({ create }: { create: Record<string, unknown> }) => ({ id: "s1", ...create }));
+    const res = await settingsPutRoute(
+      json("/api/admin/batch-settings", "PUT", {
+        courseId: "c1", anchorDay1Date: "2026-11-25", cadenceDays: 7, defaultPriceRupees: 1999, defaultStartTimeIst: "19:00", closeHoursBefore: 24,
+      }),
     );
-    expect(res.status).toBe(400);
-    expect((await res.json()).message).toMatch(/Saturday/);
+    expect(res.status).toBe(200);
+    const { settings } = await res.json();
+    expect(settings.anchorDay1Date).toBe("2026-11-25");
+    expect(settings.preview).toHaveLength(3);
+    for (const next of settings.preview) expect(next.text).toMatch(/^Wednesday, /);
   });
 
   it("will not open a batch without Zoho keys and a WhatsApp link", async () => {

@@ -4,6 +4,9 @@
 //   MMF_CLOSE_HOURS=19 MMF_ALERT_EMAILS=ops@example.com \
 //   node scripts/seed-mmf-batches.ts
 //
+// MMF_FIRST_SATURDAY is day 1 of the first batch. It keeps its old name but
+// can be any day of the week; day 2 is the day after.
+//
 // Optional: MMF_COURSE_SLUG (default master-mutual-funds-invest-smarter),
 // MMF_LANGUAGE, MMF_DURATION_MINUTES (120), MMF_FUTURE_BATCHES (2),
 // MMF_NEW_BATCH_STATUS (DRAFT|OPEN), MMF_WHATSAPP_GROUP, MMF_SURVEY_URL.
@@ -34,9 +37,9 @@ async function main() {
   if (!(price > 0)) throw new Error("MMF_PRICE must be a positive number of rupees");
   if (!(closeHours >= 0)) throw new Error("MMF_CLOSE_HOURS must be >= 0");
 
+  // Day 1 of the first batch. Despite the variable's name it can be any day
+  // of the week (owner, 23 Nov 2026); the cycle keeps that weekday.
   const anchor = istToUtc(firstSaturday, "00:00");
-  const anchorIstWeekday = new Date(anchor.getTime() + 330 * 60_000).getUTCDay();
-  if (anchorIstWeekday !== 6) throw new Error(`${firstSaturday} is not a Saturday in IST`);
 
   const course = await prisma.course.findUnique({ where: { slug } });
   if (!course) throw new Error(`Course with slug ${slug} not found`);

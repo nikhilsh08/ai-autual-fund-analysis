@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { dataBasePrisma } from "@/lib/dbPrisma";
-import { formatIstDate, istToUtc, istYmd, isValidTimeHm, toIstParts } from "@/lib/ist";
+import { formatIstDate, istToUtc, istYmd, isValidTimeHm } from "@/lib/ist";
 import { computeBatchTimes, isOnSale, nextDay1Dates } from "./schedule";
 
 const ymd = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "YYYY-MM-DD");
@@ -58,15 +58,12 @@ export const batchSettingsSchema = z.object({
   alertEmails: z.array(z.string().email()).default([]),
 });
 
-export function isIstSaturday(dateYmd: string): boolean {
-  return toIstParts(istToUtc(dateYmd, "00:00")).weekday === 6;
-}
+// Day 1 can be any day of the week (owner, 23 Nov 2026). Day 2 is the day
+// after day 1 (computeBatchTimes).
 
 const emptyToNull = (v: string | null | undefined) => (v === undefined ? undefined : v === "" ? null : v);
 
 export async function createBatch(input: z.infer<typeof batchCreateSchema>, createdBy: string) {
-  if (!isIstSaturday(input.day1Date)) throw new AdminError("day1Date must be a Saturday (IST)");
-
   const settings = await dataBasePrisma.batchSettings.findUnique({ where: { courseId: input.courseId } });
   const times = computeBatchTimes({
     day1Date: istToUtc(input.day1Date, "00:00"),
@@ -115,7 +112,6 @@ export async function patchBatch(id: string, input: z.infer<typeof batchPatchSch
   const timingChanged = input.day1Date !== undefined || input.startTimeIst !== undefined || input.closeHoursBefore !== undefined;
   if (timingChanged) {
     const day1Date = input.day1Date ?? istYmd(batch.day1StartAt);
-    if (!isIstSaturday(day1Date)) throw new AdminError("day1Date must be a Saturday (IST)");
     const startTimeIst = input.startTimeIst ?? batch.startTimeIst;
     const currentCloseHours = (batch.day1StartAt.getTime() - batch.bookingCloseAt.getTime()) / 3_600_000;
     const closeHoursBefore = input.closeHoursBefore ?? currentCloseHours;
@@ -297,7 +293,6 @@ export function guestCsvRow(row: GuestRow): unknown[] {
 }
 
 export async function upsertBatchSettings(input: z.infer<typeof batchSettingsSchema>) {
-  if (!isIstSaturday(input.anchorDay1Date)) throw new AdminError("anchorDay1Date must be a Saturday (IST)");
   const data = {
     anchorDay1Date: istToUtc(input.anchorDay1Date, "00:00"),
     cadenceDays: input.cadenceDays,
