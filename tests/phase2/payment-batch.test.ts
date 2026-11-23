@@ -133,7 +133,8 @@ describe("verifyCashfreePayment — batch orders (spec 3.3)", () => {
       currency: "INR",
       email: "asha@example.com",
       name: "Asha Rao",
-      eventSourceUrl: expect.stringMatching(/\/v20$/),
+      // The address the page is advertised on, which is where the buyer was.
+      eventSourceUrl: expect.stringMatching(/\/personalfinance1$/),
     });
     expect(vi.mocked(sendMetaCAPIPurchaseEvent).mock.invocationCallOrder[0]).toBeLessThan(
       vi.mocked(processBatchRegistrationForOrder).mock.invocationCallOrder[0],

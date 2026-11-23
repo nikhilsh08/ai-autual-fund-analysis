@@ -1,8 +1,10 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
+import { MMF_V10_LANDING_PATH } from "@/lib/landing/v10";
 import s from "./ThankYouV10.module.css";
 
-const LANDING = "/v10";
+// The address the page is advertised on (/personalfinance).
+const LANDING = MMF_V10_LANDING_PATH;
 const SUPPORT_EMAIL = "support@cashflowcrew.in";
 
 // Page chrome for pages that belong to the v10 landing path: the landing
