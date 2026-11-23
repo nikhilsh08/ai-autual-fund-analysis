@@ -2,14 +2,29 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { createCashfreeOrder } from '@/server/actions/payment.action';
-import { currentUser } from '@/lib/authDetails';
 import { dataBasePrisma } from '@/lib/dbPrisma';
+import { z } from 'zod';
+import { applyCoupon, couponAppliesTo, roundRupees } from '@/lib/pricing';
+import { isOnSale } from '@/lib/batches/schedule';
+import { LANDING_SOURCES, isLandingSource, type LandingPageKey } from '@/lib/landing/sources';
+import { landingPageOfCourse, seatLimitForPage } from '@/lib/landing/course-link';
+import { metaMatchFromRequest } from '@/lib/meta-capi';
+import { sameSiteOrigin } from '@/lib/request-origin';
+
+const batchFieldsSchema = z.object({
+    batchId: z.string().min(1).optional(),
+    whatsappOptIn: z.boolean().optional(),
+});
 
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { name, email, phone, courseIds, bundleIds, couponCode, utmParams } = body;
-        const authenticatedUser = await currentUser();
+        const { name, email, phone, courseIds, bundleIds, couponCode, utmParams, landingSource } = body;
+        const batchFields = batchFieldsSchema.safeParse(body);
+        if (!batchFields.success) {
+            return NextResponse.json({ success: false, error: 'Invalid batch fields' }, { status: 400 });
+        }
+        const { batchId, whatsappOptIn = false } = batchFields.data;
 
         if (!name || !email || !phone) {
             return NextResponse.json({ success: false, error: 'Missing fields' }, { status: 400 });
@@ -25,7 +40,7 @@ export async function POST(req: Request) {
 
         // Track all course IDs for enrollment (including bundle courses)
         let allCourseIdsForEnrollment: string[] = [...courseIdArray];
-        let bundleItemsData: { bundleId: string; price: number }[] = [];
+        const bundleItemsData: { bundleId: string; price: number }[] = [];
         let bundleTotal = 0;
 
         // 1. Fetch and Validate Bundles
@@ -68,6 +83,39 @@ export async function POST(req: Request) {
             individualCourseTotal = courses.reduce((sum, course) => sum + course.price, 0);
         }
 
+        // 2b. Batch courses are buy-now only. The price is the batch price —
+        // never Course.price and never anything sent by the browser — and the
+        // batch must be on sale right now.
+        let batch: { id: string; priceRupees: number } | null = null;
+        // The workshop landing page this course is linked to in the admin panel.
+        let coursePage: LandingPageKey | null = null;
+        const batchCourses = courses.filter((c) => c.useBatches);
+        if (batchCourses.length > 0) {
+            if (courses.length !== 1 || bundleIdArray.length > 0) {
+                return NextResponse.json({ success: false, error: 'batch_course_must_be_alone' }, { status: 400 });
+            }
+            if (!batchId) {
+                return NextResponse.json({ success: false, error: 'batch_required' }, { status: 400 });
+            }
+            const candidate = await dataBasePrisma.batch.findUnique({ where: { id: batchId } });
+            if (!candidate || candidate.courseId !== batchCourses[0].id || !isOnSale(candidate, new Date())) {
+                return NextResponse.json({ success: false, error: 'batch_not_on_sale' }, { status: 409 });
+            }
+            // /v20 and /v30 sell a fixed number of seats per batch.
+            coursePage = await landingPageOfCourse(batchCourses[0]);
+            const seatLimit = seatLimitForPage(coursePage);
+            if (seatLimit !== null) {
+                const paidSeats = await dataBasePrisma.orderItem.count({
+                    where: { batchId: candidate.id, order: { status: 'PAID' } },
+                });
+                if (paidSeats >= seatLimit) {
+                    return NextResponse.json({ success: false, error: 'batch_full' }, { status: 409 });
+                }
+            }
+            batch = { id: candidate.id, priceRupees: candidate.priceRupees };
+            individualCourseTotal = candidate.priceRupees;
+        }
+
         // 3. Calculate Totals (Pre-discount)
         const subtotal = bundleTotal + individualCourseTotal;
         let discountAmount = 0;
@@ -93,71 +141,45 @@ export async function POST(req: Request) {
                     return NextResponse.json({ success: false, error: `Minimum order amount of ₹${coupon.minAmount} required` }, { status: 400 });
                 }
 
-                // Check if coupon applies to selected items
-                const hasRestrictedItems =
-                    (coupon.applicableCourseIds?.length > 0) ||
-                    (coupon.applicableBundleIds?.length > 0);
-
-                if (hasRestrictedItems) {
-                    const hasApplicableCourse = courseIdArray.some((id: string) =>
-                        coupon.applicableCourseIds?.includes(id)
-                    );
-                    const hasApplicableBundle = bundleIdArray.some((id: string) =>
-                        coupon.applicableBundleIds?.includes(id)
-                    );
-
-                    if (!hasApplicableCourse && !hasApplicableBundle) {
-                        return NextResponse.json({
-                            success: false,
-                            error: 'Coupon not applicable to selected items'
-                        }, { status: 400 });
-                    }
+                // Same rules as validateCoupon (checkout preview), including
+                // batch scope.
+                if (!couponAppliesTo(coupon, { courseIds: courseIdArray, bundleIds: bundleIdArray, batchId: batch?.id })) {
+                    return NextResponse.json({
+                        success: false,
+                        error: 'Coupon not applicable to selected items'
+                    }, { status: 400 });
                 }
 
-                // Calculate discount
-                if (coupon.discountType === "PERCENTAGE") {
-                    let calculatedDiscount = (subtotal * coupon.discount) / 100;
-                    if (coupon.maxDiscount && calculatedDiscount > coupon.maxDiscount) {
-                        calculatedDiscount = coupon.maxDiscount;
-                    }
-                    discountAmount = calculatedDiscount;
-                } else {
-                    discountAmount = coupon.discount;
-                }
-
-                // Ensure discount doesn't exceed subtotal
-                if (discountAmount > subtotal) {
-                    discountAmount = subtotal;
-                }
-
+                discountAmount = applyCoupon(subtotal, coupon);
                 couponId = coupon.id;
             } else {
                 return NextResponse.json({ success: false, error: 'Invalid coupon code' }, { status: 400 });
             }
         }
 
-        const finalAmount = Math.max(0, Math.round((subtotal - discountAmount) * 100) / 100);
+        const finalAmount = roundRupees(subtotal - discountAmount);
 
-        // 5. User Identity Resolution
-        let targetUserId: string | null = authenticatedUser?.id || null;
-        let targetLeadId: string | null = null;
+        // 5. Buyer identity. The order belongs to the email typed at checkout,
+        // never to whoever is signed in in this browser: an admin testing a
+        // purchase is signed in on this site, and the order must not become
+        // theirs. The typed name and phone are always kept on a Lead, so the
+        // registration, the thank-you page and the Meta event use them.
+        const existingUser = await dataBasePrisma.user.findUnique({ where: { email } });
+        const targetUserId: string | null = existingUser?.id ?? null;
+        const lead = await dataBasePrisma.lead.upsert({
+            where: { email },
+            update: { name, phone, courseIds: allCourseIdsForEnrollment },
+            create: { email, name, phone, courseIds: allCourseIdsForEnrollment, source: 'checkout' }
+        });
+        const targetLeadId: string | null = lead.id;
 
-        if (!targetUserId) {
-            // Check if user exists but isn't logged in
-            const existingUser = await dataBasePrisma.user.findUnique({ where: { email } });
-
-            if (existingUser) {
-                targetUserId = existingUser.id;
-            } else {
-                // New Guest: Create/Update Lead
-                const lead = await dataBasePrisma.lead.upsert({
-                    where: { email },
-                    update: { name, phone, courseIds: allCourseIdsForEnrollment },
-                    create: { email, name, phone, courseIds: allCourseIdsForEnrollment, source: 'checkout' }
-                });
-                targetLeadId = lead.id;
-            }
-        }
+        // Which landing page sold it. Only accepted when it is the page this
+        // course is linked to, so a seat on /v20 can never be counted (or
+        // thanked) as /v30.
+        const orderSource =
+            batch && isLandingSource(landingSource) && LANDING_SOURCES[landingSource].page === coursePage
+                ? landingSource
+                : null;
 
         const orderId = `ORDER_CF_${uuidv4()}`;
 
@@ -173,11 +195,17 @@ export async function POST(req: Request) {
                 discountAmount: discountAmount,
                 couponId: couponId,
                 status: 'PENDING',
+                whatsappOptIn: batch ? whatsappOptIn : false,
+                // Which workshop landing page sold it (admin → Landing pages).
+                landingSource: orderSource,
+                // Meta CAPI match keys for the server-side Purchase event.
+                ...metaMatchFromRequest(req),
                 // Individual course items
                 items: courseIdArray.length > 0 ? {
                     create: courses.map((c) => ({
                         courseId: c.id,
-                        price: c.price
+                        price: batch ? batch.priceRupees : c.price,
+                        batchId: batch?.id ?? null,
                     }))
                 } : undefined,
                 // Bundle items
@@ -188,7 +216,10 @@ export async function POST(req: Request) {
         });
 
         // 7. Cashfree Initiation
-        const cashfreeRes = await createCashfreeOrder(orderId, finalAmount, { name, email, phone }, utmParams);
+        const cashfreeRes = await createCashfreeOrder(orderId, finalAmount, { name, email, phone }, utmParams, orderSource ?? undefined,
+            // After paying, the buyer returns to the site they are on.
+            sameSiteOrigin(req) ?? undefined,
+        );
 
         if (!cashfreeRes.success) throw new Error(cashfreeRes.error);
 
@@ -201,6 +232,8 @@ export async function POST(req: Request) {
     } catch (error: any) {
         console.error("Checkout Error Detailed:", JSON.stringify(error, null, 2));
         console.error("Checkout Error Message:", error.message);
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        // Details stay in the server log; the browser gets a generic message
+        // (database or Cashfree internals must not reach the page).
+        return NextResponse.json({ success: false, error: "payment_start_failed" }, { status: 500 });
     }
 }

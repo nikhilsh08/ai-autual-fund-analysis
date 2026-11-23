@@ -11,6 +11,11 @@ export const {
   signOut,
 } = NextAuth({
   adapter: PrismaAdapter(dataBasePrisma) as any,
+  // Auth.js trusts the request's host automatically only on Vercel. On any
+  // other host (Render) every sign-in and session check fails with "There was
+  // a problem with the server configuration" unless the host is trusted. The
+  // site always runs behind the host's own proxy, which sets the Host header.
+  trustHost: true,
   session: { strategy: "jwt" },
   cookies: {
     sessionToken: {

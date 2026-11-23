@@ -78,8 +78,7 @@ ai-autual-fund-analysis/
 │   │   │   ├── admin/         # Admin-only endpoints (require ADMIN role)
 │   │   │   ├── auth/          # NextAuth route handler
 │   │   │   ├── payment/       # Cashfree initiate / verify / webhook
-│   │   │   ├── uploadthing/   # UploadThing route handler
-│   │   │   └── zwitch/        # Zwitch payment integration (legacy/alt)
+│   │   │   └── uploadthing/   # UploadThing route handler
 │   │   ├── layout.tsx         # Root layout (fonts, theme, ToastProvider)
 │   │   ├── globals.css        # Tailwind base + custom global styles
 │   │   ├── robots.ts          # SEO: robots.txt generation
@@ -618,7 +617,7 @@ If you use a new CDN or image host, add it to the `remotePatterns` array in `nex
 - `/src/app/(shop)`: Course catalogs and individual course detail pages (PDPs).
 - `/src/app/(student)`: The protected dashboard where a user can see their purchased courses and access the integrated learning materials (e.g., TrainerCentral links).
 - `/src/components`: Reusable UI components. Many are likely based on "shadcn/ui" patterns (radix-ui + tailwind).
-- `/src/lib`: Utility functions, Prisma database client setup, and external service configurations (Zwitch, Cashfree sdk wrapper).
+- `/src/lib`: Utility functions, Prisma database client setup, and external service configurations (Cashfree sdk wrapper).
 
 ---
 
@@ -640,8 +639,7 @@ These routes are protected by checking for the `ADMIN` role. They are primarily 
 - `/masterclass`: Admin CRUD operations for `Course` items.
 - `/orders` & `/coupons`: Management APIs for transactions and discounts.
 
-### `/api/zwitch` & `/api/uploadthing`
-- **Zwitch**: Endpoints handling integration with external communication or video tools (depends on specific feature logic).
+### `/api/uploadthing`
 - **UploadThing**: Endpoint for securely passing image/file uploads directly to the cloud.
 
 ---

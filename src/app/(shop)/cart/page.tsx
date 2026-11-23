@@ -159,7 +159,7 @@ const CartPage = () => {
                   </div>
                 </div>
                 <Button className="w-full" onClick={handleCheckout}>Checkout</Button>
-                <p className="text-center text-xs text-ink-muted mt-4">Secure checkout powered by Zwitch</p>
+                <p className="text-center text-xs text-ink-muted mt-4">Secure checkout powered by Cashfree</p>
               </div>
             </div>
           </div>

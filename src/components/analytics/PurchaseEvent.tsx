@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { trackPurchase } from "@/lib/analytics/track";
 
 interface PurchaseEventProps {
     amount: number;
@@ -11,6 +12,8 @@ interface PurchaseEventProps {
         item_name: string;
         price: number;
     }>;
+    // Kept for callers; the order's UTM tags are stored on the order and sent
+    // server-side. They are not added to the browser events.
     utm?: {
         source?: string;
         medium?: string;
@@ -20,56 +23,20 @@ interface PurchaseEventProps {
     };
 }
 
-export default function PurchaseEvent({
-    amount,
-    currency,
-    transactionId,
-    items,
-    utm,
-}: PurchaseEventProps) {
+// Fires GA4 `purchase` and Meta Pixel `Purchase` for a paid order, once per
+// order per browser. The Pixel event carries eventID = transactionId (the
+// order ID), the same value the Conversions API sends as event_id
+// (lib/meta-capi.ts), so Meta counts one purchase, not two.
+export default function PurchaseEvent({ amount, currency, transactionId, items }: PurchaseEventProps) {
     const firedRef = useRef(false);
 
     useEffect(() => {
         if (firedRef.current) return;
         firedRef.current = true;
-
-        // GA4 Purchase Event
-        if (typeof (window as any).gtag !== "undefined") {
-            (window as any).gtag("event", "purchase", {
-                transaction_id: transactionId,
-                value: amount,
-                currency: currency,
-                items: items,
-                // GA4 automatically parses UTMs from URL, but we can set them as user properties or event params if needed explicitly
-                // especially if we are on a different page than the landing page.
-                campaign: utm?.campaign,
-                source: utm?.source,
-                medium: utm?.medium,
-                term: utm?.term,
-                content: utm?.content,
-            });
-        }
-
-        // Meta Pixel Purchase Event
-        // NOTE: The { eventID } option enables deduplication with the server-side
-        // Meta Conversions API event (meta-capi.ts). Both use orderId as event_id.
-        // Meta will count it as ONE purchase, not two.
-        if (typeof (window as any).fbq !== "undefined") {
-            (window as any).fbq("track", "Purchase", {
-                value: amount,
-                currency: currency,
-                content_ids: items.map((item) => item.item_id),
-                content_type: "product",
-                utm_source: utm?.source,
-                utm_medium: utm?.medium,
-                utm_campaign: utm?.campaign,
-            }, {
-                eventID: transactionId, // Must match event_id sent via CAPI (orderId)
-            });
-        }
-
-        console.log("Analytics: Purchase Event Fired", { transactionId, amount, utm });
-    }, [amount, currency, items, transactionId, utm]);
+        // Waits for the Pixel and gtag if they are still loading (a reload or
+        // a direct visit to the thank-you page), so the event is not dropped.
+        trackPurchase({ orderId: transactionId, value: amount, currency, items });
+    }, [amount, currency, items, transactionId]);
 
     return null;
 }

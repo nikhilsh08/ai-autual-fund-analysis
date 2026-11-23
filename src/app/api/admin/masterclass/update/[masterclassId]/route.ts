@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import { verifyAdmin } from "@/lib/auth-admin";
 import { CourseType } from "@prisma/client";
+import { getLandingCourse, landingPageByCourseId } from "@/lib/landing/course-link";
+import { isLandingPageKey } from "@/lib/landing/sources";
 
 export async function PATCH(
     req: Request,
@@ -47,6 +49,60 @@ export async function PATCH(
         for (const field of boolFields) {
             if (field in body) updateData[field] = Boolean(body[field]);
         }
+
+        // Sold in batches: changed only when a real true/false is sent, so an
+        // older admin form that does not know the field cannot switch it off.
+        if (typeof body.useBatches === "boolean") {
+            updateData.useBatches = body.useBatches;
+            if (!body.useBatches) {
+                // Turning it off while a batch is on sale would take the workshop
+                // landing page (/v10, /v20) off sale without warning.
+                const openBatches = await dataBasePrisma.batch.count({ where: { courseId: masterclassId, status: "OPEN" } });
+                if (openBatches > 0) {
+                    return NextResponse.json(
+                        { message: "This course has an open batch. Close it in Batches before turning off 'Sold in batches'." },
+                        { status: 409 },
+                    );
+                }
+            }
+        }
+        // Workshop landing page link. "v10" | "v20" | "v30" links this course
+        // to that page (one course per page); "none" / "" unlinks it.
+        if ("landingPage" in body) {
+            const current = (await landingPageByCourseId()).get(masterclassId) ?? null;
+            const next = isLandingPageKey(body.landingPage) ? body.landingPage : null;
+            if (next !== current) {
+                // Moving or removing the link while a batch is on sale would
+                // take that page off sale (or move the sale) without warning.
+                const openOnPage = await dataBasePrisma.batch.count({ where: { courseId: masterclassId, status: "OPEN" } });
+                if (current && openOnPage > 0) {
+                    return NextResponse.json(
+                        { message: `This course has an open batch on /${current}. Close it in Batches before changing its landing page.` },
+                        { status: 409 },
+                    );
+                }
+                if (next) {
+                    const taken = await getLandingCourse(next);
+                    if (taken && taken.id !== masterclassId) {
+                        return NextResponse.json(
+                            { message: `/${next} is already linked to "${taken.title}". Unlink it there first (set its landing page to None).` },
+                            { status: 409 },
+                        );
+                    }
+                    updateData.landingPage = next;
+                    updateData.useBatches = true;
+                } else {
+                    // "none" (not null): a course found by its old slug stays unlinked.
+                    updateData.landingPage = "none";
+                }
+            } else if (next) {
+                // Same link: store it explicitly (older courses were linked by slug).
+                updateData.landingPage = next;
+                updateData.useBatches = true;
+            }
+        }
+        // An empty TrainerCentral ID would break the unique index; keep the old one.
+        if ("tcCourseId" in updateData && !updateData.tcCourseId) delete updateData.tcCourseId;
 
         if ("price" in body) updateData.price = parseFloat(body.price);
         if ("originalPrice" in body) updateData.originalPrice = body.originalPrice ? parseFloat(body.originalPrice) : null;

@@ -1,0 +1,77 @@
+// The three workshop landing pages. Each one is linked to its OWN course in
+// the admin panel (Masterclasses -> "Workshop landing page"), so each has its
+// own batches, dates, price and seats.
+//
+// The checkout sends `landingSource`; createCashfreeOrder carries it in the
+// Cashfree return URL as `src`, and /payment/callback uses it to send the
+// buyer back to the right pages. Anything else keeps the main-site flow.
+export const LANDING_PAGES = ["v10", "v20", "v30"] as const;
+export type LandingPageKey = (typeof LANDING_PAGES)[number];
+
+export const LANDING_SOURCES = {
+  "mmf-v10": {
+    page: "v10",
+    name: "v10 · Master Mutual Funds",
+    landing: "/v10",
+    checkout: "/v10/checkout",
+    thankYou: "/v10/thank-you",
+  },
+  "mpf-v20": {
+    page: "v20",
+    name: "v20 · Master Personal Finance with AI",
+    landing: "/v20",
+    checkout: "/v20/checkout",
+    thankYou: "/v20/thank-you",
+  },
+  "mpf-v30": {
+    page: "v30",
+    name: "v30 · Master Personal Finance with AI (new design)",
+    landing: "/v30",
+    checkout: "/v30/checkout",
+    thankYou: "/v30/thank-you",
+  },
+} as const satisfies Record<string, { page: LandingPageKey; name: string; landing: string; checkout: string; thankYou: string }>;
+
+export type LandingSource = keyof typeof LANDING_SOURCES;
+
+// Courses created before Course.landingPage existed. Used only while such a
+// course has no landingPage value and no other course is linked to the page.
+export const LEGACY_COURSE_SLUG: Partial<Record<LandingPageKey, string>> = {
+  v10: "master-mutual-funds-invest-smarter",
+  v20: "master-personal-finance-with-ai",
+};
+
+// Paid bookings a batch may take, per page; null = no limit. No page has a
+// limit (owner decision, 16 Nov 2026): bookings are never refused for seats
+// and no page counts seats down. Putting a number here for a page makes its
+// checkout stop at that many paid bookings and its seat line count down. The
+// /v20 and /v30 wording says 50, so any other number needs their templates
+// changed too.
+export const LANDING_SEATS_PER_BATCH: Record<LandingPageKey, number | null> = {
+  v10: null,
+  v20: null,
+  v30: null,
+};
+
+export function isLandingSource(value: unknown): value is LandingSource {
+  return typeof value === "string" && Object.prototype.hasOwnProperty.call(LANDING_SOURCES, value);
+}
+
+export function isLandingPageKey(value: unknown): value is LandingPageKey {
+  return typeof value === "string" && (LANDING_PAGES as readonly string[]).includes(value);
+}
+
+export const landingPath = (page: LandingPageKey) => `/${page}`;
+
+// The address each page is advertised on. It shows the same page as /v10,
+// /v20 or /v30: next.config.ts serves it from that route without changing
+// the address in the browser. The booking, thank-you and refund pages stay on
+// the /v10, /v20 and /v30 addresses, which keep working as before.
+//
+// To move a page to another address, change it here; nothing else needs
+// editing. Keep each address a single path segment that no other page uses.
+export const LANDING_PUBLIC_PATH: Record<LandingPageKey, string> = {
+  v10: "/personalfinance",
+  v20: "/personalfinance1",
+  v30: "/personalfinance2",
+};

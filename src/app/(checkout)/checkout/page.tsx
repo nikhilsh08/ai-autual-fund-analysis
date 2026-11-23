@@ -18,11 +18,14 @@ import { useCartStore } from '@/store/cart-store';
 import { useStore } from '@/hooks/use-store';
 import { getUpsellRecommendations } from '@/server/actions/get-recommendations';
 import { getCourseByIdAction } from '@/server/actions/get-courses';
-import { useZwitchPayment } from '@/hooks/useZwitchPayment';
 import { getCashfreeInstance } from '@/lib/PGinitialize';
 import { validateCoupon } from '@/server/actions/coupon.action';
 import axios from 'axios';
 import { getSessionUTMs } from '@/components/analytics/UTMCapture';
+import { useRef } from 'react';
+import { trackInitiateCheckout } from '@/lib/analytics/track';
+import { MMF_COPY } from '@/lib/mmf-copy';
+import { formatDuration } from '@/lib/ist';
 
 const checkoutSchema = z.object({
   name: z.string().min(2, { message: "Full name is required" }),
@@ -45,11 +48,17 @@ const CheckoutContent = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [buyNowItem, setBuyNowItem] = useState<any>(null);
   const [isLoadingBuyNow, setIsLoadingBuyNow] = useState(!!buyNowId);
-  const { initiateZwitch } = useZwitchPayment();
-  let zwitchPayment = false;
-
   const [upsellItem, setUpsellItem] = useState<any>(null);
   const [isRedirecting, setIsRedirecting] = useState(false);
+
+  // Workshop (batch) path: price and dates come from the batch on sale.
+  const requestedBatchId = searchParams.get('batchId');
+  // Which landing page sent the buyer here; decides the thank-you page after payment.
+  const landingSource = searchParams.get('src');
+  const [batch, setBatch] = useState<{ id: string; priceRupees: number; day1Date: string; startTime: string; durationMinutes: number } | null>(null);
+  const [batchUnavailable, setBatchUnavailable] = useState(false);
+  const [whatsappOptIn, setWhatsappOptIn] = useState(false);
+  const checkoutTracked = useRef(false);
 
   // Coupon State
   const [couponCode, setCouponCode] = useState("");
@@ -71,6 +80,7 @@ const CheckoutContent = () => {
     }
   }, [session, setValue]);
 
+
   useEffect(() => {
     const fetchBuyNowCourse = async () => {
       if (!buyNowId) {
@@ -90,6 +100,20 @@ const CheckoutContent = () => {
             originalPrice: (course as any).originalPrice,
             thumbnail: course.thumbnail || ""
           });
+
+          if ((course as any).useBatches) {
+            const res = await fetch(`/api/batches/current?courseId=${buyNowId}`, { cache: 'no-store' });
+            if (res.ok) {
+              const { batch: current } = await res.json();
+              if (requestedBatchId && current.id !== requestedBatchId) {
+                console.warn('[checkout] requested batch is no longer on sale; showing the current batch');
+              }
+              setBatch(current);
+              setBuyNowItem((item: any) => (item ? { ...item, price: current.priceRupees, originalPrice: undefined } : item));
+            } else {
+              setBatchUnavailable(true);
+            }
+          }
         }
       } catch (error) {
         console.error("Error fetching course", error);
@@ -151,6 +175,17 @@ const CheckoutContent = () => {
   const grossTotal = itemsTotal;
   const discount = appliedCoupon ? appliedCoupon.discountAmount : 0;
   const total = Math.max(0, grossTotal - discount);
+
+  // InitiateCheckout / begin_checkout, once per checkout load with items.
+  useEffect(() => {
+    if (checkoutTracked.current || isEmpty || isLoadingBuyNow || !(total > 0)) return;
+    checkoutTracked.current = true;
+    trackInitiateCheckout({
+      value: total,
+      contentIds: courseIds.length > 0 ? courseIds : bundleIds,
+      contentName: batch ? MMF_COPY.contentName : 'Checkout',
+    });
+  }, [isEmpty, isLoadingBuyNow, total, courseIds, bundleIds, batch]);
   const tax = (total * taxRate) / (1 + taxRate); // Extract GST portion from GST-inclusive total
   const subtotal = total - tax;
   // console all total  
@@ -261,18 +296,7 @@ const CheckoutContent = () => {
   const onPaymentSubmit = async (data: CheckoutFormValues) => {
     console.log("Payment Data:", data, { total });
     setIsProcessing(true);
-    if (zwitchPayment) {
       try {
-        await initiateZwitch({ ...data, amount: total });
-      } catch (error) {
-        toast.error("Payment Failed");
-      } finally {
-        setIsProcessing(false);
-      }
-    }
-    else {
-      try {
-
 
         const paymentSession = await axios.post('/api/payment/cashfree/initiate', {
           name: data.name,
@@ -281,6 +305,9 @@ const CheckoutContent = () => {
           courseIds: courseIds.length > 0 ? courseIds : undefined,
           bundleIds: bundleIds.length > 0 ? bundleIds : undefined,
           couponCode: appliedCoupon?.code,
+          batchId: batch?.id,
+          whatsappOptIn: batch ? whatsappOptIn : undefined,
+          landingSource: batch ? landingSource : undefined,
           // Capture UTMs
           utmParams: {
             // Prefer UTMs from current URL; fall back to sessionStorage (set on
@@ -304,7 +331,7 @@ const CheckoutContent = () => {
 
           const cashfree = await getCashfreeInstance();
 
-          let checkOutOptions = {
+          const checkOutOptions = {
             paymentSessionId: payment_session_id,
             redirectTarget: "_modal",
           }
@@ -338,10 +365,10 @@ const CheckoutContent = () => {
       } finally {
         setIsProcessing(false);
       }
-    }
   };
 
-  const showUpsellCard = !isEmpty && upsellItem && !isUpsellInCart;
+  // No follow-on offers on the workshop path (CONTENT-RULES).
+  const showUpsellCard = !isEmpty && upsellItem && !isUpsellInCart && !batch;
 
   return (
     <div className="pt-28 pb-32 px-6 min-h-screen bg-cream">
@@ -377,7 +404,18 @@ const CheckoutContent = () => {
                 <span className="text-sm font-medium text-teal bg-teal/10 px-3 py-1 rounded-full border border-teal/20">Secure Checkout</span>
               </div>
 
-              <div className="bg-card p-8 rounded-2xl border border-border shadow-sm relative overflow-hidden">
+              {batch && (
+                <p className="text-sm text-ink-secondary bg-cream-dark border border-border rounded-xl px-4 py-3" data-testid="batch-line">
+                  {MMF_COPY.checkout.batchLine(batch.day1Date, batch.startTime, formatDuration(batch.durationMinutes))}
+                </p>
+              )}
+              {batchUnavailable && (
+                <p className="text-sm text-ink-secondary bg-cream-dark border border-border rounded-xl px-4 py-3">
+                  {MMF_COPY.landing.nothingOnSale}
+                </p>
+              )}
+
+              <div className="bg-card p-8 rounded-2xl border border-border shadow-sm relative overflow-hidden" data-clarity-mask="true">
                 <h2 className="text-xl font-medium text-ink mb-6 flex items-center gap-2">
                   <User size={20} className="text-accent" /> Contact Information
                 </h2>
@@ -407,6 +445,17 @@ const CheckoutContent = () => {
                     </div>
                     {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
                   </div>
+                  {batch && (
+                    <label className="flex items-start gap-3 text-sm text-ink-secondary cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={whatsappOptIn}
+                        onChange={(e) => setWhatsappOptIn(e.target.checked)}
+                        className="mt-1 h-4 w-4 rounded border-border"
+                      />
+                      <span>{MMF_COPY.checkout.whatsappConsent}</span>
+                    </label>
+                  )}
                 </form>
               </div>
 

@@ -13,7 +13,7 @@ export const InstructorCard: React.FC = () => (
         <li className="flex items-start gap-3">
           <Award className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
           <span className="text-gray-700">
-            Managed Risk for ₹65B+ AUM at Goldman Sachs
+            Analysed the risk of $65B of mutual fund and hedge-fund assets at Goldman Sachs
           </span>
         </li>
         <li className="flex items-start gap-3">

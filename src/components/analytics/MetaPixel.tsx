@@ -2,15 +2,23 @@
 
 import { usePathname } from "next/navigation";
 import Script from "next/script";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function MetaPixel({ pixelId }: { pixelId: string }) {
     const pathname = usePathname();
     const [loaded, setLoaded] = useState(false);
+    const lastTrackedPath = useRef<string | null>(null);
 
     useEffect(() => {
         if (!loaded) return;
-        // Track page view on route change
+        // The init snippet below already fires PageView for the first page;
+        // only client-side route changes need another one.
+        if (lastTrackedPath.current === null) {
+            lastTrackedPath.current = pathname;
+            return;
+        }
+        if (lastTrackedPath.current === pathname) return;
+        lastTrackedPath.current = pathname;
         (window as any).fbq('track', 'PageView');
     }, [pathname, loaded]);
 
