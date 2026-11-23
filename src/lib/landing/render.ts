@@ -1,7 +1,8 @@
-import { formatDuration, formatIstDate, formatIstDateTime, formatIstTime } from "@/lib/ist";
+import { addDays, formatDuration, formatIstDate, formatIstDateTime, formatIstShortDate, formatIstTime } from "@/lib/ist";
 import { MMF_V10_CHECKOUT_PATH } from "@/lib/landing/v10";
 import { MMF_COPY } from "@/lib/mmf-copy";
-import { escapeHtml, landingEventsScript, trackingNoscript, trackingTags } from "@/lib/landing/tracking";
+import { escapeHtml, landingEventsScript, scriptJson, trackingNoscript, trackingTags } from "@/lib/landing/tracking";
+import { batchWeekdays, daysOnPage, fillWeekdays } from "@/lib/landing/weekdays";
 
 export { escapeHtml };
 
@@ -9,6 +10,8 @@ export interface LandingBatch {
   id: string;
   priceRupees: number;
   day1StartAt: Date;
+  // Absent: the day after day 1.
+  day2StartAt?: Date;
   bookingCloseAt: Date;
   durationMinutes: number;
   language: string | null;
@@ -29,11 +32,20 @@ export interface LandingConfig {
   fallbackPriceRupees: number | null;
   // Length of one session, used for the duration tokens when nothing is on sale.
   fallbackDurationMinutes: number;
+  // Day 1 of the next batch on the cycle (Batch settings). Names the two
+  // weekdays when nothing is on sale; absent, the page keeps its own words.
+  fallbackDay1?: Date | null;
 }
 
 export class LandingRenderError extends Error {}
 
-const TOKEN_RE = /\{(price|class date|booking close date|session duration|total duration)\}/;
+// Tokens in src/landing/mmf-v10.html:
+//   {day 1 short date} / {day 2 short date}  "5 Dec" / "6 Dec" ("to be announced" with nothing on sale)
+//   {day 1} / {day 2}                        "Saturday 5 Dec" / "Sunday 6 Dec"; the weekday alone with nothing on sale
+//   {class date}                             "Saturday, 5 December 2026"
+// The start time is the page's own {{ startTime }} value (the startTime prop below).
+const TOKEN_RE =
+  /\{(price|class date|day 1 short date|day 2 short date|day 1|day 2|booking close date|session duration|total duration)\}/;
 const SESSIONS_PER_BATCH = 2; // Day 1 and Day 2
 const SUPPORT_SCRIPT = '<script src="/mmf/support.js"></script>';
 
@@ -46,7 +58,8 @@ function setPropDefault(html: string, prop: string, value: string): string {
   return html.replace(re, `$1${escapeHtml(value)}$3`);
 }
 
-function headSnippet(cfg: LandingConfig, priceRupees: number | null): string {
+// dayLabels: the two days as the 2-day path names them ("Saturday 5 Dec", "Sunday 6 Dec").
+function headSnippet(cfg: LandingConfig, priceRupees: number | null, dayLabels: [string, string]): string {
   const parts: string[] = [
     `<title>${escapeHtml(cfg.title)}</title>`,
     `<meta name="description" content="${escapeHtml(cfg.description)}">`,
@@ -65,10 +78,11 @@ function headSnippet(cfg: LandingConfig, priceRupees: number | null): string {
 
   // support.js reuses window.React / window.ReactDOM when they exist and
   // skips its own page re-fetch when window.__resources is set (spec 5.3).
+  // motion.js reads window.MMF_DAYS for the "Day 1 · …" label of the 2-day path.
   parts.push(
     '<script src="/mmf/vendor/react.production.min.js"></script>',
     '<script src="/mmf/vendor/react-dom.production.min.js"></script>',
-    "<script>window.__resources={};</script>",
+    `<script>window.__resources={};window.MMF_DAYS=${scriptJson(dayLabels)};</script>`,
   );
 
   // Pixel, GTM, GA4, Clarity, then UTM capture, ViewContent and AddToCart.
@@ -97,10 +111,26 @@ export function renderLanding(template: string, batch: LandingBatch | null, cfg:
   const closeText = batch ? formatIstDateTime(batch.bookingCloseAt) : MMF_COPY.landing.dateToBeAnnounced;
 
   const sessionMinutes = batch ? batch.durationMinutes : cfg.fallbackDurationMinutes;
+  // The two weekdays: the batch on sale, else the cycle in Batch settings.
+  const days = daysOnPage(batch, cfg.fallbackDay1);
+  const [weekday1, weekday2] = batchWeekdays(days);
 
-  let html = template.replace("<html>", '<html lang="en">');
+  // Both days of the batch. With nothing on sale there is no date to give:
+  // the short-date tokens read "to be announced" and the day tokens name the
+  // weekday alone.
+  const day1Short = batch ? formatIstShortDate(batch.day1StartAt) : MMF_COPY.landing.dateToBeAnnounced;
+  const day2Short = batch
+    ? formatIstShortDate(batch.day2StartAt ?? addDays(batch.day1StartAt, 1))
+    : MMF_COPY.landing.dateToBeAnnounced;
+  const dayLabels: [string, string] = batch ? [`${weekday1} ${day1Short}`, `${weekday2} ${day2Short}`] : [weekday1, weekday2];
+
+  let html = fillWeekdays(template, days).replace("<html>", '<html lang="en">');
   html = html
     .replaceAll("{price}", escapeHtml(priceText))
+    .replaceAll("{day 1 short date}", escapeHtml(day1Short))
+    .replaceAll("{day 2 short date}", escapeHtml(day2Short))
+    .replaceAll("{day 1}", escapeHtml(dayLabels[0]))
+    .replaceAll("{day 2}", escapeHtml(dayLabels[1]))
     .replaceAll("{class date}", escapeHtml(classDate))
     .replaceAll("{booking close date}", escapeHtml(closeText))
     .replaceAll("{session duration}", escapeHtml(formatDuration(sessionMinutes)))
@@ -121,7 +151,7 @@ export function renderLanding(template: string, batch: LandingBatch | null, cfg:
     );
   }
 
-  html = html.replace(SUPPORT_SCRIPT, `${headSnippet(cfg, priceRupees)}\n${SUPPORT_SCRIPT}`);
+  html = html.replace(SUPPORT_SCRIPT, `${headSnippet(cfg, priceRupees, dayLabels)}\n${SUPPORT_SCRIPT}`);
   html = html.replace("<body>", `<body>\n${bodyNoscript(cfg)}`);
 
   if (TOKEN_RE.test(html)) throw new LandingRenderError("unfilled token in rendered page");

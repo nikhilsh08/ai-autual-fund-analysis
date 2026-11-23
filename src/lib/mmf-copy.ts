@@ -1,11 +1,26 @@
 // Visitor-facing copy for the Master Mutual Funds workshop path. Every string
 // is the draft from Part 3 of the brief, verbatim. Change wording here only.
+//
+// The brief's drafts say "Saturday" and "Sunday". A batch can start on any
+// day of the week (owner, 23 Nov 2026), so those two words are taken from the
+// batch's own dates; for a Saturday batch the text reads as the brief wrote it.
+
+// "Saturday, 21 November 2026" -> "Saturday"
+export const weekdayOf = (dateText: string) => dateText.split(",")[0].trim();
+
+// "Saturday, 21 November 2026" -> "Saturday 21 November 2026"
+const spokenDate = (dateText: string) => dateText.replace(",", "");
+
 export const MMF_COPY = {
   contentName: "Master Mutual Funds workshop",
 
   landing: {
-    // C2 — announcement bar: "Live workshop · Starts {class date}" only. Price and
-    // "50 seats per batch" removed at the owner's request (15 Nov 2026).
+    // C2 — announcement bar. Landing page (owner, 23 Nov 2026): the whole
+    // booking line, as on /v30 — both days with their dates, the start time,
+    // the price and "Only 50 seats per batch", with no button. Its text is in
+    // src/landing/mmf-v10.html. The checkout page keeps "Live workshop ·
+    // Starts {class date}" (price and "50 seats per batch" were taken off the
+    // bar at the owner's request on 15 Nov 2026).
     // C3 — mobile sticky bar (replaces "{N} of 50 seats left")
     sticky: "2-day live workshop + 5 guides",
     // C4 — FAQ, device question
@@ -19,19 +34,22 @@ export const MMF_COPY = {
   },
 
   checkout: {
-    // K1 — above the form
-    batchLine: (classDate: string, startTime: string, duration: string) =>
-      `Batch: ${classDate}, ${startTime} IST, Saturday and Sunday, ${duration} each, live online.`,
+    // K1 — above the form. The two weekdays are the batch's own (a batch can
+    // start on any day); both dates arrive as "Saturday, 21 November 2026".
+    batchLine: (day1Date: string, day2Date: string, startTime: string, duration: string) =>
+      `Batch: ${day1Date}, ${startTime} IST, ${weekdayOf(day1Date)} and ${weekdayOf(day2Date)}, ${duration} each, live online.`,
     // K2 — checkbox under phone
     whatsappConsent: "Send booking confirmation and session reminders to this number on WhatsApp.",
   },
 
   thankYou: {
     T1: "Your seat is booked.",
-    T2: (day1: string, day2: string, startTime: string, duration: string) =>
-      `Saturday ${day1} and Sunday ${day2}, ${startTime} IST, ${duration} each.`,
-    T3_DAY1: "Join Saturday's session",
-    T3_DAY2: "Join Sunday's session",
+    // Both dates arrive as "Saturday, 21 November 2026" and are shown as
+    // "Saturday 21 November 2026", so the weekday is always the batch's own.
+    T2: (day1Date: string, day2Date: string, startTime: string, duration: string) =>
+      `${spokenDate(day1Date)} and ${spokenDate(day2Date)}, ${startTime} IST, ${duration} each.`,
+    // "Join Saturday's session" — the weekday of that session (weekdayOf).
+    T3: (weekday: string) => `Join ${weekday}'s session`,
     T4: "Your join link is being prepared. It will appear here in a few seconds and will also be sent to your email.",
     T5: "Join the batch WhatsApp group",
     T6: "Add both sessions to my calendar",
@@ -50,5 +68,5 @@ export const MMF_COPY = {
   },
 } as const;
 
-// "Saturday, 21 November 2026" -> "21 November 2026" (T2 already says the weekday)
+// "Saturday, 21 November 2026" -> "21 November 2026" (shown beside a line that already says the weekday)
 export const withoutWeekday = (dateText: string) => dateText.replace(/^[A-Za-z]+,\s*/, "");

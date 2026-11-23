@@ -172,6 +172,10 @@ section{position:relative}
 .track .day{position:relative;height:22px;width:100%;text-align:center;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
 .track .day span{position:absolute;left:0;width:100%;top:0}
 .track .day .d2{opacity:0}
+/* Date and time inside the day label (an <i>, because every <span> in that label is stacked). The label stays on one line; on the narrowest phones it keeps the date and leaves the time to the lines around it. */
+.track .day i{font-style:normal}
+.track .day span{white-space:nowrap}
+@media(max-width:400px){.track .day .tm{display:none}}
 .dots{position:relative;display:grid;grid-template-columns:repeat(6,1fr);width:100%}
 .dots .line{position:absolute;top:21px;left:8.33%;right:8.33%;height:2px;background:#cfd0d0}
 .dots .fill{position:absolute;top:21px;left:8.33%;right:8.33%;height:2px;background:var(--accent);transform-origin:left;transform:scaleX(0)}
@@ -627,13 +631,19 @@ html.sda #learn .path{margin-top:24px}
 @keyframes c5{0%{transform:translate(-50%,-50%) rotateY(240deg) translateZ(var(--ring));opacity:0}40%{transform:translate(-50%,-50%) rotateY(120deg) translateZ(var(--ring));opacity:0}60%{transform:translate(-50%,-50%) rotateY(60deg) translateZ(var(--ring));opacity:.18}80%{transform:translate(-50%,-50%) rotateY(0deg) translateZ(var(--ring));opacity:1}100%{transform:translate(-50%,-50%) rotateY(-60deg) translateZ(var(--ring));opacity:.18}}
 @keyframes c6{0%{transform:translate(-50%,-50%) rotateY(300deg) translateZ(var(--ring));opacity:0}60%{transform:translate(-50%,-50%) rotateY(120deg) translateZ(var(--ring));opacity:0}80%{transform:translate(-50%,-50%) rotateY(60deg) translateZ(var(--ring));opacity:.18}100%{transform:translate(-50%,-50%) rotateY(0deg) translateZ(var(--ring));opacity:1}}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+/* Phones: the short top bar names both days AND the start time (owner, 23 Nov 2026). The menu button sits on the right, so the left side is freed for the text; the seats line gives way below 481px and the price below 360px (the price is also in the bottom bar). */
+@media(max-width:480px){.bar .seat{display:none}}
+/* A start time ("10:30 AM IST") is never split across two lines. */
+[data-val="startTime"]{white-space:nowrap}
+@media(max-width:413px){.bar{padding-left:12px;font-size:12.5px}}
+@media(max-width:359px){.bar .pr{display:none}}
 </style>
 </head>
 <body>
 <div class="page">
 <div class="grid" aria-hidden="true"></div>
 <div class="compass" aria-hidden="true"><span class="cn">N</span><span class="cline"><span class="cfill"></span></span><span class="cs">S</span></div>
-<div class="bar"><span class="bl">2-day live workshop</span><span class="bl">·</span><span class="bl">Saturday <b>{class date}</b> and Sunday <b>{day 2 date}</b><span data-if="hasStart">, <span data-val="startTime"></span></span></span><span class="bs">Sat <b>{class date}</b> – Sun <b>{day 2 date}</b></span><span>·</span><span><b>₹{price}</b></span><span class="seat">·</span><span class="bl seat"><span data-val="barSeats"></span></span><span class="bs seat"><span data-val="barSeatsShort"></span></span><a class="barbtn" href="#seat">Book my seat</a></div>
+<div class="bar"><span class="bl">2-day live workshop</span><span class="bl">·</span><span class="bl">Saturday <b>{class date}</b> and Sunday <b>{day 2 date}</b><span data-if="hasStart">, <span data-val="startTime"></span></span></span><span class="bs">Sat <b>{class date}</b> – Sun <b>{day 2 date}</b><span data-if="hasStart">, <span data-val="startTime"></span></span></span><span class="pr">·</span><span class="pr"><b>₹{price}</b></span><span class="seat">·</span><span class="bl seat"><span data-val="barSeats"></span></span><span class="bs seat"><span data-val="barSeatsShort"></span></span><a class="barbtn" href="#seat">Book my seat</a></div>
 <button class="menubtn" type="button" aria-label="Open the menu" aria-expanded="false" aria-controls="menu"><span></span><span></span><span></span></button>
 <nav class="menu" id="menu" aria-label="Page sections" hidden>
   <a href="#mission">What you learn</a>
@@ -810,7 +820,7 @@ html.sda #learn .path{margin-top:24px}
   <div class="path">
     <div class="pin">
       <div class="track" aria-hidden="true">
-        <div class="day"><span class="d1">Day 1 · Saturday</span><span class="d2">Day 2 · Sunday</span></div>
+        <div class="day"><span class="d1">Day 1 · Saturday<i data-if="hasStart"> {class date}<i class="tm">, <i data-val="startTime"></i></i></i></span><span class="d2">Day 2 · Sunday<i data-if="hasStart"> {day 2 date}<i class="tm">, <i data-val="startTime"></i></i></i></span></div>
         <div class="dots"><span class="line"></span><span class="fill"></span><span class="dot on">1</span><span class="dot d2">2</span><span class="dot d3">3</span><span class="dot d4">4</span><span class="dot d5">5</span><span class="dot d6">6</span></div>
       </div>
       <div class="ringwrap" aria-hidden="true">
@@ -849,7 +859,7 @@ html.sda #learn .path{margin-top:24px}
   </div>
   <div class="swp" data-swipe="1" aria-label="The two days">
     <div class="swc day1">
-      <h3>Day 1 · Saturday {class date}</h3>
+      <h3>Day 1 · Saturday {class date}<span data-if="hasStart">, <span data-val="startTime"></span></span></h3>
       <p class="sub">Levels 1 to 3 · Mutual funds, from the basics to a 5-minute check</p>
       <div class="slot"><b>0:00</b><span>How a mutual fund works, and how to narrow the categories to a few</span></div>
       <div class="slot"><b>0:25</b><span>SIP, lump sum and step-up SIP; the costs: expense ratio, exit loads, tax</span></div>
@@ -859,7 +869,7 @@ html.sda #learn .path{margin-top:24px}
       <p class="end"><b>By the end of Day 1</b> you can check a fund by hand and with a model. You also know how to avoid a leading question.</p>
     </div>
     <div class="swc day2">
-      <h3>Day 2 · Sunday {day 2 date}</h3>
+      <h3>Day 2 · Sunday {day 2 date}<span data-if="hasStart">, <span data-val="startTime"></span></span></h3>
       <p class="sub">Levels 4 to 6 · The live check, dividing your money, stocks, and the basics of deposits, gold and insurance</p>
       <div class="slot"><b>0:00</b><span>Live check on a sample portfolio of seven real funds; the model is asked a leading question, then a fair one</span></div>
       <div class="slot"><b>0:30</b><span>Overlap, and how to split your money across equity, debt, gold and cash, from your own numbers</span></div>
@@ -925,7 +935,7 @@ html.sda #learn .path{margin-top:24px}
     <div class="price">
       <div>
         <div class="body">
-          <p>Next batch starts {class date}<span data-if="hasStart"> at <span data-val="startTime"></span></span>. <span data-val="seatsLine"></span> Booking for this batch closes {booking close date}.</p>
+          <p>Next batch: <span data-if="hasStart">Saturday </span>{class date}<span data-if="hasStart"> and Sunday {day 2 date}, <span data-val="startTime"></span></span>. <span data-val="seatsLine"></span> Booking for this batch closes {booking close date}.</p>
           <p><b>7-day refund guarantee.</b> Ask for a full refund within 7 days after Day 2. You do not have to give a reason. <a class="ul" href="./refund-policy.html">Read the refund policy</a></p>
           <p>Education only. This workshop does not give investment advice or recommend any fund, stock, bond or insurance product.</p>
         </div>

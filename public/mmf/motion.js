@@ -114,7 +114,9 @@
       d.style.transform = j === k ? 'scale(1.14)' : 'none';
       d.setAttribute('aria-current', j === k ? 'step' : 'false');
     });
-    if (p.day) p.day.textContent = k < N / 2 ? 'Day 1 · Saturday' : 'Day 2 · Sunday';
+    /* The two weekdays come from the batch; the page sets window.MMF_DAYS. */
+    var wd = window.MMF_DAYS || ['Saturday', 'Sunday'];
+    if (p.day) p.day.textContent = k < N / 2 ? 'Day 1 · ' + wd[0] : 'Day 2 · ' + wd[1];
   }
 
   /* Sound familiar: the row nearest the middle of the screen is highlighted */

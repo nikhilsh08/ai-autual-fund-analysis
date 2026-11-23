@@ -17,6 +17,7 @@ import {
   MPF_V20_SOURCE,
 } from "@/lib/landing/v20";
 import { LANDING_PUBLIC_PATH } from "@/lib/landing/sources";
+import { daysOnPage, fillWeekdays } from "@/lib/landing/weekdays";
 import {
   checkoutEventsScript,
   escapeHtml,
@@ -151,6 +152,9 @@ export interface V20LandingData {
   seatLimit?: number | null;
   // Session length when nothing is on sale (batch settings).
   fallbackDurationMinutes?: number | null;
+  // Day 1 of the next batch on the cycle (batch settings). Names the two
+  // weekdays when nothing is on sale; absent, the page keeps its own words.
+  fallbackDay1?: Date | null;
 }
 
 export function renderV20Landing(template: string, data: V20LandingData, common: V20Common): string {
@@ -159,7 +163,9 @@ export function renderV20Landing(template: string, data: V20LandingData, common:
 
   const { batch } = data;
   const priceRupees = batch ? batch.priceRupees : data.fallbackPriceRupees;
-  const seats = applySeatLimit(template, !!batch, data.seatLimit, data.paidSeats);
+  // The two weekdays first, while the page file holds no batch or buyer value.
+  const page = fillWeekdays(template, daysOnPage(batch, data.fallbackDay1));
+  const seats = applySeatLimit(page, !!batch, data.seatLimit, data.paidSeats);
   const seatsLeft = seats.seatsLeft;
 
   let html = seats.html.replace(
@@ -295,7 +301,7 @@ export function renderV20Checkout(template: string, batch: V20Batch, common: V20
   must(template, PAGE_MPF_MARKER, "the window.MPF line");
   must(template, '<form class="card" id="coform"', "the checkout form");
 
-  let html = template.replace(PAGE_MPF_MARKER, checkoutConfigScript(batch, common, hooks));
+  let html = fillWeekdays(template, batch).replace(PAGE_MPF_MARKER, checkoutConfigScript(batch, common, hooks));
   // Clarity must not record what buyers type (OWNER_DECISIONS D8).
   html = html.replace('<form class="card" id="coform"', '<form class="card" id="coform" data-clarity-mask="true"');
   html = fillSessionLength(rewritePaths(fillTokens(html, batch, batch.priceRupees)), batch.durationMinutes);
@@ -364,7 +370,8 @@ export function renderV20ThankYou(
   };
   const refresh = { orderId: order.orderId, verifyUrl: hooks.verifyUrl, bookingUrl: hooks.bookingUrl, state: order.state };
 
-  let html = template.replace(
+  // The two weekdays first: the buyer's name goes in next and must stay as typed.
+  let html = fillWeekdays(template, batch).replace(
     PAGE_MPF_MARKER,
     `window.MPF = ${scriptJson(mpf)};
 // "Refresh status": ask the server to re-check the payment with Cashfree, then reload.

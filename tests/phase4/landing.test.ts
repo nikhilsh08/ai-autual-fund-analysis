@@ -43,8 +43,11 @@ describe("landing renderer (spec 5.2, 11)", () => {
     // The button keeps the buyer on the address the page is advertised on.
     expect(html).toContain('href="/personalfinance/checkout" data-checkout="1"');
     expect(html).not.toContain("/v10/checkout");
+    expect(html).not.toMatch(/\{(day 1 short date|day 2 short date|day 1|day 2)\}/);
     expect(html).toContain("₹1,999");
-    expect(html).toContain("Saturday, 21 November 2026");
+    // Both days of the batch, by weekday and date.
+    expect(html).toContain("Saturday 21 Nov");
+    expect(html).toContain("Sunday 22 Nov");
     expect(html).toContain("Friday, 20 November 2026, 11:59 PM IST");
     expect(html).toContain('<html lang="en">');
     expect(html).toContain("fbq('init','PIXEL123')");
@@ -63,8 +66,18 @@ describe("landing renderer (spec 5.2, 11)", () => {
     expect(html).toContain("window.__resources={}");
 
     for (const phrase of FORBIDDEN) expect(html).not.toContain(phrase);
-    expect(html).not.toContain("50 seats per batch");
-    expect(html).toMatch(/class="abar">Live workshop · Starts Saturday, 21 November 2026<\/div>/);
+    // The top bar gives the whole booking line, as on /v30 (owner, 23 Nov
+    // 2026): both days with their dates, the start time ({{ timeComma }} is
+    // filled by the page from the batch's start time), the price and the
+    // seats line. It has no button.
+    const bar = /<div class="abar">.*?<\/div>/s.exec(html)![0];
+    expect(bar).toContain('<span class="al">2-day live workshop</span>');
+    expect(bar).toContain('<span class="al">Saturday <b>21 Nov</b> and Sunday <b>22 Nov</b>{{ timeComma }}</span>');
+    expect(bar).toContain('<span class="as">Sat <b>21 Nov</b> – Sun <b>22 Nov</b>{{ timeComma }}</span>');
+    expect(bar).toContain("<b>₹1,999</b>");
+    expect(bar).toContain("Only 50 seats per batch");
+    expect(bar).not.toMatch(/<a\b|Book my seat/);
+    expect(html).toContain("timeComma: st ? ', ' + st + ' IST' : ''");
     expect(html).toContain("2-day live workshop + 5 guides");
     expect(html).toContain("Your personal join link is shown on the confirmation page after payment");
   });
@@ -89,10 +102,9 @@ describe("landing renderer (spec 5.2, 11)", () => {
     expect(html).not.toMatch(/\{(session duration|total duration)\}/);
     expect(text).toContain("₹2,499");
     expect(text).not.toContain("1,999");
-    expect(text).toContain("Starts Saturday, 5 December 2026");
-    expect(text).toContain("closes Friday, 4 December 2026, 6:00 PM IST");
+    expect(text).toContain("Next batch: Saturday 5 Dec and Sunday 6 Dec{{ timeComma }}. Booking for this batch closes Friday, 4 December 2026, 6:00 PM IST.");
     expect(html).toContain("&quot;default&quot;:&quot;10:30 AM&quot;");
-    expect(text).toContain("Saturday and Sunday · 1 hour 30 minutes each");
+    expect(text).toContain("Saturday 5 Dec and Sunday 6 Dec{{ timeComma }} · 1 hour 30 minutes each");
     expect(text).toContain("In 3 hours over one weekend");
     expect(text).toContain("3 hours of live teaching");
     expect(text).not.toMatch(/\b2 hours\b|\b4 hours\b|four hours/);
@@ -101,7 +113,8 @@ describe("landing renderer (spec 5.2, 11)", () => {
 
   it("uses the settings session length when nothing is on sale", () => {
     const text = visibleText(renderLanding(template, null, { ...cfg, fallbackDurationMinutes: 60 }));
-    expect(text).toContain("Saturday and Sunday · 1 hour each");
+    // No date to give: the days are named without one.
+    expect(text).toContain("Saturday and Sunday{{ timeComma }} · 1 hour each");
     expect(text).toContain("In 2 hours over one weekend");
   });
 

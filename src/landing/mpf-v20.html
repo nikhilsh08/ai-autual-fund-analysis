@@ -19,12 +19,22 @@
 @media (max-width:640px){.hero .metarow{margin-top:14px;font-size:14px;gap:4px 0}.hero .metarow span{padding:0 8px}.hero .metarow span:last-child{display:inline}.hero .ctas{margin-top:12px}}
 @media (min-width:641px) and (max-width:1080px) and (max-height:860px){.hero{padding-top:16px}.hero .display{font-size:min(9.4vw,10.5vh);margin-top:10px}.hero .lede{margin-top:14px;font-size:17px;line-height:1.4}.hero .lede+.lede{margin-top:6px!important}.hero .metarow{margin-top:14px}.hero .ctas{margin-top:14px}}
 @media (min-width:1081px) and (max-height:700px){.hero{padding-top:16px}.hero .display{margin-top:12px}.hero .lede{margin-top:16px}.hero .lede+.lede{margin-top:8px!important}.hero .metarow{margin-top:12px}.hero .ctas{margin-top:12px}}
+/* The top bar gives the whole booking line, as on /v30: both days with their dates, the start time, the price and the seats line (owner, 23 Nov 2026). The seats line gives way first when the screen is narrow. */
+.bar{align-items:center}
+@media (min-width:641px) and (max-width:820px){.bar .seat{display:none}}
+@media (max-width:480px){.bar .seat{display:none}}
+/* A start time ("10:30 AM IST") is never split across two lines. */
+[data-val="startTime"]{white-space:nowrap}
+/* Date and time inside the 2-day path's day label (an <i>, because every <span> in that label is stacked). The label stays on one line; on the narrowest phones it keeps the date and leaves the time to the lines around it. */
+.track .day i{font-style:normal}
+.track .day span{white-space:nowrap}
+@media (max-width:400px){.track .day .tm{display:none}}
 </style>
 <div class="page" style="--accent: #0f7f63; --bg: #e9e9e9">
 <div class="grid" aria-hidden="true"></div>
 <div class="compass" aria-hidden="true"><span class="cn">N</span><span class="cline"><span class="cfill"></span></span><span class="cs">S</span></div>
 
-<div class="bar"><span class="bl">2-day live workshop</span><span class="bl">·</span><span class="bl">Saturday <b>{class date}</b> and Sunday <b>{day 2 date}</b></span><span class="bs">Sat <b>{class date}</b> – Sun <b>{day 2 date}</b></span></div>
+<div class="bar"><span class="bl">2-day live workshop</span><span class="bl">·</span><span class="bl">Saturday <b>{class date}</b> and Sunday <b>{day 2 date}</b><span data-if="hasStart">, <span data-val="startTime"></span></span></span><span class="bs">Sat <b>{class date}</b> – Sun <b>{day 2 date}</b><span data-if="hasStart">, <span data-val="startTime"></span></span></span><span>·</span><span><b>₹{price}</b></span><span class="seat">·</span><span class="bl seat"><span data-val="barSeats"></span></span><span class="bs seat"><span data-val="barSeatsShort"></span></span></div>
 
 <div class="wrap">
 <header class="hdr">
@@ -44,7 +54,7 @@
     <span class="coord" style="left:88.5%;top:460px">CAGR 13%</span>
   </div>
   <div class="wrap">
-    <p class="kicker"><span class="k1">2-day live workshop · Saturday and Sunday · Live online<br></span>Taught by a former Goldman Sachs risk analyst</p>
+    <p class="kicker"><span class="k1">2-day live workshop · Saturday<span data-if="hasStart"> {class date}</span> and Sunday<span data-if="hasStart"> {day 2 date}, <span data-val="startTime"></span></span> · Live online<br></span>Taught by a former Goldman Sachs risk analyst</p>
     <h1 class="display"><span class="l">Intelligence <span class="nb">is for sale.</span></span><span class="l l2">Judgement <span class="nb">is not.</span></span></h1>
     <p class="lede">Master Personal Finance with AI: a 2-day live workshop on how to use AI to manage your own money. <b>No finance background and no coding is needed.</b> Mutual funds in depth, then your asset allocation (how much goes into equity, debt, gold and cash), then the basics of stocks, fixed deposits, gold and insurance in India.</p>
     <p class="lede l2d" style="margin-top:16px;font-size:clamp(17px,1.45vw,20px);font-weight:300">You leave with <mark>a 5-minute check for any fund</mark>, your own asset allocation written down, and a way of questioning an AI model such as ChatGPT or Claude so that it lists the errors in your reasoning instead of repeating your view.</p>
@@ -70,7 +80,7 @@
     <span class="coord" style="left:78%;top:auto;bottom:54px">overlap 64%</span>
   </div>
   <div class="wrap">
-    <div class="strip"><span><b>CashFlowCrew.</b></span><span class="r">Master Personal Finance with AI.</span><span class="g">Next batch starts {class date}</span><span class="r"><b>2 days · Live online</b></span></div>
+    <div class="strip"><span><b>CashFlowCrew.</b></span><span class="r">Master Personal Finance with AI.</span><span class="g">Next batch: <span data-if="hasStart">Saturday </span>{class date}<span data-if="hasStart"> and Sunday {day 2 date}, <span data-val="startTime"></span></span></span><span class="r"><b>2 days · Live online</b></span></div>
   </div>
   <div class="wrap" style="margin-top:72px">
     <h2><span class="w">The</span><span class="w">problem</span><span class="w">is</span><span class="w">no</span><span class="w">longer</span><span class="w">too</span><span class="w">little</span><span class="w">information.</span><span class="w">Apps</span><span class="w">rank</span><span class="w">funds,</span><span class="w">YouTube</span><span class="w">channels</span><span class="w">publish</span><span class="w">stock</span><span class="w">ideas,</span><span class="w">and</span><span class="w">banks</span><span class="w">have</span><span class="w">products</span><span class="w">to</span><span class="w">sell</span><span class="w">you.</span></h2>
@@ -184,7 +194,7 @@
   <div class="path">
     <div class="pin">
       <div class="track" aria-hidden="true">
-        <div class="day"><span class="d1">Day 1 · Saturday</span><span class="d2">Day 2 · Sunday</span></div>
+        <div class="day"><span class="d1">Day 1 · Saturday<i data-if="hasStart"> {class date}<i class="tm">, <i data-val="startTime"></i></i></i></span><span class="d2">Day 2 · Sunday<i data-if="hasStart"> {day 2 date}<i class="tm">, <i data-val="startTime"></i></i></i></span></div>
         <div class="dots">
           <span class="line"></span><span class="fill"></span>
           <span class="dot on">1</span><span class="dot d2">2</span><span class="dot d3">3</span><span class="dot d4">4</span><span class="dot d5">5</span><span class="dot d6">6</span>
@@ -314,13 +324,13 @@
 
 <section class="sec" id="agenda">
   <div class="wrap">
-    <div class="shead"><b>Two days, in order</b><span>The six levels, hour by hour, on Saturday {class date} and Sunday {day 2 date}</span></div>
+    <div class="shead"><b>Two days, in order</b><span>The six levels, hour by hour, on Saturday {class date} and Sunday {day 2 date}<span data-if="hasStart">, <span data-val="startTime"></span></span></span></div>
     <h2 class="h2 reveal">Day 1 teaches the fund checks. Day 2 runs them on a sample portfolio, then moves to allocation and stocks.</h2>
     <div class="swipe" aria-hidden="true"><span>Swipe for Day 2</span><svg viewBox="0 0 28 14"><path d="M0 7h26M20 1l6 6-6 6" fill="none" stroke="#111" stroke-width="1.2"/></svg></div>
     <div class="agwrap">
     <div class="agenda reveal">
-      <div class="dh"><h3>Day 1 · Saturday {class date} · Levels 1 to 3</h3><p>Mutual funds, from the basics to a 5-minute check</p></div>
-      <div class="dh"><h3>Day 2 · Sunday {day 2 date} · Levels 4 to 6</h3><p>The live check, your allocation, stocks, and the basics of deposits, gold and insurance</p></div>
+      <div class="dh"><h3>Day 1 · Saturday {class date}<span data-if="hasStart">, <span data-val="startTime"></span></span> · Levels 1 to 3</h3><p>Mutual funds, from the basics to a 5-minute check</p></div>
+      <div class="dh"><h3>Day 2 · Sunday {day 2 date}<span data-if="hasStart">, <span data-val="startTime"></span></span> · Levels 4 to 6</h3><p>The live check, your allocation, stocks, and the basics of deposits, gold and insurance</p></div>
       <div class="slot"><b>0:00</b><span>The questions to ask about any portfolio, and how to put them to a model without suggesting the answer</span></div>
       <div class="slot"><b>0:00</b><span>Live check: the sample portfolio of seven real funds checked on screen, including the model asked a leading question and then a neutral one</span></div>
       <div class="slot"><b>0:15</b><span>How a mutual fund works, and the 3 to 5 categories you need; how a fixed deposit compares with a debt fund</span></div>
@@ -372,7 +382,7 @@
     <div class="price">
       <div class="body reveal">
         <p>This is an educational workshop. It does not give investment advice or recommend any fund, stock, bond or insurance product.</p>
-        <p>Next batch starts {class date}. <span data-val="seatsLine"></span> Booking for this batch closes {booking close date}.</p>
+        <p>Next batch: <span data-if="hasStart">Saturday </span>{class date}<span data-if="hasStart"> and Sunday {day 2 date}, <span data-val="startTime"></span></span>. <span data-val="seatsLine"></span> Booking for this batch closes {booking close date}.</p>
         <p>If the workshop does not help you, ask for a full refund within 7 days of purchase. <a class="ul" href="https://www.cashflowcrew.in/refund-policy">Read the refund policy →</a></p>
       </div>
       <div class="pcard reveal" id="seat">
@@ -380,7 +390,7 @@
         <p class="big">₹{price}</p>
         <p class="meta"><span data-val="startsLine"></span></p>
         <div style="margin-top:18px">
-          <div class="row"><span>2-day live workshop, Saturday and Sunday</span><b>Included</b></div>
+          <div class="row"><span>2-day live workshop, Saturday<span data-if="hasStart"> {class date}</span> and Sunday<span data-if="hasStart"> {day 2 date}, <span data-val="startTime"></span></span></span><b>Included</b></div>
           <div class="row"><span>Live check on a sample portfolio of seven real funds, by hand and then with AI</span><b>Day 2</b></div>
           <div class="row"><span>Five PDF guides</span><b>Included</b></div>
           <div class="row"><span>Certificate of completion</span><b>Included</b></div>
@@ -399,7 +409,7 @@
     <h2 class="h2 reveal">Before you book.</h2>
     <div class="list">
     <details><summary>Is this investment advice? Will you tell me what to buy?</summary><p class="a">No. This is an educational workshop. You learn how to evaluate an allocation, a fund, a stock or a bond, but nothing is recommended. For personal investment advice, please consult a SEBI-registered investment adviser.</p></details>
-    <details><summary>When exactly is the workshop?</summary><p class="a">Day 1 is Saturday {class date}; Day 2 is Sunday {day 2 date}. Both days are live online. The start time is shown above and in the session link, which is sent 24 hours before Day 1.</p></details>
+    <details><summary>When exactly is the workshop?</summary><p class="a">Day 1 is Saturday {class date}; Day 2 is Sunday {day 2 date}. <span data-if="hasStart">Both days start at <span data-val="startTime"></span>. </span>Both days are live online. The session link is sent 24 hours before Day 1.</p></details>
     <details><summary>Do I need to know how to code, or pay for an AI tool?</summary><p class="a">No. No code is written in the workshop. Everything is done in the chat window of a model. The free versions of ChatGPT, Claude, Gemini or DeepSeek are enough to do every exercise in the workshop. A paid plan mainly raises the number of messages and file uploads allowed; the workshop is designed to be followed on a free tier.</p></details>
     <details><summary>Which AI tool do you use, and does it matter?</summary><p class="a">I use more than one and show you how to ask the same question of two models and compare. The method matters more than the tool: the question you ask and the data you attach determine the quality of the answer, and both are taught on Day 1.</p></details>
     <details><summary>Is this suitable for a first-time investor?</summary><p class="a">Yes. Level 1 starts with how a mutual fund works and builds from there, step by step, in simple language, using real funds. Every term is explained when it is first used.</p></details>
@@ -442,7 +452,8 @@
     barSeatsShort: low ? (seats + ' seats left') : 'Only 50 seats',
     seatsText: low ? (seats + ' of 50 seats left in this batch. ') : '',
     seatsLine: low ? (seats + ' of 50 seats left in this batch.') : 'Each batch is limited to 50 attendees, so that questions can be answered live.',
-    stickyLine: low ? (seats + ' of 50 seats left · Sat {class date} – Sun {day 2 date}') : 'Sat {class date} – Sun {day 2 date} · live online',
+    /* Both days and the start time; "live online" only when there is no start time yet. */
+    stickyLine: low ? (seats + ' of 50 seats left · Sat {class date} – Sun {day 2 date}') : 'Sat {class date} – Sun {day 2 date} · ' + (cfg.startTime || 'live online'),
     startsLine: ['Saturday {class date} and Sunday {day 2 date}', cfg.startTime, cfg.language].filter(Boolean).join(' · '),
     startTime: cfg.startTime || '', language: cfg.language || ''
   };

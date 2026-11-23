@@ -87,8 +87,15 @@
   .btn:hover .arrow{transform:translateX(3px)}
 
   /* ============ Announcement bar + nav ============ */
-  .abar{background:var(--ink);padding:8px 12px;text-align:center;font-family:var(--fh);font-size:clamp(11px,3.3vw,12.5px);font-weight:600;line-height:1.45;letter-spacing:.02em;color:#F4EFE5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  @media(min-width:768px){.abar{font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;padding:9px var(--px)}}
+  /* The bar gives the whole booking line, as on /v30: both days with their
+     dates, the start time, the price and the seats line (owner, 23 Nov 2026).
+     .al = wide screens, .as = phones (short day names), .aseat = seats line. */
+  .abar{display:flex;flex-wrap:nowrap;justify-content:center;align-items:center;gap:0 14px;min-height:40px;background:var(--ink);padding:6px 20px;font-family:var(--fh);font-size:14px;font-weight:400;line-height:1.3;color:#fff;white-space:nowrap;overflow:hidden}
+  .abar b{font-weight:700}
+  .abar .as{display:none}
+  @media(min-width:641px) and (max-width:860px){.abar .aseat{display:none}}
+  @media(max-width:640px){.abar{min-height:34px;padding:6px 10px;font-size:12.5px;gap:0 8px}.abar .al{display:none}.abar .as{display:inline}}
+  @media(max-width:480px){.abar .aseat{display:none}}
   .nav{position:sticky;top:0;z-index:40;background:var(--gd);border-bottom:1px solid transparent;transition:border-color .25s,box-shadow .25s}
   [data-nav].scrolled{border-bottom-color:rgba(255,255,255,.12)!important;box-shadow:0 8px 24px -18px rgba(0,0,0,.6)}
   .nav-in{max-width:1200px;margin:0 auto;min-height:60px;padding:8px var(--px);display:flex;align-items:center;justify-content:space-between;gap:14px}
@@ -520,7 +527,7 @@
 </helmet>
 
 <sc-if value="{{ showBar }}" hint-placeholder-val="{{ true }}">
-  <div class="abar">Live workshop · Starts {class date}</div>
+  <div class="abar"><span class="al">2-day live workshop</span><span class="al">·</span><span class="al">Saturday <b>{day 1 short date}</b> and Sunday <b>{day 2 short date}</b>{{ timeComma }}</span><span class="as">Sat <b>{day 1 short date}</b> – Sun <b>{day 2 short date}</b>{{ timeComma }}</span><span>·</span><span><b>₹{price}</b></span><span class="aseat">·</span><span class="al aseat">Only 50 seats per batch</span><span class="as aseat">Only 50 seats</span></div>
 </sc-if>
 
 <nav data-nav="1" class="nav">
@@ -541,13 +548,13 @@
 <section data-screen-label="01 Hero" class="hero">
   <div data-hero="1" class="hero-grid">
     <div data-heroleft="1" class="hero-copy">
-      <div class="eyebrow" data-rise="1">2-day live workshop · Saturday and Sunday · {session duration} each</div>
+      <div class="eyebrow" data-rise="1">2-day live workshop · {day 1} and {day 2}{{ timeComma }} · {session duration} each</div>
       <div data-byline="1" class="byline" data-rise="1" style="--d:.05s">
         <span class="byline-img"><img decoding="async" src="/mmf/assets/portrait.webp" alt="Nikhil Sharma, the instructor" width="46" height="46"></span>
         <span class="byline-txt">Taught by a former Goldman Sachs risk analyst</span>
       </div>
       <h1 class="h1" data-rise="1" style="--d:.08s">Learn to check a mutual fund's risk, <span class="acc">not only its past returns.</span></h1>
-      <div data-meta="1" class="meta" data-rise="1" style="--d:.16s"><b>₹{price}</b><span class="dot"></span><span>Starts {class date}</span><sc-if value="{{ hasStart }}" hint-placeholder-val="{{ false }}"><span class="dot"></span><span>{{ startTime }}</span></sc-if><sc-if value="{{ hasLang }}" hint-placeholder-val="{{ false }}"><span class="dot"></span><span>{{ language }}</span></sc-if><span class="dot"></span><span>Live online</span></div>
+      <div data-meta="1" class="meta" data-rise="1" style="--d:.16s"><b>₹{price}</b><span class="dot"></span><span>{day 1}</span><span class="dot"></span><span>{day 2}</span><sc-if value="{{ hasStart }}" hint-placeholder-val="{{ false }}"><span class="dot"></span><span>{{ startTime }} IST</span></sc-if><sc-if value="{{ hasLang }}" hint-placeholder-val="{{ false }}"><span class="dot"></span><span>{{ language }}</span></sc-if><span class="dot"></span><span>Live online</span></div>
       <div class="hero-cta" data-rise="1" style="--d:.22s"><a href="#admission" data-herocta="1" class="btn btn-lg btn-block">Book my seat — ₹{price}<span class="arrow" aria-hidden="true">→</span></a></div>
       <div data-stats="1" class="proof" data-rise="1" style="--d:.3s">
         <div><div class="proof-n">$65B</div><div class="proof-t">of mutual fund and hedge-fund assets whose risk I analysed at Goldman Sachs</div></div>
@@ -614,7 +621,7 @@
   <div data-path3d="1" class="path">
     <div data-p3dsticky="1" class="path-stage">
       <div data-track="1" class="dots">
-        <span data-day="1" class="dayl">Day 1 · Saturday</span>
+        <span data-day="1" class="dayl">Day 1 · {day 1}</span>
         <div class="dotrow">
           <span class="dotline"></span>
           <span data-fill="1" class="dotfill"></span>
@@ -638,7 +645,7 @@
         </div>
       </div>
       <div data-ltexts="1" style="padding:0 var(--px)">
-        <div data-lday="1" class="lday">Day 1 · Saturday</div>
+        <div data-lday="1" class="lday"><span>Day 1 · {day 1}{{ timeComma }}</span></div>
         <div data-ltext="1" data-fade="1" class="lcard l1">
           <img decoding="async" data-lcoin="1" class="lcoin" src="/mmf/assets/level-1.webp" alt="" width="150" height="150" loading="lazy">
           <div class="lbody">
@@ -666,7 +673,7 @@
             <div class="lwalk"><span class="lwalk-l">You walk away with</span><span class="lwalk-t">A 5-minute check you can run on any fund</span></div>
           </div>
         </div>
-        <div data-lday="1" class="lday">Day 2 · Sunday</div>
+        <div data-lday="1" class="lday"><span>Day 2 · {day 2}{{ timeComma }}</span></div>
         <div data-ltext="1" data-fade="1" class="lcard">
           <img decoding="async" data-lcoin="1" class="lcoin" src="/mmf/assets/level-4.webp" alt="" width="150" height="150" loading="lazy">
           <div class="lbody">
@@ -705,7 +712,7 @@
 <section data-screen-label="05 What a live check looks like" id="live" class="sec bg-g on-g">
   <div class="wrap">
     <div class="shead">
-      <div data-fade="1" class="eyebrow">Live on Sunday</div>
+      <div data-fade="1" class="eyebrow">Live on {day 2}{{ timeComma }}</div>
       <h2 data-fade="1" class="h2">You watch each check run <span class="acc">live, on a sample portfolio.</span></h2>
       <p data-fade="1" class="lead">I run these checks on a sample portfolio so that you can see <mark>an example of this implementation</mark>.</p>
     </div>
@@ -798,13 +805,13 @@
   <div class="wrap" style="max-width:960px">
     <div class="shead">
       <h2 data-fade="1" class="h2">Two days, <span class="acc">{session duration} each.</span></h2>
-      <p data-fade="1" class="lead">Saturday covers Levels 1 to 3. Sunday covers Levels 4 to 6, with checks shown live on a sample portfolio.</p>
+      <p data-fade="1" class="lead">{day 1} covers Levels 1 to 3. {day 2} covers Levels 4 to 6, with checks shown live on a sample portfolio.{{ bothStart }}</p>
     </div>
     <div data-swipe3d="1" class="swipe3d">
     <div class="stabs" aria-hidden="true"><button type="button" data-spill="1" class="spill on" tabindex="-1">Saturday</button><button type="button" data-spill="1" class="spill" tabindex="-1">Sunday</button></div>
     <div data-grid2="1" data-strack="1" class="agenda">
       <div data-agenda="1" class="acard">
-        <div class="ahead"><span class="eyebrow">Saturday · Levels 1 to 3</span><b>Funds, costs and risk</b></div>
+        <div class="ahead"><span class="eyebrow">{day 1}{{ timeComma }} · Levels 1 to 3</span><b>Funds, costs and risk</b></div>
         <div style="display:contents">
           <div data-slot="1"><span class="sbase"></span><span data-seg="1" class="seg"></span><span class="stime">0:00</span><span data-stext="1">Five questions to ask about any portfolio</span></div>
           <div data-slot="1"><span class="sbase"></span><span data-seg="1" class="seg"></span><span class="stime">0:15</span><span data-stext="1">How a mutual fund works, and the categories you need</span></div>
@@ -816,7 +823,7 @@
         <div class="aend"><i>By the end of Saturday</i><b>You can run a 5-minute check on any fund.</b></div>
       </div>
       <div data-agenda="1" class="acard">
-        <div class="ahead"><span class="eyebrow">Sunday · Levels 4 to 6</span><b>Portfolios, allocation and market declines</b></div>
+        <div class="ahead"><span class="eyebrow">{day 2}{{ timeComma }} · Levels 4 to 6</span><b>Portfolios, allocation and market declines</b></div>
         <div style="display:contents">
           <div data-slot="1" class="ex"><span class="sbase"></span><span data-seg="1" class="seg"></span><span class="stime">0:00</span><span data-stext="1"><span class="exl"><i>Worked example</i><b>A sample portfolio checked on screen</b></span></span></div>
           <div data-slot="1"><span class="sbase"></span><span data-seg="1" class="seg"></span><span class="stime">0:25</span><span data-stext="1">Common mistakes, and where a beginner should start</span></div>
@@ -878,15 +885,15 @@
            land in view below the sticky menu bar (motion.js scrolls to 72px above this element). -->
       <span id="admission" aria-hidden="true" style="display:block;width:100%;height:0;position:relative;top:-8px;scroll-margin-top:72px"></span>
       <div data-pricecard="1" class="pcard">
-        <div class="pc-top"><span class="pc-price">₹{price}</span><span class="pc-sub">Starts {class date}<sc-if value="{{ hasStart }}" hint-placeholder-val="{{ false }}"> · {{ startTime }}</sc-if><sc-if value="{{ hasLang }}" hint-placeholder-val="{{ false }}"> · {{ language }}</sc-if></span><span class="pc-sub">Saturday {session duration} + Sunday {session duration}, live online</span></div>
+        <div class="pc-top"><span class="pc-price">₹{price}</span><span class="pc-sub">{day 1} and {day 2}{{ timeComma }}<sc-if value="{{ hasLang }}" hint-placeholder-val="{{ false }}"> · {{ language }}</sc-if></span><span class="pc-sub">Saturday {session duration} + Sunday {session duration}, live online</span></div>
         <div class="pc-list">
           <div class="pc-li"><span>✓</span>Live checks on a sample portfolio built from real funds</div>
-          <div class="pc-li"><span>✓</span>{total duration} of live teaching across Saturday and Sunday</div>
+          <div class="pc-li"><span>✓</span>{total duration} of live teaching across {day 1} and {day 2}</div>
           <div class="pc-li"><span>✓</span>Five PDF guides</div>
           <div class="pc-li"><span>✓</span>Certificate of completion</div>
         </div>
         <a href="#" data-checkout="1" class="btn btn-lg btn-block">Book my seat — ₹{price}<span class="arrow" aria-hidden="true">→</span></a>
-        <p class="pc-batch" data-batch-line="1">Next batch starts {class date}. Booking for this batch closes {booking close date}.</p>
+        <p class="pc-batch" data-batch-line="1">Next batch: {day 1} and {day 2}{{ timeComma }}. Booking for this batch closes {booking close date}.</p>
       </div>
     </div>
   </div>
@@ -900,7 +907,7 @@
       <details data-qa="1"><summary>I'm a complete beginner. Will I keep up?</summary><p>Yes. The workshop starts with how a mutual fund works and builds from there, step by step, in simple language, using real funds. Every term is explained when it is first used.</p></details>
       <details data-qa="1"><summary>I already invest. Will this be too basic?</summary><p>Probably not. Many investors have not checked their funds' maximum drawdown, risk-adjusted return, or the changes the manager made to the portfolio during a market decline. On Sunday, these checks are run live on a sample portfolio.</p></details>
       <details data-qa="1"><summary>Will you check my own portfolio?</summary><p>No. The checks are shown on a sample portfolio built from real funds. You can run the same checks on your own funds using the free tools in guide 4. No fund is recommended to buy, sell or hold.</p></details>
-      <details data-qa="1"><summary>Do I need to attend both days?</summary><p>Yes. Saturday covers how funds work, what they cost and how to measure risk. On Sunday, those checks are run live on a sample portfolio, followed by asset allocation, market declines and retirement withdrawals. Each day builds on the one before.</p></details>
+      <details data-qa="1"><summary>Do I need to attend both days?</summary><p>Yes. {day 1} covers how funds work, what they cost and how to measure risk. On {day 2}, those checks are run live on a sample portfolio, followed by asset allocation, market declines and retirement withdrawals. Each day builds on the one before.{{ bothStart }}</p></details>
       <details data-qa="1"><summary>When do I get the five guides?</summary><p>They are shared as PDFs during the live workshop. They are yours to keep.</p></details>
       <details data-qa="1"><summary>Is it live, or a recording?</summary><p>Live. You can ask questions in the chat at any time, and they are answered during the session.</p></details>
       <details data-qa="1"><summary>Do I need existing investments or any software?</summary><p>No. You need a stable internet connection and a computer, tablet or phone with audio. Your personal join link is shown on the confirmation page after payment and is sent to your email and WhatsApp.</p></details>
@@ -949,10 +956,16 @@
 class Component extends DCLogic {
   renderVals() {
     // No seat limit: nothing here may ever render a seat count.
+    // The start time is the batch's own (Admin → Batches → Start time); the
+    // server passes it in as the startTime prop. It is joined to every line
+    // that names the two days. Both values are empty when nothing is on sale.
+    const st = this.props.startTime ?? '';
     return {
       showStickyCta: this.props.showStickyCta ?? true,
       showBar: this.props.showAnnouncementBar ?? true,
-      startTime: this.props.startTime ?? '', hasStart: !!(this.props.startTime ?? ''),
+      startTime: st, hasStart: !!st,
+      timeComma: st ? ', ' + st + ' IST' : '',
+      bothStart: st ? ' Both days start at ' + st + ' IST.' : '',
       language: this.props.language ?? '', hasLang: !!(this.props.language ?? ''),
       stickyLine: '2-day live workshop + 5 guides'
     };

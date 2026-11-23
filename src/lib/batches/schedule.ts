@@ -2,8 +2,9 @@ import { addDays, addMinutes, istMidnight, istToUtc, istYmd } from "@/lib/ist";
 
 const MS_PER_DAY = 86_400_000;
 
-// Saturdays on the cycle, as IST-midnight instants, starting with the first
-// one on or after `from` (compared by IST calendar day).
+// Day-1 dates on the cycle, as IST-midnight instants, starting with the first
+// one on or after `from` (compared by IST calendar day). The anchor can be any
+// day of the week; a cadence that is a multiple of 7 keeps that weekday.
 export function nextDay1Dates(anchorDay1: Date, cadenceDays: number, from: Date, count: number): Date[] {
   if (cadenceDays <= 0) throw new Error("cadenceDays must be positive");
   const anchor = istMidnight(anchorDay1);
@@ -14,6 +15,17 @@ export function nextDay1Dates(anchorDay1: Date, cadenceDays: number, from: Date,
   while (anchor.getTime() + k * step < fromMidnight.getTime()) k += 1;
 
   return Array.from({ length: count }, (_, i) => new Date(anchor.getTime() + (k + i) * step));
+}
+
+// Day 1 of the next batch on the cycle in Batch settings, or null when the
+// course has no usable settings. The workshop pages use it to name the two
+// weekdays while nothing is on sale.
+export function nextCycleDay1(
+  settings: { anchorDay1Date?: Date | null; cadenceDays?: number | null } | null | undefined,
+  now: Date = new Date(),
+): Date | null {
+  if (!settings?.anchorDay1Date || !settings.cadenceDays || settings.cadenceDays <= 0) return null;
+  return nextDay1Dates(settings.anchorDay1Date, settings.cadenceDays, now, 1)[0];
 }
 
 export interface BatchTimes {

@@ -71,6 +71,11 @@ export function formatIstDate(date: Date): string {
   return `${WEEKDAYS[p.weekday]}, ${p.day} ${MONTHS[p.month - 1]} ${p.year}`;
 }
 
+// "Saturday"
+export function formatIstWeekday(date: Date): string {
+  return WEEKDAYS[toIstParts(date).weekday];
+}
+
 // "7:00 PM"
 export function formatIstTime(date: Date): string {
   const p = toIstParts(date);
