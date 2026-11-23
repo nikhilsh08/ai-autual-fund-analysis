@@ -121,7 +121,15 @@ export const createCashfreeOrder = async (
     const response = await cashfree.PGCreateOrder(request);
     return { success: true, data: response.data };
   } catch (error: any) {
-    return { success: false, error: error.response?.data?.message || "Gateway error" };
+    // `code` is Cashfree's own answer without its message: HTTP status, error
+    // class and error code, e.g. "401 authentication_error/request_failed".
+    // For a failure before any answer (network, timeout) it is the error's
+    // own name and code.
+    const data = error.response?.data;
+    const gateway = [data?.type, data?.code].filter((v) => typeof v === "string" && v).join("/");
+    const local = [error?.name !== "Error" ? error?.name : null, error?.code].filter((v) => typeof v === "string" && v).join(" ");
+    const code = [error.response?.status, gateway || local].filter(Boolean).join(" ") || undefined;
+    return { success: false, error: data?.message || "Gateway error", code };
   }
 };
 

@@ -179,4 +179,46 @@ describe("POST /api/payment/cashfree/initiate — landing page, seats and buyer 
     await call({ origin: "https://evil.example", "x-forwarded-host": "cashflowcrew-v10.onrender.com" });
     expect(vi.mocked(createCashfreeOrder).mock.calls[0][5]).toBeUndefined();
   });
+
+  it("says that the payment gateway refused, with its error code but not its message", async () => {
+    vi.mocked(createCashfreeOrder).mockResolvedValueOnce({
+      success: false,
+      error: "authentication Failed",
+      code: "401 authentication_error/request_failed",
+    } as never);
+
+    const res = await post({ batchId: "b1" });
+    const text = await res.text();
+
+    expect(res.status).toBe(500);
+    expect(JSON.parse(text)).toEqual({
+      success: false,
+      error: "payment_start_failed",
+      stage: "gateway",
+      reason: "401 authentication_error/request_failed",
+    });
+    expect(text).not.toContain("authentication Failed");
+  });
+
+  it("says that saving the order failed, with the error code but not its message", async () => {
+    prisma.order.create.mockRejectedValueOnce(
+      Object.assign(new Error("Unique constraint failed on the fields: (`orderId`)"), {
+        name: "PrismaClientKnownRequestError",
+        code: "P2002",
+      }),
+    );
+
+    const res = await post({ batchId: "b1" });
+    const text = await res.text();
+
+    expect(res.status).toBe(500);
+    expect(JSON.parse(text)).toEqual({
+      success: false,
+      error: "payment_start_failed",
+      stage: "order",
+      reason: "PrismaClientKnownRequestError P2002",
+    });
+    expect(text).not.toContain("Unique constraint");
+    expect(createCashfreeOrder).not.toHaveBeenCalled();
+  });
 });

@@ -16,7 +16,25 @@ const batchFieldsSchema = z.object({
     whatsappOptIn: z.boolean().optional(),
 });
 
+// The step a payment start has reached. Sent back when it fails, so a failure
+// can be told apart ("the gateway refused" or "the order could not be saved")
+// without the server log.
+type Stage = "check" | "buyer" | "order" | "gateway";
+
+// The error's class and code, never its message: a message can carry
+// database or gateway internals, which must not reach the page.
+function failureReason(error: unknown): string | undefined {
+    const e = error as { gatewayCode?: unknown; name?: unknown; code?: unknown } | null;
+    if (typeof e?.gatewayCode === "string" && e.gatewayCode) return e.gatewayCode.slice(0, 120);
+    const parts = [
+        typeof e?.name === "string" && e.name !== "Error" ? e.name : null,
+        typeof e?.code === "string" ? e.code : null,
+    ].filter(Boolean);
+    return parts.length ? parts.join(" ").slice(0, 120) : undefined;
+}
+
 export async function POST(req: Request) {
+    let stage: Stage = "check";
     try {
         const body = await req.json();
         const { name, email, phone, courseIds, bundleIds, couponCode, utmParams, landingSource } = body;
@@ -164,6 +182,7 @@ export async function POST(req: Request) {
         // purchase is signed in on this site, and the order must not become
         // theirs. The typed name and phone are always kept on a Lead, so the
         // registration, the thank-you page and the Meta event use them.
+        stage = "buyer";
         const existingUser = await dataBasePrisma.user.findUnique({ where: { email } });
         const targetUserId: string | null = existingUser?.id ?? null;
         const lead = await dataBasePrisma.lead.upsert({
@@ -184,6 +203,7 @@ export async function POST(req: Request) {
         const orderId = `ORDER_CF_${uuidv4()}`;
 
         // 6. Create Pending Order with both course items and bundle items
+        stage = "order";
         await dataBasePrisma.order.create({
             data: {
                 orderId,
@@ -216,12 +236,15 @@ export async function POST(req: Request) {
         });
 
         // 7. Cashfree Initiation
+        stage = "gateway";
         const cashfreeRes = await createCashfreeOrder(orderId, finalAmount, { name, email, phone }, utmParams, orderSource ?? undefined,
             // After paying, the buyer returns to the site they are on.
             sameSiteOrigin(req) ?? undefined,
         );
 
-        if (!cashfreeRes.success) throw new Error(cashfreeRes.error);
+        if (!cashfreeRes.success) {
+            throw Object.assign(new Error(cashfreeRes.error), { gatewayCode: (cashfreeRes as { code?: string }).code });
+        }
 
         return NextResponse.json({
             success: true,
@@ -232,8 +255,14 @@ export async function POST(req: Request) {
     } catch (error: any) {
         console.error("Checkout Error Detailed:", JSON.stringify(error, null, 2));
         console.error("Checkout Error Message:", error.message);
+        console.error("Checkout Error Stage:", stage);
         // Details stay in the server log; the browser gets a generic message
-        // (database or Cashfree internals must not reach the page).
-        return NextResponse.json({ success: false, error: "payment_start_failed" }, { status: 500 });
+        // (database or Cashfree internals must not reach the page), plus the
+        // step that failed and the error's code.
+        const reason = failureReason(error);
+        return NextResponse.json(
+            { success: false, error: "payment_start_failed", stage, ...(reason ? { reason } : {}) },
+            { status: 500 },
+        );
     }
 }
