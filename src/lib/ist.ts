@@ -53,6 +53,17 @@ export function istMidnight(date: Date): Date {
   return istToUtc(istYmd(date), "00:00");
 }
 
+// "19:00": the IST time of day of an instant, as the admin panel's time field gives it.
+export function istHm(date: Date): string {
+  const p = toIstParts(date);
+  return `${pad(p.hour)}:${pad(p.minute)}`;
+}
+
+// Whole IST calendar days from `from` to `to` (1 when `to` is the next day).
+export function istDaysBetween(from: Date, to: Date): number {
+  return Math.round((istMidnight(to).getTime() - istMidnight(from).getTime()) / MS_PER_DAY);
+}
+
 export function addDays(date: Date, days: number): Date {
   return new Date(date.getTime() + days * MS_PER_DAY);
 }

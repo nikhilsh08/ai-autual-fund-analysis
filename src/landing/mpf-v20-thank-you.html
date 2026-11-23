@@ -98,7 +98,8 @@ window.MPF = window.MPF || {};</script>
    { state: "paid" | "verifying" | "failed", orderId, name, email, amountRupees,
      joinDay1, joinDay2, whatsappGroup,            (links; empty until ready)
      day1StartISO, day2StartISO,                    (e.g. "2026-11-22T10:00:00+05:30", for the calendar file)
-     sessionMinutes }                              (length of each session in the calendar file, default 120)
+     sessionMinutes,                               (length of each session in the calendar file, default 120)
+     sessionMinutesDay2 }                          (length of day 2 when it has its own; absent: sessionMinutes)
    MPF.startTime "h:mm AM IST" (from the batch). MPF.onRefresh() is called by "Refresh status" (default: reload). */
 function mpfThanks(cfg, root) {
   var ty = root.getElementById('ty'); if (!ty || ty.dataset.ready) return; ty.dataset.ready = '1';
@@ -120,7 +121,7 @@ function mpfThanks(cfg, root) {
   if (ics) ics.addEventListener('click', function () {
     if (!o.day1StartISO || !o.day2StartISO) { ics.textContent = 'Calendar file is added by the backend'; return; }
     var f = function (d) { return new Date(d).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); };
-    var ev = function (n, s) { var e = new Date(new Date(s).getTime() + (o.sessionMinutes || 120) * 60000); return 'BEGIN:VEVENT\r\nUID:mpf-' + n + '-' + (o.orderId || 'seat') + '@cashflowcrew.in\r\nDTSTAMP:' + f(new Date()) + '\r\nDTSTART:' + f(s) + '\r\nDTEND:' + f(e) + '\r\nSUMMARY:Master Personal Finance with AI · Day ' + n + '\r\nDESCRIPTION:Join link: ' + ((n == 1 ? o.joinDay1 : o.joinDay2) || 'sent by email 24 hours before Day 1') + '\r\nEND:VEVENT\r\n'; };
+    var ev = function (n, s) { var e = new Date(new Date(s).getTime() + ((n == 2 && o.sessionMinutesDay2) || o.sessionMinutes || 120) * 60000); return 'BEGIN:VEVENT\r\nUID:mpf-' + n + '-' + (o.orderId || 'seat') + '@cashflowcrew.in\r\nDTSTAMP:' + f(new Date()) + '\r\nDTSTART:' + f(s) + '\r\nDTEND:' + f(e) + '\r\nSUMMARY:Master Personal Finance with AI · Day ' + n + '\r\nDESCRIPTION:Join link: ' + ((n == 1 ? o.joinDay1 : o.joinDay2) || 'sent by email 24 hours before Day 1') + '\r\nEND:VEVENT\r\n'; };
     var body = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//CashFlowCrew//MPF//EN\r\n' + ev(1, o.day1StartISO) + ev(2, o.day2StartISO) + 'END:VCALENDAR\r\n';
     var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([body], { type: 'text/calendar' })); a.download = 'master-personal-finance-with-ai.ics'; document.body.appendChild(a); a.click(); a.remove();
   });

@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { siteConfig } from "@/config/seo";
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import { getCurrentBatch } from "@/lib/batches/current";
-import { nextCycleDay1 } from "@/lib/batches/schedule";
+import { nextCycleDays } from "@/lib/batches/schedule";
 import { renderLanding, type LandingConfig } from "@/lib/landing/render";
 import { getLandingCourse } from "@/lib/landing/course-link";
 import { LANDING_PUBLIC_PATH } from "@/lib/landing/sources";
@@ -28,12 +28,15 @@ const DESCRIPTION = "Learn how to pick the right mutual funds and build a wealth
 // when neither a batch nor the batch settings can be read.
 const SCHEMA_DEFAULT_DURATION_MINUTES = 120;
 
+// The next batch on the cycle in Batch settings: names the two weekdays, and
+// gives day 2's own length, when nothing is on sale.
+type Cycle = Pick<LandingConfig, "fallbackDay1" | "fallbackDay2" | "fallbackDay2DurationMinutes">;
+
 function config(
     courseId: string,
     fallbackPriceRupees: number | null,
     fallbackDurationMinutes: number,
-    // Day 1 of the next batch on the cycle: names the weekdays when nothing is on sale.
-    fallbackDay1: Date | null = null,
+    cycle: Cycle = {},
 ): LandingConfig {
     return {
         courseId,
@@ -49,7 +52,7 @@ function config(
         clarityId: process.env.NEXT_PUBLIC_CLARITY_ID,
         fallbackPriceRupees,
         fallbackDurationMinutes,
-        fallbackDay1,
+        ...cycle,
     };
 }
 
@@ -76,7 +79,7 @@ export async function GET(req: Request) {
     let courseId = "";
     let fallbackPrice: number | null = null;
     let fallbackDuration = SCHEMA_DEFAULT_DURATION_MINUTES;
-    let fallbackDay1: Date | null = null;
+    let cycle: Cycle = {};
 
     try {
         const course = await getLandingCourse(PAGE);
@@ -90,19 +93,31 @@ export async function GET(req: Request) {
         if (!batch) {
             const settings = await dataBasePrisma.batchSettings.findUnique({
                 where: { courseId: course.id },
-                select: { defaultPriceRupees: true, durationMinutes: true, anchorDay1Date: true, cadenceDays: true },
+                select: {
+                    defaultPriceRupees: true,
+                    durationMinutes: true,
+                    anchorDay1Date: true,
+                    cadenceDays: true,
+                    day2OffsetDays: true,
+                    day2DurationMinutes: true,
+                },
             });
             fallbackPrice = settings?.defaultPriceRupees ?? course.price;
             fallbackDuration = settings?.durationMinutes ?? fallbackDuration;
-            fallbackDay1 = nextCycleDay1(settings);
+            const next = nextCycleDays(settings);
+            cycle = {
+                fallbackDay1: next?.day1,
+                fallbackDay2: next?.day2,
+                fallbackDay2DurationMinutes: settings?.day2DurationMinutes,
+            };
         }
 
-        const html = renderLanding(template, batch, config(course.id, fallbackPrice, fallbackDuration, fallbackDay1));
+        const html = renderLanding(template, batch, config(course.id, fallbackPrice, fallbackDuration, cycle));
         return htmlResponse(html, "public, s-maxage=60, stale-while-revalidate=300");
     } catch (error) {
         console.error("[landing] render failed, serving fallback", error);
         try {
-            const html = renderLanding(template, null, config(courseId, fallbackPrice, fallbackDuration, fallbackDay1));
+            const html = renderLanding(template, null, config(courseId, fallbackPrice, fallbackDuration, cycle));
             // Served after an error: never cache it, so the real page returns at once.
             return htmlResponse(html, "no-store");
         } catch (fallbackError) {

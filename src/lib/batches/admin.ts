@@ -1,11 +1,20 @@
 import { z } from "zod";
 import { dataBasePrisma } from "@/lib/dbPrisma";
-import { formatIstDate, istToUtc, istYmd, isValidTimeHm } from "@/lib/ist";
-import { computeBatchTimes, isOnSale, nextDay1Dates } from "./schedule";
+import { addDays, formatIstDate, istDaysBetween, istHm, istToUtc, istYmd, isValidTimeHm } from "@/lib/ist";
+import { computeBatchTimes, isOnSale, nextDay1Dates, type BatchTimes } from "./schedule";
 
 const ymd = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "YYYY-MM-DD");
 const hm = z.string().refine(isValidTimeHm, "HH:mm");
 const optionalText = z.string().trim().max(500).nullable().optional();
+
+// Day 2 has its own date, start time and length (owner, 23 Nov 2026). Each
+// is optional: left out, day 2 is the day after day 1, at day 1's time, for
+// day 1's length. `day2DurationMinutes: null` also means "same as day 1".
+const day2Fields = {
+  day2Date: ymd.optional(),
+  day2StartTimeIst: hm.optional(),
+  day2DurationMinutes: z.number().int().positive().nullable().optional(),
+};
 
 export const batchCreateSchema = z.object({
   courseId: z.string().min(1),
@@ -14,6 +23,7 @@ export const batchCreateSchema = z.object({
   priceRupees: z.number().positive(),
   closeHoursBefore: z.number().int().min(0),
   durationMinutes: z.number().int().positive().optional(),
+  ...day2Fields,
   language: optionalText,
   zohoWebinarKeyDay1: optionalText,
   zohoWebinarKeyDay2: optionalText,
@@ -31,6 +41,7 @@ export const batchPatchSchema = z
     closeHoursBefore: z.number().min(0).optional(),
     priceRupees: z.number().positive().optional(),
     durationMinutes: z.number().int().positive().optional(),
+    ...day2Fields,
     language: optionalText,
     zohoWebinarKeyDay1: optionalText,
     zohoWebinarKeyDay2: optionalText,
@@ -48,6 +59,11 @@ export const batchSettingsSchema = z.object({
   defaultPriceRupees: z.number().positive(),
   defaultStartTimeIst: hm,
   durationMinutes: z.number().int().positive().default(120),
+  // Day 2 of each new batch. Left out or null: the day after day 1, at day
+  // 1's time, for day 1's length.
+  day2OffsetDays: z.number().int().min(1).max(90).nullable().optional(),
+  defaultDay2StartTimeIst: hm.nullable().optional(),
+  day2DurationMinutes: z.number().int().positive().nullable().optional(),
   defaultLanguage: optionalText,
   closeHoursBefore: z.number().min(0),
   newBatchStatus: z.enum(["DRAFT", "OPEN"]).default("DRAFT"),
@@ -58,10 +74,24 @@ export const batchSettingsSchema = z.object({
   alertEmails: z.array(z.string().email()).default([]),
 });
 
-// Day 1 can be any day of the week (owner, 23 Nov 2026). Day 2 is the day
-// after day 1 (computeBatchTimes).
+// Day 1 can be any day of the week, and day 2 any later date with its own
+// start time and length (owner, 23 Nov 2026). Left out, day 2 is the day
+// after day 1 and matches it (computeBatchTimes).
 
 const emptyToNull = (v: string | null | undefined) => (v === undefined ? undefined : v === "" ? null : v);
+
+// The pages call the batch a "2-day workshop", so the two sessions are on
+// two dates, in order.
+function assertDay2AfterDay1(times: BatchTimes): void {
+  if (istYmd(times.day2StartAt) <= istYmd(times.day1StartAt)) {
+    throw new AdminError("Day 2 must be on a later date than day 1");
+  }
+}
+
+// Stored only when it differs from day 1, so "same as day 1" stays true when
+// day 1's length is changed later.
+const ownDay2Minutes = (day2: number | null | undefined, day1: number): number | null =>
+  day2 != null && day2 !== day1 ? day2 : null;
 
 export async function createBatch(input: z.infer<typeof batchCreateSchema>, createdBy: string) {
   const settings = await dataBasePrisma.batchSettings.findUnique({ where: { courseId: input.courseId } });
@@ -69,7 +99,11 @@ export async function createBatch(input: z.infer<typeof batchCreateSchema>, crea
     day1Date: istToUtc(input.day1Date, "00:00"),
     startTimeIst: input.startTimeIst,
     closeHoursBefore: input.closeHoursBefore,
+    day2Date: input.day2Date ? istToUtc(input.day2Date, "00:00") : null,
+    day2StartTimeIst: input.day2StartTimeIst,
   });
+  assertDay2AfterDay1(times);
+  const durationMinutes = input.durationMinutes ?? settings?.durationMinutes ?? 120;
   const last = await dataBasePrisma.batch.findFirst({
     where: { courseId: input.courseId },
     orderBy: { batchNumber: "desc" },
@@ -81,7 +115,8 @@ export async function createBatch(input: z.infer<typeof batchCreateSchema>, crea
       courseId: input.courseId,
       batchNumber: (last?.batchNumber ?? 0) + 1,
       ...times,
-      durationMinutes: input.durationMinutes ?? settings?.durationMinutes ?? 120,
+      durationMinutes,
+      day2DurationMinutes: ownDay2Minutes(input.day2DurationMinutes, durationMinutes),
       startTimeIst: input.startTimeIst,
       language: emptyToNull(input.language) ?? settings?.defaultLanguage ?? null,
       priceRupees: input.priceRupees,
@@ -109,13 +144,40 @@ export async function patchBatch(id: string, input: z.infer<typeof batchPatchSch
     if (input[key] !== undefined) data[key] = typeof input[key] === "string" ? emptyToNull(input[key] as string) : input[key];
   }
 
-  const timingChanged = input.day1Date !== undefined || input.startTimeIst !== undefined || input.closeHoursBefore !== undefined;
+  if (input.durationMinutes !== undefined || input.day2DurationMinutes !== undefined) {
+    const day1Minutes = input.durationMinutes ?? batch.durationMinutes;
+    const day2 = input.day2DurationMinutes === undefined ? batch.day2DurationMinutes : input.day2DurationMinutes;
+    data.day2DurationMinutes = ownDay2Minutes(day2, day1Minutes);
+  }
+
+  const timingChanged =
+    input.day1Date !== undefined ||
+    input.startTimeIst !== undefined ||
+    input.closeHoursBefore !== undefined ||
+    input.day2Date !== undefined ||
+    input.day2StartTimeIst !== undefined;
   if (timingChanged) {
     const day1Date = input.day1Date ?? istYmd(batch.day1StartAt);
     const startTimeIst = input.startTimeIst ?? batch.startTimeIst;
     const currentCloseHours = (batch.day1StartAt.getTime() - batch.bookingCloseAt.getTime()) / 3_600_000;
     const closeHoursBefore = input.closeHoursBefore ?? currentCloseHours;
-    Object.assign(data, computeBatchTimes({ day1Date: istToUtc(day1Date, "00:00"), startTimeIst, closeHoursBefore }), { startTimeIst });
+
+    // Day 2 when it is not sent: it stays the same number of days after day
+    // 1. Its time follows day 1 only while the batch is still "the day after,
+    // same time" (an edit of day 1 alone then moves both days, as it always
+    // has); a day 2 with its own date or time keeps its own time.
+    const gapDays = istDaysBetween(batch.day1StartAt, batch.day2StartAt);
+    const followsDay1 = gapDays === 1 && istHm(batch.day1StartAt) === istHm(batch.day2StartAt);
+    const day1Midnight = istToUtc(day1Date, "00:00");
+    const times = computeBatchTimes({
+      day1Date: day1Midnight,
+      startTimeIst,
+      closeHoursBefore,
+      day2Date: input.day2Date ? istToUtc(input.day2Date, "00:00") : addDays(day1Midnight, gapDays),
+      day2StartTimeIst: input.day2StartTimeIst ?? (followsDay1 ? startTimeIst : istHm(batch.day2StartAt)),
+    });
+    assertDay2AfterDay1(times);
+    Object.assign(data, times, { startTimeIst });
   }
 
   return dataBasePrisma.batch.update({ where: { id }, data });
@@ -188,6 +250,10 @@ export async function listBatches(courseId: string | null, now: Date = new Date(
   return batches.map((b) => ({
     ...b,
     day1Text: formatIstDate(b.day1StartAt),
+    // Day 2 as the admin form shows it: its date and its start time in IST.
+    day2Text: formatIstDate(b.day2StartAt),
+    day2Date: istYmd(b.day2StartAt),
+    day2StartTimeIst: istHm(b.day2StartAt),
     bookedCount: booked.get(b.id) ?? 0,
     isOnSaleNow: isOnSale(b, now),
     zohoReady: Boolean(b.zohoWebinarKeyDay1 && b.zohoWebinarKeyDay2),
@@ -299,6 +365,13 @@ export async function upsertBatchSettings(input: z.infer<typeof batchSettingsSch
     defaultPriceRupees: input.defaultPriceRupees,
     defaultStartTimeIst: input.defaultStartTimeIst,
     durationMinutes: input.durationMinutes,
+    // Stored only where day 2 differs from day 1 (null = follows day 1).
+    day2OffsetDays: input.day2OffsetDays != null && input.day2OffsetDays !== 1 ? input.day2OffsetDays : null,
+    defaultDay2StartTimeIst:
+      input.defaultDay2StartTimeIst && input.defaultDay2StartTimeIst !== input.defaultStartTimeIst
+        ? input.defaultDay2StartTimeIst
+        : null,
+    day2DurationMinutes: ownDay2Minutes(input.day2DurationMinutes, input.durationMinutes),
     defaultLanguage: emptyToNull(input.defaultLanguage) ?? null,
     closeHoursBefore: input.closeHoursBefore,
     newBatchStatus: input.newBatchStatus,
@@ -315,11 +388,15 @@ export async function upsertBatchSettings(input: z.infer<typeof batchSettingsSch
   });
 }
 
-export function settingsPreview(settings: { anchorDay1Date: Date; cadenceDays: number }, now: Date = new Date()) {
-  return nextDay1Dates(settings.anchorDay1Date, settings.cadenceDays, now, 3).map((d) => ({
-    date: istYmd(d),
-    text: formatIstDate(d),
-  }));
+// The next three batches on the cycle: day 1 (date, text) and day 2.
+export function settingsPreview(
+  settings: { anchorDay1Date: Date; cadenceDays: number; day2OffsetDays?: number | null },
+  now: Date = new Date(),
+) {
+  return nextDay1Dates(settings.anchorDay1Date, settings.cadenceDays, now, 3).map((d) => {
+    const day2 = addDays(d, settings.day2OffsetDays ?? 1);
+    return { date: istYmd(d), text: formatIstDate(d), day2Date: istYmd(day2), day2Text: formatIstDate(day2) };
+  });
 }
 
 export class AdminError extends Error {

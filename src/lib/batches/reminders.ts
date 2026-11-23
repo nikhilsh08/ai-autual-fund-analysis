@@ -7,6 +7,8 @@ export interface ReminderBatch {
   day1StartAt: Date;
   day2StartAt: Date;
   durationMinutes: number;
+  // Length of day 2. Absent: the same as day 1.
+  day2DurationMinutes?: number | null;
 }
 
 // Windows from spec 3.6. Reminders are only ever sent before a session

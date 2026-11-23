@@ -5,6 +5,7 @@ import { siteConfig } from "@/config/seo";
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import { getCurrentBatch } from "@/lib/batches/current";
 import { computeBatchTimes, nextDay1Dates } from "@/lib/batches/schedule";
+import { addDays } from "@/lib/ist";
 import { groupLinkFor } from "@/lib/batches/messaging";
 import { trackingConfigFromEnv } from "@/lib/landing/tracking";
 import { getLandingCourse, landingPageOfCourse, seatLimitForPage } from "@/lib/landing/course-link";
@@ -64,6 +65,7 @@ export function toV20Batch(b: {
   day2StartAt: Date;
   bookingCloseAt: Date;
   durationMinutes: number;
+  day2DurationMinutes?: number | null;
   language: string | null;
 }): V20Batch {
   return {
@@ -73,6 +75,7 @@ export function toV20Batch(b: {
     day2StartAt: b.day2StartAt,
     bookingCloseAt: b.bookingCloseAt,
     durationMinutes: b.durationMinutes,
+    day2DurationMinutes: b.day2DurationMinutes ?? null,
     language: b.language,
   };
 }
@@ -188,6 +191,8 @@ export async function previewBatchFor(page: LandingPageKey, now: Date = new Date
       day1Date,
       startTimeIst: settings.defaultStartTimeIst,
       closeHoursBefore: settings.closeHoursBefore,
+      day2Date: addDays(day1Date, settings.day2OffsetDays ?? 1),
+      day2StartTimeIst: settings.defaultDay2StartTimeIst,
     });
     return {
       ...fallback,
@@ -196,6 +201,7 @@ export async function previewBatchFor(page: LandingPageKey, now: Date = new Date
         priceRupees: settings.defaultPriceRupees,
         ...times,
         durationMinutes: settings.durationMinutes,
+        day2DurationMinutes: settings.day2DurationMinutes ?? null,
         language: settings.defaultLanguage ?? null,
       },
     };

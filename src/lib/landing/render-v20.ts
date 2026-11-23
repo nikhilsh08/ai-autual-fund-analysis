@@ -7,7 +7,9 @@
 // the amount charged. If a template changes, keep the markers listed in
 // MARKERS below or rendering throws V20RenderError.
 
-import { formatDuration, formatIstShortDate, formatIstShortDateTime, formatIstTime } from "@/lib/ist";
+import { formatDuration, formatIstShortDate, formatIstShortDateTime, formatIstTime, istDaysBetween } from "@/lib/ist";
+import { day2Minutes } from "@/lib/batches/schedule";
+import { eachDayOf, fillEachDayMpf, type EachDay } from "@/lib/landing/each-day";
 import { MMF_COPY } from "@/lib/mmf-copy";
 import {
   MPF_V20_CHECKOUT_PATH,
@@ -38,6 +40,8 @@ export interface V20Batch {
   day2StartAt: Date;
   bookingCloseAt: Date;
   durationMinutes: number;
+  // Length of day 2. Absent or null: the same as day 1.
+  day2DurationMinutes?: number | null;
   language: string | null;
 }
 
@@ -62,7 +66,8 @@ function must(html: string, marker: string, what: string): void {
   if (!html.includes(marker)) throw new V20RenderError(`template is missing ${what}`);
 }
 
-// Same start time on both days, e.g. "10:00 AM IST".
+// Day 1's start time, e.g. "10:00 AM IST". It is day 2's as well unless the
+// batch gives day 2 its own; then fillEachDayMpf prints each day's time.
 export const v20StartTime = (batch: V20Batch) => `${formatIstTime(batch.day1StartAt)} IST`;
 
 // The sentence in the /v20 and /v30 price cards that promises a seat limit.
@@ -89,9 +94,43 @@ export const SCHEMA_DEFAULT_DURATION_MINUTES = 120;
 
 // The designer's copy says "about 2 hours" (each day). The length comes from
 // the batch (Admin → Batches → duration), so a 90-minute batch reads
-// "about 1 hour 30 minutes".
-export function fillSessionLength(html: string, minutes: number): string {
-  return html.replace(/about 2 hours/g, `about ${escapeHtml(formatDuration(minutes))}`);
+// "about 1 hour 30 minutes". When day 2 has its own length, the sentences
+// that give one length for both days give each day's instead.
+export function fillSessionLength(html: string, minutes: number, minutesDay2: number = minutes): string {
+  const day1 = `about ${escapeHtml(formatDuration(minutes))}`;
+  if (minutesDay2 === minutes) return html.replace(/about 2 hours/g, day1);
+
+  const day2 = `about ${escapeHtml(formatDuration(minutesDay2))}`;
+  // One pass, longest wording first, so no replaced text is replaced again.
+  return html.replace(/Each day runs for about 2 hours|about 2 hours each day|about 2 hours each|about 2 hours/g, (found) => {
+    if (found === "Each day runs for about 2 hours") return `Day 1 runs for ${day1} and Day 2 for ${day2}`;
+    if (found === "about 2 hours each day") return `${day1} on Day 1 and ${day2} on Day 2`;
+    if (found === "about 2 hours each") return `${day1} and ${day2}`;
+    return day1;
+  });
+}
+
+// Each day's own start time and length for a page: from the batch on sale,
+// else (no times to give) from the cycle in Batch settings.
+export function eachDayOnPage(
+  batch: V20Batch | null,
+  fallback: {
+    fallbackDurationMinutes?: number | null;
+    fallbackDay2DurationMinutes?: number | null;
+    fallbackDay1?: Date | null;
+    fallbackDay2?: Date | null;
+  },
+): EachDay {
+  if (batch) return eachDayOf(batch);
+  const minutes = fallback.fallbackDurationMinutes ?? SCHEMA_DEFAULT_DURATION_MINUTES;
+  return {
+    times: null,
+    inARow:
+      !fallback.fallbackDay1 ||
+      !fallback.fallbackDay2 ||
+      istDaysBetween(fallback.fallbackDay1, fallback.fallbackDay2) === 1,
+    minutes: [minutes, fallback.fallbackDay2DurationMinutes ?? minutes],
+  };
 }
 
 function fillTokens(html: string, batch: V20Batch | null, priceRupees: number | null): string {
@@ -155,6 +194,10 @@ export interface V20LandingData {
   // Day 1 of the next batch on the cycle (batch settings). Names the two
   // weekdays when nothing is on sale; absent, the page keeps its own words.
   fallbackDay1?: Date | null;
+  // Day 2 of that batch and its length, when Batch settings give day 2 its
+  // own. Absent: the day after day 1, for the same length.
+  fallbackDay2?: Date | null;
+  fallbackDay2DurationMinutes?: number | null;
 }
 
 export function renderV20Landing(template: string, data: V20LandingData, common: V20Common): string {
@@ -163,8 +206,10 @@ export function renderV20Landing(template: string, data: V20LandingData, common:
 
   const { batch } = data;
   const priceRupees = batch ? batch.priceRupees : data.fallbackPriceRupees;
-  // The two weekdays first, while the page file holds no batch or buyer value.
-  const page = fillWeekdays(template, daysOnPage(batch, data.fallbackDay1));
+  const each = eachDayOnPage(batch, data);
+  // Each day's own details and the two weekdays first, while the page file
+  // holds no batch or buyer value.
+  const page = fillWeekdays(fillEachDayMpf(template, each), daysOnPage(batch, data.fallbackDay1, data.fallbackDay2));
   const seats = applySeatLimit(page, !!batch, data.seatLimit, data.paidSeats);
   const seatsLeft = seats.seatsLeft;
 
@@ -187,7 +232,7 @@ export function renderV20Landing(template: string, data: V20LandingData, common:
   }
 
   html = rewritePaths(fillTokens(html, batch, priceRupees));
-  html = fillSessionLength(html, batch?.durationMinutes ?? data.fallbackDurationMinutes ?? SCHEMA_DEFAULT_DURATION_MINUTES);
+  html = fillSessionLength(html, ...each.minutes);
 
   const head = [
     // Canonical and og:url name the address the page is advertised on.
@@ -301,10 +346,13 @@ export function renderV20Checkout(template: string, batch: V20Batch, common: V20
   must(template, PAGE_MPF_MARKER, "the window.MPF line");
   must(template, '<form class="card" id="coform"', "the checkout form");
 
-  let html = fillWeekdays(template, batch).replace(PAGE_MPF_MARKER, checkoutConfigScript(batch, common, hooks));
+  let html = fillWeekdays(fillEachDayMpf(template, eachDayOf(batch)), batch).replace(
+    PAGE_MPF_MARKER,
+    checkoutConfigScript(batch, common, hooks),
+  );
   // Clarity must not record what buyers type (OWNER_DECISIONS D8).
   html = html.replace('<form class="card" id="coform"', '<form class="card" id="coform" data-clarity-mask="true"');
-  html = fillSessionLength(rewritePaths(fillTokens(html, batch, batch.priceRupees)), batch.durationMinutes);
+  html = fillSessionLength(rewritePaths(fillTokens(html, batch, batch.priceRupees)), batch.durationMinutes, day2Minutes(batch));
 
   const head = [...headExtras(common, MPF_V20_CHECKOUT_PATH, false)];
   if (!hooks.preview) {
@@ -366,12 +414,15 @@ export function renderV20ThankYou(
       day1StartISO: batch.day1StartAt.toISOString(),
       day2StartISO: batch.day2StartAt.toISOString(),
       sessionMinutes: batch.durationMinutes,
+      // Day 2's own length, for its entry in the calendar file.
+      sessionMinutesDay2: day2Minutes(batch),
     },
   };
   const refresh = { orderId: order.orderId, verifyUrl: hooks.verifyUrl, bookingUrl: hooks.bookingUrl, state: order.state };
 
-  // The two weekdays first: the buyer's name goes in next and must stay as typed.
-  let html = fillWeekdays(template, batch).replace(
+  // Each day's details and the two weekdays first: the buyer's name goes in
+  // next and must stay as typed.
+  let html = fillWeekdays(fillEachDayMpf(template, eachDayOf(batch)), batch).replace(
     PAGE_MPF_MARKER,
     `window.MPF = ${scriptJson(mpf)};
 // "Refresh status": ask the server to re-check the payment with Cashfree, then reload.
@@ -423,7 +474,7 @@ window.MPF.onRefresh = function () {
 </script>`;
   if (live) html = html.replace(/<\/body>(?![\s\S]*<\/body>)/, `${live}\n</body>`);
 
-  html = fillSessionLength(rewritePaths(fillTokens(html, batch, null)), batch.durationMinutes);
+  html = fillSessionLength(rewritePaths(fillTokens(html, batch, null)), batch.durationMinutes, day2Minutes(batch));
 
   const head = [`<meta name="referrer" content="same-origin">`];
   if (!hooks.preview) {

@@ -5,11 +5,37 @@
 // day of the week (owner, 23 Nov 2026), so those two words are taken from the
 // batch's own dates; for a Saturday batch the text reads as the brief wrote it.
 
+import { formatDuration } from "@/lib/ist";
+
 // "Saturday, 21 November 2026" -> "Saturday"
 export const weekdayOf = (dateText: string) => dateText.split(",")[0].trim();
 
 // "Saturday, 21 November 2026" -> "Saturday 21 November 2026"
 const spokenDate = (dateText: string) => dateText.replace(",", "");
+
+// Day 2's own start time and length ("7:00 PM", "3 hours"). Given only for a
+// batch whose day 2 is not simply the day after day 1, at the same time, for
+// the same length (owner, 23 Nov 2026); each day is then stated in full.
+export interface Day2Details {
+  startTime: string;
+  duration: string;
+}
+
+// From the batch as GET /api/batches/current and
+// GET /api/orders/[orderId]/booking return it (lib/batches/display.ts).
+export const day2DetailsOf = (batch: {
+  startTime: string;
+  durationMinutes: number;
+  day2StartTime?: string;
+  day2DurationMinutes?: number;
+  eachDayStated?: boolean;
+}): Day2Details | null =>
+  batch.eachDayStated
+    ? {
+        startTime: batch.day2StartTime ?? batch.startTime,
+        duration: formatDuration(batch.day2DurationMinutes ?? batch.durationMinutes),
+      }
+    : null;
 
 export const MMF_COPY = {
   contentName: "Master Mutual Funds workshop",
@@ -35,8 +61,12 @@ export const MMF_COPY = {
   checkout: {
     // K1 — above the form. The two weekdays are the batch's own (a batch can
     // start on any day); both dates arrive as "Saturday, 21 November 2026".
-    batchLine: (day1Date: string, day2Date: string, startTime: string, duration: string) =>
-      `Batch: ${day1Date}, ${startTime} IST, ${weekdayOf(day1Date)} and ${weekdayOf(day2Date)}, ${duration} each, live online.`,
+    // With day2 (a batch whose days differ), each day is stated in full:
+    // its date, its start time and its length.
+    batchLine: (day1Date: string, day2Date: string, startTime: string, duration: string, day2?: Day2Details | null) =>
+      day2
+        ? `Batch: ${day1Date}, ${startTime} IST (${duration}) and ${day2Date}, ${day2.startTime} IST (${day2.duration}), live online.`
+        : `Batch: ${day1Date}, ${startTime} IST, ${weekdayOf(day1Date)} and ${weekdayOf(day2Date)}, ${duration} each, live online.`,
     // K2 — checkbox under phone
     whatsappConsent: "Send booking confirmation and session reminders to this number on WhatsApp.",
   },
@@ -45,8 +75,11 @@ export const MMF_COPY = {
     T1: "Your seat is booked.",
     // Both dates arrive as "Saturday, 21 November 2026" and are shown as
     // "Saturday 21 November 2026", so the weekday is always the batch's own.
-    T2: (day1Date: string, day2Date: string, startTime: string, duration: string) =>
-      `${spokenDate(day1Date)} and ${spokenDate(day2Date)}, ${startTime} IST, ${duration} each.`,
+    // With day2 (a batch whose days differ), each day has its own time and length.
+    T2: (day1Date: string, day2Date: string, startTime: string, duration: string, day2?: Day2Details | null) =>
+      day2
+        ? `${spokenDate(day1Date)}, ${startTime} IST (${duration}) and ${spokenDate(day2Date)}, ${day2.startTime} IST (${day2.duration}).`
+        : `${spokenDate(day1Date)} and ${spokenDate(day2Date)}, ${startTime} IST, ${duration} each.`,
     // "Join Saturday's session" — the weekday of that session (weekdayOf).
     T3: (weekday: string) => `Join ${weekday}'s session`,
     T4: "Your join link is being prepared. It will appear here in a few seconds and will also be sent to your email.",

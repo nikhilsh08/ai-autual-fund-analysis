@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import { buildIcs } from "@/lib/batches/ics";
+import { day2EndAt } from "@/lib/batches/schedule";
 import { addMinutes } from "@/lib/ist";
 
 export const dynamic = "force-dynamic";
@@ -51,7 +52,8 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
         {
             uid: `mmf-${batch.id}-day2@cashflowcrew.in`,
             start: batch.day2StartAt,
-            end: addMinutes(batch.day2StartAt, batch.durationMinutes),
+            // Day 2 can have its own length (Admin → Batches).
+            end: day2EndAt(batch),
             summary: `${SUMMARY} (Day 2)`,
             description: describe(joinLinkDay2),
             url: joinLinkDay2 ?? undefined,

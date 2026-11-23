@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { CalendarPlus, CheckCircle2, MessageCircle, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { MMF_COPY, weekdayOf } from "@/lib/mmf-copy";
+import { MMF_COPY, day2DetailsOf, weekdayOf } from "@/lib/mmf-copy";
 import { formatDuration } from "@/lib/ist";
 
 interface Booking {
@@ -15,6 +15,10 @@ interface Booking {
         day2Date: string;
         startTime: string;
         durationMinutes: number;
+        // Day 2's own start time and length, when the batch gives it its own.
+        day2StartTime?: string;
+        day2DurationMinutes?: number;
+        eachDayStated?: boolean;
         day1StartAt: string;
         day2StartAt: string;
     };
@@ -87,7 +91,7 @@ export default function WorkshopThankYou({ orderId, initialBooking }: { orderId:
                 <h1 className="text-2xl font-bold text-ink">{t.T1}</h1>
                 {batch && (
                     <p className="text-ink-secondary">
-                        {t.T2(batch.day1Date, batch.day2Date, batch.startTime, formatDuration(batch.durationMinutes))}
+                        {t.T2(batch.day1Date, batch.day2Date, batch.startTime, formatDuration(batch.durationMinutes), day2DetailsOf(batch))}
                     </p>
                 )}
             </div>
@@ -141,7 +145,7 @@ export default function WorkshopThankYou({ orderId, initialBooking }: { orderId:
                                 className="underline"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                href={googleCalendarUrl(`${MMF_COPY.contentName} — Day 2`, batch.day2StartAt, batch.durationMinutes, t.T7)}
+                                href={googleCalendarUrl(`${MMF_COPY.contentName} — Day 2`, batch.day2StartAt, batch.day2DurationMinutes ?? batch.durationMinutes, t.T7)}
                             >
                                 Google Calendar — {weekdayOf(batch.day2Date)}
                             </a>

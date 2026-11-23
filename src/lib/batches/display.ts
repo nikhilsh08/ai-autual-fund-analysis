@@ -1,4 +1,5 @@
 import { formatIstDate, formatIstDateTime, formatIstTime } from "@/lib/ist";
+import { day2Minutes, daysMatch } from "./schedule";
 
 export interface BatchLike {
   id: string;
@@ -6,6 +7,8 @@ export interface BatchLike {
   day1StartAt: Date;
   day2StartAt: Date;
   durationMinutes: number;
+  // Length of day 2. Absent or null: the same as day 1.
+  day2DurationMinutes?: number | null;
   startTimeIst: string;
   language: string | null;
   priceRupees: number;
@@ -23,6 +26,12 @@ export function batchDisplay(batch: BatchLike) {
     startTime: formatIstTime(batch.day1StartAt),
     startTimeIst: batch.startTimeIst,
     durationMinutes: batch.durationMinutes,
+    // Day 2's own start time and length (the same as day 1 unless set in the
+    // admin panel). eachDayStated: day 2 is not simply "the day after, same
+    // time, same length", so a page must state each day in full.
+    day2StartTime: formatIstTime(batch.day2StartAt),
+    day2DurationMinutes: day2Minutes(batch),
+    eachDayStated: !daysMatch(batch),
     language: batch.language,
     bookingCloseText: formatIstDateTime(batch.bookingCloseAt),
     day1StartAt: batch.day1StartAt.toISOString(),

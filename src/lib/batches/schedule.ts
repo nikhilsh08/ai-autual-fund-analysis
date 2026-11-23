@@ -1,4 +1,4 @@
-import { addDays, addMinutes, istMidnight, istToUtc, istYmd } from "@/lib/ist";
+import { addDays, addMinutes, istDaysBetween, istHm, istMidnight, istToUtc, istYmd } from "@/lib/ist";
 
 const MS_PER_DAY = 86_400_000;
 
@@ -28,24 +28,70 @@ export function nextCycleDay1(
   return nextDay1Dates(settings.anchorDay1Date, settings.cadenceDays, now, 1)[0];
 }
 
+// Day 1 and day 2 of the next batch on the cycle in Batch settings (IST
+// midnights), or null when the course has no usable settings. Day 2 is
+// `day2OffsetDays` after day 1; absent, the day after.
+export function nextCycleDays(
+  settings:
+    | { anchorDay1Date?: Date | null; cadenceDays?: number | null; day2OffsetDays?: number | null }
+    | null
+    | undefined,
+  now: Date = new Date(),
+): { day1: Date; day2: Date } | null {
+  const day1 = nextCycleDay1(settings, now);
+  return day1 ? { day1, day2: addDays(day1, settings?.day2OffsetDays ?? 1) } : null;
+}
+
 export interface BatchTimes {
   day1StartAt: Date;
   day2StartAt: Date;
   bookingCloseAt: Date;
 }
 
+// Booking always closes before day 1. Day 2 has its own date and start time
+// (owner, 23 Nov 2026); absent, it is the day after day 1 at day 1's time.
 export function computeBatchTimes(input: {
   day1Date: Date;
   startTimeIst: string;
   closeHoursBefore: number;
+  day2Date?: Date | null;
+  day2StartTimeIst?: string | null;
 }): BatchTimes {
   const day1StartAt = istToUtc(istYmd(input.day1Date), input.startTimeIst);
+  const day2Date = input.day2Date ?? addDays(istMidnight(input.day1Date), 1);
   return {
     day1StartAt,
-    day2StartAt: addDays(day1StartAt, 1),
+    day2StartAt: istToUtc(istYmd(day2Date), input.day2StartTimeIst ?? input.startTimeIst),
     bookingCloseAt: addMinutes(day1StartAt, -input.closeHoursBefore * 60),
   };
 }
+
+// The two sessions of a batch, as the pages, messages and jobs read them.
+export interface TwoDays {
+  day1StartAt: Date;
+  day2StartAt: Date;
+  durationMinutes: number;
+  // Length of day 2. Absent or null: the same as day 1.
+  day2DurationMinutes?: number | null;
+}
+
+export const day2Minutes = (batch: Pick<TwoDays, "durationMinutes" | "day2DurationMinutes">): number =>
+  batch.day2DurationMinutes ?? batch.durationMinutes;
+
+// Day 2 is the calendar day after day 1 (IST).
+export const daysInARow = (batch: Pick<TwoDays, "day1StartAt" | "day2StartAt">): boolean =>
+  istDaysBetween(batch.day1StartAt, batch.day2StartAt) === 1;
+
+export const sameStartTime = (batch: Pick<TwoDays, "day1StartAt" | "day2StartAt">): boolean =>
+  istHm(batch.day1StartAt) === istHm(batch.day2StartAt);
+
+export const sameLength = (batch: Pick<TwoDays, "durationMinutes" | "day2DurationMinutes">): boolean =>
+  day2Minutes(batch) === batch.durationMinutes;
+
+// True for a batch as every batch was before 23 Nov 2026: day 2 is the day
+// after day 1, at the same time, for the same length. Pages then read exactly
+// as they always have; otherwise each day is stated with its own details.
+export const daysMatch = (batch: TwoDays): boolean => daysInARow(batch) && sameStartTime(batch) && sameLength(batch);
 
 export interface SaleWindow {
   status: string;
@@ -65,6 +111,6 @@ export function pickCurrentBatch<T extends SaleWindow>(batches: T[], now: Date):
   return open[0] ?? null;
 }
 
-export function day2EndAt(batch: { day2StartAt: Date; durationMinutes: number }): Date {
-  return addMinutes(batch.day2StartAt, batch.durationMinutes);
+export function day2EndAt(batch: { day2StartAt: Date; durationMinutes: number; day2DurationMinutes?: number | null }): Date {
+  return addMinutes(batch.day2StartAt, day2Minutes(batch));
 }
