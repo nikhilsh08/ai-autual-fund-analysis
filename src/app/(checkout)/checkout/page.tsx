@@ -24,7 +24,7 @@ import axios from 'axios';
 import { getSessionUTMs } from '@/components/analytics/UTMCapture';
 import { useRef } from 'react';
 import { trackInitiateCheckout } from '@/lib/analytics/track';
-import { MMF_COPY } from '@/lib/mmf-copy';
+import { MMF_COPY, day2DetailsOf } from '@/lib/mmf-copy';
 import { formatDuration } from '@/lib/ist';
 
 const checkoutSchema = z.object({
@@ -55,7 +55,18 @@ const CheckoutContent = () => {
   const requestedBatchId = searchParams.get('batchId');
   // Which landing page sent the buyer here; decides the thank-you page after payment.
   const landingSource = searchParams.get('src');
-  const [batch, setBatch] = useState<{ id: string; priceRupees: number; day1Date: string; day2Date: string; startTime: string; durationMinutes: number } | null>(null);
+  const [batch, setBatch] = useState<{
+    id: string;
+    priceRupees: number;
+    day1Date: string;
+    day2Date: string;
+    startTime: string;
+    durationMinutes: number;
+    // Day 2's own start time and length, when the batch gives it its own.
+    day2StartTime?: string;
+    day2DurationMinutes?: number;
+    eachDayStated?: boolean;
+  } | null>(null);
   const [batchUnavailable, setBatchUnavailable] = useState(false);
   const [whatsappOptIn, setWhatsappOptIn] = useState(false);
   const checkoutTracked = useRef(false);
@@ -406,7 +417,7 @@ const CheckoutContent = () => {
 
               {batch && (
                 <p className="text-sm text-ink-secondary bg-cream-dark border border-border rounded-xl px-4 py-3" data-testid="batch-line">
-                  {MMF_COPY.checkout.batchLine(batch.day1Date, batch.day2Date, batch.startTime, formatDuration(batch.durationMinutes))}
+                  {MMF_COPY.checkout.batchLine(batch.day1Date, batch.day2Date, batch.startTime, formatDuration(batch.durationMinutes), day2DetailsOf(batch))}
                 </p>
               )}
               {batchUnavailable && (

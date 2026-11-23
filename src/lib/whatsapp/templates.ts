@@ -6,6 +6,15 @@ interface BatchDates {
   day2StartAt: Date;
 }
 
+// The confirmation message has one slot for the start time. Both days at the
+// same time: that time, as before. Different times: each day's own time in
+// the same slot, so the buyer is never told day 1's time for day 2.
+export function startTimesText(batch: BatchDates): string {
+  const day1 = formatIstTime(batch.day1StartAt);
+  const day2 = formatIstTime(batch.day2StartAt);
+  return day1 === day2 ? day1 : `${day1} on day 1 and ${day2} on day 2`;
+}
+
 export function w1Params(input: {
   name: string;
   batch: BatchDates;
@@ -17,7 +26,7 @@ export function w1Params(input: {
     input.name,
     formatIstDate(input.batch.day1StartAt),
     formatIstDate(input.batch.day2StartAt),
-    formatIstTime(input.batch.day1StartAt),
+    startTimesText(input.batch),
     input.joinLink,
     input.groupLink ?? "to be shared by email",
     input.orderRef,

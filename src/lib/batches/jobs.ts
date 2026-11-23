@@ -69,10 +69,14 @@ export async function runBatchesJob(overrides: Partial<JobDeps> = {}): Promise<B
     if (settings.autoCreate) {
       const day1Dates = nextDay1Dates(settings.anchorDay1Date, settings.cadenceDays, now, settings.futureBatchCount);
       for (const day1Date of day1Dates) {
+        // Day 2 from Batch settings: its own gap in days, start time and
+        // length. Absent, it is the day after day 1 and matches day 1.
         const times = computeBatchTimes({
           day1Date,
           startTimeIst: settings.defaultStartTimeIst,
           closeHoursBefore: settings.closeHoursBefore,
+          day2Date: addDays(day1Date, settings.day2OffsetDays ?? 1),
+          day2StartTimeIst: settings.defaultDay2StartTimeIst,
         });
         const already = existing.find((b) => b.day1StartAt.getTime() === times.day1StartAt.getTime());
         if (already) continue;
@@ -84,6 +88,7 @@ export async function runBatchesJob(overrides: Partial<JobDeps> = {}): Promise<B
             day2StartAt: times.day2StartAt,
             bookingCloseAt: times.bookingCloseAt,
             durationMinutes: settings.durationMinutes,
+            day2DurationMinutes: settings.day2DurationMinutes ?? null,
             startTimeIst: settings.defaultStartTimeIst,
             language: settings.defaultLanguage,
             priceRupees: settings.defaultPriceRupees,

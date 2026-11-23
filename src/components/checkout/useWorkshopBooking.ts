@@ -12,6 +12,11 @@ export interface WorkshopBooking {
         day2Date: string;
         startTime: string;
         durationMinutes: number;
+        // Day 2's own start time and length, and whether each day must be
+        // stated in full (lib/batches/display.ts).
+        day2StartTime?: string;
+        day2DurationMinutes?: number;
+        eachDayStated?: boolean;
         day1StartAt: string;
         day2StartAt: string;
     };

@@ -48,6 +48,8 @@ model Batch {
   day1StartAt     DateTime
   day2StartAt     DateTime
   durationMinutes Int         @default(120)
+  // Length of day 2. Absent: the same as day 1 (durationMinutes).
+  day2DurationMinutes Int?
   startTimeIst    String
   language        String?
   priceRupees     Float
@@ -79,6 +81,11 @@ model BatchSettings {
   defaultPriceRupees       Float
   defaultStartTimeIst      String
   durationMinutes          Int         @default(120)
+  // Day 2 of a new batch: how many days after day 1 it falls (absent: 1),
+  // its start time and its length (absent: the same as day 1).
+  day2OffsetDays           Int?
+  defaultDay2StartTimeIst  String?
+  day2DurationMinutes      Int?
   defaultLanguage          String?
   closeHoursBefore         Int
   newBatchStatus           BatchStatus @default(DRAFT)

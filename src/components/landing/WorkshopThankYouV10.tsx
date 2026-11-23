@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { CalendarPlus, Check, MessageCircle, Video, X } from "lucide-react";
-import { MMF_COPY, weekdayOf, withoutWeekday } from "@/lib/mmf-copy";
+import { MMF_COPY, day2DetailsOf, weekdayOf, withoutWeekday } from "@/lib/mmf-copy";
 import { formatDuration } from "@/lib/ist";
 import { googleCalendarUrl, useWorkshopBooking, type WorkshopBooking } from "@/components/checkout/useWorkshopBooking";
 import s from "./ThankYouV10.module.css";
@@ -117,10 +117,18 @@ export default function WorkshopThankYouV10({ orderId, initialBooking }: { order
     const { booking, linksReady } = useWorkshopBooking(orderId, initialBooking);
     const batch = booking?.batch;
     const t = MMF_COPY.thankYou;
+    // Each day's own start time and length (the same on both days unless the
+    // batch gives day 2 its own).
+    const day2Minutes = batch ? (batch.day2DurationMinutes ?? batch.durationMinutes) : 0;
     const timeLine = batch ? `${batch.startTime} IST · ${formatDuration(batch.durationMinutes)}` : "";
+    const timeLineDay2 = batch ? `${batch.day2StartTime ?? batch.startTime} IST · ${formatDuration(day2Minutes)}` : "";
 
     return (
-        <ThankYouCard tone="paid" title={t.T1} lead={batch ? t.T2(batch.day1Date, batch.day2Date, batch.startTime, formatDuration(batch.durationMinutes)) : undefined}>
+        <ThankYouCard
+            tone="paid"
+            title={t.T1}
+            lead={batch ? t.T2(batch.day1Date, batch.day2Date, batch.startTime, formatDuration(batch.durationMinutes), day2DetailsOf(batch)) : undefined}
+        >
             {batch && (
                 <>
                     <p className={s.cardLabel}>Your two sessions</p>
@@ -135,7 +143,7 @@ export default function WorkshopThankYouV10({ orderId, initialBooking }: { order
                         <DayTile
                             eyebrow={`Day 2 · ${weekdayOf(batch.day2Date)}`}
                             date={withoutWeekday(batch.day2Date)}
-                            time={timeLine}
+                            time={timeLineDay2}
                             href={linksReady ? (booking?.joinLinkDay2 ?? null) : null}
                             label={t.T3(weekdayOf(batch.day2Date))}
                         />
@@ -178,7 +186,7 @@ export default function WorkshopThankYouV10({ orderId, initialBooking }: { order
                                 className={s.chip}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                href={googleCalendarUrl(`${MMF_COPY.contentName} — Day 2`, batch.day2StartAt, batch.durationMinutes, t.T7)}
+                                href={googleCalendarUrl(`${MMF_COPY.contentName} — Day 2`, batch.day2StartAt, day2Minutes, t.T7)}
                             >
                                 Google Calendar — {weekdayOf(batch.day2Date)}
                             </a>

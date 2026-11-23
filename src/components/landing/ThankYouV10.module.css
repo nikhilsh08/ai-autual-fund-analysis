@@ -102,6 +102,12 @@
 .bar b {
   font-weight: 700;
 }
+/* A batch whose two days start at different times has a longer line: it may
+   run onto a second line instead of being cut off at the screen edge. */
+.bar:has(.barTwoTimes) {
+  flex-wrap: wrap;
+  white-space: normal;
+}
 .barShort {
   display: none;
 }

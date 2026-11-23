@@ -132,7 +132,9 @@ describe("admin-panel values on every workshop page", () => {
       expect(bar1, page).toContain("<b>₹3,456</b>");
       // Batch 2: Tuesday 12 and Thursday 14 January, ₹4,321.
       expect(bar2, page).toContain("Tuesday <b>12 Jan</b> and Thursday <b>14 Jan</b>");
-      expect(bar2, page).toContain("Tue <b>12 Jan</b> – Thu <b>14 Jan</b>");
+      // Two days that are not in a row are joined with "and", not with the
+      // "–" of a run of days (owner, 23 Nov 2026: day 2 can be any later date).
+      expect(bar2, page).toContain("Tue <b>12 Jan</b> and Thu <b>14 Jan</b>");
       expect(bar2, page).toContain("<b>₹4,321</b>");
 
       // Nothing of batch 1 is left anywhere on a page that shows batch 2.

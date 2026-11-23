@@ -123,6 +123,27 @@ describe("runBatchesJob", () => {
     const again = await runBatchesJob({ prisma: prisma as never, now, sendAlert, registerInZoho: vi.fn(), sendTemplate: vi.fn(), sendConfirmation: vi.fn() });
     expect(again.created).toBe(0);
     expect(batches.rows).toHaveLength(2);
+    // No day 2 in the settings: the day after day 1, same time, same length.
+    expect(batches.rows[1].day2StartAt).toEqual(istToUtc("2026-12-06", "19:00"));
+    expect(batches.rows[1]).toMatchObject({ day2DurationMinutes: null });
+  });
+
+  it("gives each new batch the day 2 set in Batch settings: its own gap, start time and length", async () => {
+    const batches = table<Row>([]);
+    const ownDay2 = { ...settings, day2OffsetDays: 4, defaultDay2StartTimeIst: "20:30", day2DurationMinutes: 180 };
+    const prisma = { batch: batches, batchSettings: table([ownDay2]), batchRegistration: table([]) };
+
+    const report = await runBatchesJob({ prisma: prisma as never, now, sendAlert: vi.fn(), registerInZoho: vi.fn(), sendTemplate: vi.fn(), sendConfirmation: vi.fn() });
+
+    expect(report.created).toBe(2);
+    // Day 1 on the cycle (Saturdays, 7:00 PM); day 2 four days later at 8:30 PM, for 3 hours.
+    expect(batches.rows.map((b) => b.day1StartAt)).toEqual([istToUtc("2026-11-21", "19:00"), istToUtc("2026-12-05", "19:00")]);
+    expect(batches.rows.map((b) => b.day2StartAt)).toEqual([istToUtc("2026-11-25", "20:30"), istToUtc("2026-12-09", "20:30")]);
+    for (const b of batches.rows) {
+      expect(b).toMatchObject({ durationMinutes: 120, day2DurationMinutes: 180, startTimeIst: "19:00" });
+      // Booking still closes 24 hours before day 1.
+      expect(b.bookingCloseAt).toEqual(addMinutes(b.day1StartAt as Date, -24 * 60));
+    }
   });
 });
 

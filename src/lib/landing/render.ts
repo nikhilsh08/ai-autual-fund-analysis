@@ -1,4 +1,13 @@
-import { addDays, formatDuration, formatIstDate, formatIstDateTime, formatIstShortDate, formatIstTime } from "@/lib/ist";
+import {
+  addDays,
+  formatDuration,
+  formatIstDate,
+  formatIstDateTime,
+  formatIstShortDate,
+  formatIstTime,
+  istDaysBetween,
+} from "@/lib/ist";
+import { eachDayOf, fillEachDayV10, type EachDay } from "@/lib/landing/each-day";
 import { MMF_V10_CHECKOUT_PATH } from "@/lib/landing/v10";
 import { MMF_COPY } from "@/lib/mmf-copy";
 import { escapeHtml, landingEventsScript, scriptJson, trackingNoscript, trackingTags } from "@/lib/landing/tracking";
@@ -14,6 +23,8 @@ export interface LandingBatch {
   day2StartAt?: Date;
   bookingCloseAt: Date;
   durationMinutes: number;
+  // Length of day 2. Absent or null: the same as day 1.
+  day2DurationMinutes?: number | null;
   language: string | null;
 }
 
@@ -35,6 +46,10 @@ export interface LandingConfig {
   // Day 1 of the next batch on the cycle (Batch settings). Names the two
   // weekdays when nothing is on sale; absent, the page keeps its own words.
   fallbackDay1?: Date | null;
+  // Day 2 of that batch and its length, when Batch settings give day 2 its
+  // own. Absent: the day after day 1, for the same length.
+  fallbackDay2?: Date | null;
+  fallbackDay2DurationMinutes?: number | null;
 }
 
 export class LandingRenderError extends Error {}
@@ -46,7 +61,6 @@ export class LandingRenderError extends Error {}
 // The start time is the page's own {{ startTime }} value (the startTime prop below).
 const TOKEN_RE =
   /\{(price|class date|day 1 short date|day 2 short date|day 1|day 2|booking close date|session duration|total duration)\}/;
-const SESSIONS_PER_BATCH = 2; // Day 1 and Day 2
 const SUPPORT_SCRIPT = '<script src="/mmf/support.js"></script>';
 
 const inr = (rupees: number) => new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(rupees);
@@ -110,10 +124,19 @@ export function renderLanding(template: string, batch: LandingBatch | null, cfg:
   const classDate = batch ? formatIstDate(batch.day1StartAt) : MMF_COPY.landing.dateToBeAnnounced;
   const closeText = batch ? formatIstDateTime(batch.bookingCloseAt) : MMF_COPY.landing.dateToBeAnnounced;
 
-  const sessionMinutes = batch ? batch.durationMinutes : cfg.fallbackDurationMinutes;
   // The two weekdays: the batch on sale, else the cycle in Batch settings.
-  const days = daysOnPage(batch, cfg.fallbackDay1);
+  const days = daysOnPage(batch, cfg.fallbackDay1, cfg.fallbackDay2);
   const [weekday1, weekday2] = batchWeekdays(days);
+  // Each day's own start time and length (Admin → Batches). With nothing on
+  // sale there is no time to give, only the cycle's days and lengths.
+  const each: EachDay = batch
+    ? eachDayOf({ ...batch, day2StartAt: batch.day2StartAt ?? addDays(batch.day1StartAt, 1) })
+    : {
+        times: null,
+        inARow: !cfg.fallbackDay1 || !cfg.fallbackDay2 || istDaysBetween(cfg.fallbackDay1, cfg.fallbackDay2) === 1,
+        minutes: [cfg.fallbackDurationMinutes, cfg.fallbackDay2DurationMinutes ?? cfg.fallbackDurationMinutes],
+      };
+  const [sessionMinutes, day2SessionMinutes] = each.minutes;
 
   // Both days of the batch. With nothing on sale there is no date to give:
   // the short-date tokens read "to be announced" and the day tokens name the
@@ -124,7 +147,8 @@ export function renderLanding(template: string, batch: LandingBatch | null, cfg:
     : MMF_COPY.landing.dateToBeAnnounced;
   const dayLabels: [string, string] = batch ? [`${weekday1} ${day1Short}`, `${weekday2} ${day2Short}`] : [weekday1, weekday2];
 
-  let html = fillWeekdays(template, days).replace("<html>", '<html lang="en">');
+  // Each day's own details first, on the page file's own words; then the weekdays.
+  let html = fillWeekdays(fillEachDayV10(template, each), days).replace("<html>", '<html lang="en">');
   html = html
     .replaceAll("{price}", escapeHtml(priceText))
     .replaceAll("{day 1 short date}", escapeHtml(day1Short))
@@ -134,7 +158,7 @@ export function renderLanding(template: string, batch: LandingBatch | null, cfg:
     .replaceAll("{class date}", escapeHtml(classDate))
     .replaceAll("{booking close date}", escapeHtml(closeText))
     .replaceAll("{session duration}", escapeHtml(formatDuration(sessionMinutes)))
-    .replaceAll("{total duration}", escapeHtml(formatDuration(sessionMinutes * SESSIONS_PER_BATCH)));
+    .replaceAll("{total duration}", escapeHtml(formatDuration(sessionMinutes + day2SessionMinutes)));
 
   html = setPropDefault(html, "startTime", batch ? formatIstTime(batch.day1StartAt) : "");
   html = setPropDefault(html, "language", batch?.language ?? "");

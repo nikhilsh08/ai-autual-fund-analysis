@@ -15,10 +15,12 @@
 // markers below or rendering throws V30RenderError.
 
 import { formatIstShortDate, formatIstShortDateTime } from "@/lib/ist";
+import { day2Minutes } from "@/lib/batches/schedule";
+import { eachDayOf, fillEachDayMpf } from "@/lib/landing/each-day";
 import { MMF_COPY } from "@/lib/mmf-copy";
 import {
-  SCHEMA_DEFAULT_DURATION_MINUTES,
   applySeatLimit,
+  eachDayOnPage,
   fillSessionLength,
   v20StartTime,
   type V20Batch,
@@ -135,6 +137,10 @@ export interface V30LandingData {
   // Day 1 of the next batch on the cycle (batch settings). Names the two
   // weekdays when nothing is on sale; absent, the page keeps its own words.
   fallbackDay1?: Date | null;
+  // Day 2 of that batch and its length, when Batch settings give day 2 its
+  // own. Absent: the day after day 1, for the same length.
+  fallbackDay2?: Date | null;
+  fallbackDay2DurationMinutes?: number | null;
 }
 
 export function renderV30Landing(template: string, data: V30LandingData, common: V30Common): string {
@@ -143,8 +149,10 @@ export function renderV30Landing(template: string, data: V30LandingData, common:
 
   const { batch } = data;
   const priceRupees = batch ? batch.priceRupees : data.fallbackPriceRupees;
-  // The two weekdays first, while the page file holds no batch or buyer value.
-  const page = fillWeekdays(template, daysOnPage(batch, data.fallbackDay1));
+  const each = eachDayOnPage(batch, data);
+  // Each day's own details and the two weekdays first, while the page file
+  // holds no batch or buyer value.
+  const page = fillWeekdays(fillEachDayMpf(template, each), daysOnPage(batch, data.fallbackDay1, data.fallbackDay2));
   const seats = applySeatLimit(page, !!batch, data.seatLimit, data.paidSeats);
   const seatsLeft = seats.seatsLeft;
 
@@ -160,15 +168,14 @@ export function renderV30Landing(template: string, data: V30LandingData, common:
     );
   }
 
-  const minutes = batch?.durationMinutes ?? data.fallbackDurationMinutes ?? SCHEMA_DEFAULT_DURATION_MINUTES;
-  html = fillSessionLength(rewritePaths(fillTokens(html, batch, priceRupees)), minutes);
+  html = fillSessionLength(rewritePaths(fillTokens(html, batch, priceRupees)), ...each.minutes);
 
   // Canonical and og:url name the address the page is advertised on.
   const url = `${common.siteUrl}${LANDING_PUBLIC_PATH.v30}`;
   const head = [
     canonical(common, LANDING_PUBLIC_PATH.v30),
     `<meta property="og:title" content="Master Personal Finance with AI — 2-day live workshop">`,
-    `<meta property="og:description" content="${fillSessionLength(escapeHtml(DESCRIPTION), minutes)}">`,
+    `<meta property="og:description" content="${fillSessionLength(escapeHtml(DESCRIPTION), ...each.minutes)}">`,
     `<meta property="og:url" content="${escapeHtml(url)}">`,
     `<meta property="og:type" content="website">`,
     ...trackingTags(common.tracking),
@@ -211,14 +218,14 @@ export function renderV30Checkout(template: string, batch: V30Batch, common: V30
     landingSource: MPF_V30_SOURCE,
     preview: !!hooks.preview,
   };
-  let html = fillWeekdays(template, batch)
+  let html = fillWeekdays(fillEachDayMpf(template, eachDayOf(batch)), batch)
     .replace(MPF_MARKER, startTimeOnly(batch))
     .replace(CHECKOUT_MARKER_RE, `window.MPF_CHECKOUT=${scriptJson(cfg)}`);
   // Clarity must not record what buyers type (OWNER_DECISIONS D8).
   if (!html.includes('id="coform" method="post" action="javascript:void(0)" novalidate data-clarity-mask="true"')) {
     html = html.replace('<form class="card" id="coform"', '<form class="card" id="coform" data-clarity-mask="true"');
   }
-  html = fillSessionLength(rewritePaths(fillTokens(html, batch, batch.priceRupees)), batch.durationMinutes);
+  html = fillSessionLength(rewritePaths(fillTokens(html, batch, batch.priceRupees)), batch.durationMinutes, day2Minutes(batch));
 
   const item: TrackedItem = { contentIds: [common.courseId], contentName: MPF_V30_CONTENT_NAME, value: batch.priceRupees, currency: "INR" };
   const head = [canonical(common, MPF_V30_CHECKOUT_PATH)];
@@ -280,19 +287,22 @@ export function renderV30ThankYou(
     day1Start: batch.day1StartAt.toISOString(),
     day2Start: batch.day2StartAt.toISOString(),
     durationMinutes: batch.durationMinutes,
+    // Day 2's own length, for its calendar entries.
+    day2DurationMinutes: day2Minutes(batch),
     joinDay1: order.joinDay1 ?? "",
     joinDay2: order.joinDay2 ?? "",
     whatsappGroup: order.whatsappGroup ?? "",
     preview: !!hooks.preview,
   };
 
-  // The two weekdays first: the buyer's name goes in next and must stay as typed.
-  let html = fillWeekdays(template, batch)
+  // Each day's details and the two weekdays first: the buyer's name goes in
+  // next and must stay as typed.
+  let html = fillWeekdays(fillEachDayMpf(template, eachDayOf(batch)), batch)
     .replace(MPF_MARKER, startTimeOnly(batch))
     .replace(ORDER_MARKER_RE, `window.MPF_ORDER=${scriptJson(mpfOrder)}`)
     // Name, email and order ID are on screen: keep them out of Clarity.
     .replace("<main>", '<main data-clarity-mask="true">');
-  html = fillSessionLength(rewritePaths(fillTokens(html, batch, null)), batch.durationMinutes);
+  html = fillSessionLength(rewritePaths(fillTokens(html, batch, null)), batch.durationMinutes, day2Minutes(batch));
 
   const head = [`<meta name="referrer" content="same-origin">`];
   if (!hooks.preview) {

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { dataBasePrisma } from "@/lib/dbPrisma";
-import { nextCycleDay1 } from "@/lib/batches/schedule";
+import { nextCycleDays } from "@/lib/batches/schedule";
 import { renderV20Landing } from "@/lib/landing/render-v20";
 import {
     getV20BatchOnSale,
@@ -46,8 +46,9 @@ export async function GET(req: Request) {
     let courseId = "";
     let fallbackPrice: number | null = null;
     let fallbackDuration: number | null = null;
-    // Day 1 of the next batch on the cycle: names the weekdays when nothing is on sale.
-    let fallbackDay1: Date | null = null;
+    // The next batch on the cycle in Batch settings: names the two weekdays, and
+    // gives day 2 its own length, when nothing is on sale.
+    let cycle: { fallbackDay1?: Date | null; fallbackDay2?: Date | null; fallbackDay2DurationMinutes?: number | null } = {};
 
     try {
         const course = await getPageCourse("v20");
@@ -59,11 +60,23 @@ export async function GET(req: Request) {
         if (!batch) {
             const settings = await dataBasePrisma.batchSettings.findUnique({
                 where: { courseId: course.id },
-                select: { defaultPriceRupees: true, durationMinutes: true, anchorDay1Date: true, cadenceDays: true },
+                select: {
+                    defaultPriceRupees: true,
+                    durationMinutes: true,
+                    anchorDay1Date: true,
+                    cadenceDays: true,
+                    day2OffsetDays: true,
+                    day2DurationMinutes: true,
+                },
             });
             fallbackPrice = settings?.defaultPriceRupees ?? course.price;
             fallbackDuration = settings?.durationMinutes ?? null;
-            fallbackDay1 = nextCycleDay1(settings);
+            const next = nextCycleDays(settings);
+            cycle = {
+                fallbackDay1: next?.day1,
+                fallbackDay2: next?.day2,
+                fallbackDay2DurationMinutes: settings?.day2DurationMinutes,
+            };
         }
 
         const html = renderV20Landing(
@@ -72,7 +85,7 @@ export async function GET(req: Request) {
                 batch,
                 fallbackPriceRupees: fallbackPrice,
                 fallbackDurationMinutes: fallbackDuration,
-                fallbackDay1,
+                ...cycle,
                 paidSeats: batch ? await paidSeats(batch.id) : 0,
                 seatLimit: SEAT_LIMIT,
             },
@@ -85,7 +98,7 @@ export async function GET(req: Request) {
         try {
             const html = renderV20Landing(
                 template,
-                { batch: null, fallbackPriceRupees: fallbackPrice, fallbackDurationMinutes: fallbackDuration, fallbackDay1, paidSeats: 0, seatLimit: SEAT_LIMIT },
+                { batch: null, fallbackPriceRupees: fallbackPrice, fallbackDurationMinutes: fallbackDuration, ...cycle, paidSeats: 0, seatLimit: SEAT_LIMIT },
                 v20Common(courseId),
             );
             // Served after an error: never cache it, so the real page returns at once.

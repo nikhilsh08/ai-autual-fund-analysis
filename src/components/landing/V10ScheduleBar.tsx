@@ -1,4 +1,4 @@
-import { formatIstShortDate, formatIstTime, formatIstWeekday } from "@/lib/ist";
+import { formatIstShortDate, formatIstTime, formatIstWeekday, istDaysBetween } from "@/lib/ist";
 import s from "./ThankYouV10.module.css";
 
 const inr = (rupees: number) => new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(rupees);
@@ -9,6 +9,10 @@ const inr = (rupees: number) => new Intl.NumberFormat("en-IN", { maximumFraction
 // button (owner, 23 Nov 2026). Every value is the batch's own (Admin →
 // Batches). On phones the short day names are used and the seats line gives
 // way first, as on the landing page (see .bar in ThankYouV10.module.css).
+//
+// Day 2 can be any later date with its own start time (owner, 23 Nov 2026).
+// The wording then follows the landing page's bar (lib/landing/each-day.ts):
+// each day gets its own time, and "–" is used only for two days in a row.
 export default function V10ScheduleBar({
     batch,
 }: {
@@ -18,19 +22,42 @@ export default function V10ScheduleBar({
     const day2 = formatIstWeekday(batch.day2StartAt);
     const date1 = formatIstShortDate(batch.day1StartAt);
     const date2 = formatIstShortDate(batch.day2StartAt);
-    const time = `${formatIstTime(batch.day1StartAt)} IST`;
+    const time1 = formatIstTime(batch.day1StartAt);
+    const time2 = formatIstTime(batch.day2StartAt);
+    const time = `${time1} IST`;
+    const inARow = istDaysBetween(batch.day1StartAt, batch.day2StartAt) === 1;
+    // "7:00 PM" -> "7 PM" on the short line.
+    const compact = (value: string) => value.replace(":00", "");
+
+    const days =
+        time1 === time2 ? (
+            <>
+                <span className={s.barLong}>
+                    {day1} <b>{date1}</b> and {day2} <b>{date2}</b>, {time}
+                </span>
+                <span className={s.barShort}>
+                    {day1.slice(0, 3)} <b>{date1}</b> {inARow ? "–" : "and"} {day2.slice(0, 3)} <b>{date2}</b>, {time}
+                </span>
+            </>
+        ) : (
+            <>
+                <span className={`${s.barLong} ${s.barTwoTimes}`}>
+                    {day1} <b>{date1}</b>, {time1} IST and {day2} <b>{date2}</b>, {time2} IST
+                </span>
+                <span className={`${s.barShort} ${s.barTwoTimes}`}>
+                    {day1.slice(0, 3)} <b>{date1}</b> {compact(time1)} · {day2.slice(0, 3)} <b>{date2}</b> {compact(time2)} IST
+                </span>
+            </>
+        );
 
     return (
         <>
             <span className={s.barLong}>2-day live workshop</span>
             <span className={s.barLong}>·</span>
-            <span className={s.barLong}>
-                {day1} <b>{date1}</b> and {day2} <b>{date2}</b>, {time}
-            </span>
-            <span className={s.barShort}>
-                {day1.slice(0, 3)} <b>{date1}</b> – {day2.slice(0, 3)} <b>{date2}</b>, {time}
-            </span>
-            <span>·</span>
+            {days}
+            {/* With two times the price may move to a second line on phones:
+                its dot is then shown on wide screens only, as on the landing page. */}
+            <span className={time1 === time2 ? undefined : s.barLong}>·</span>
             <span>
                 <b>₹{inr(batch.priceRupees)}</b>
             </span>
