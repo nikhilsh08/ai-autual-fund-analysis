@@ -38,11 +38,8 @@ export default function V10Shell({
     const checkout = variant === "checkout";
     return (
         <div className={`${s.page} ${checkout ? s.pageCheckout : ""} ${className ?? ""}`}>
-            {announcement && (
-                <div className={s.bar}>
-                    <span>{announcement}</span>
-                </div>
-            )}
+            {/* The landing page's black bar. Its line comes from V10ScheduleBar. */}
+            {announcement && <div className={s.bar}>{announcement}</div>}
             <nav className={s.nav} aria-label="Workshop">
                 <div className={`${s.navInner} ${checkout ? s.navInnerWide : ""}`}>
                     <a href={LANDING} className={s.brand}>
