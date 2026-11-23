@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Archivo, Playfair_Display } from "next/font/google";
 import { notFound, redirect } from "next/navigation";
 import CheckoutV10 from "@/components/landing/CheckoutV10";
+import V10ScheduleBar from "@/components/landing/V10ScheduleBar";
 import V10Shell from "@/components/landing/V10Shell";
 import { getCurrentBatch } from "@/lib/batches/current";
 import { dataBasePrisma } from "@/lib/dbPrisma";
@@ -37,10 +38,6 @@ const playfair = Playfair_Display({
     display: "swap",
 });
 
-const announcementLine = (classDate: string) =>
-    // Same line as the landing page's announcement bar (one line: no price, no seat count).
-    `Live workshop · Starts ${classDate}`;
-
 export default async function WorkshopCheckoutPage({ searchParams }: { searchParams: Promise<{ preview?: string }> }) {
     const fontClass = `${archivo.variable} ${playfair.variable}`;
 
@@ -54,7 +51,7 @@ export default async function WorkshopCheckoutPage({ searchParams }: { searchPar
         if (!batch) redirect(`${MMF_V10_LANDING_PATH}?preview=1#seat`);
         const classDate = formatIstDate(batch.day1StartAt);
         return (
-            <V10Shell className={fontClass} variant="checkout" announcement={announcementLine(classDate)}>
+            <V10Shell className={fontClass} variant="checkout" announcement={<V10ScheduleBar batch={batch} />}>
                 <CheckoutV10
                     courseId={courseId ?? "preview"}
                     batch={{ id: "preview", priceRupees: batch.priceRupees, classDate, bookingCloseText: formatIstDateTime(batch.bookingCloseAt) }}
@@ -87,7 +84,8 @@ export default async function WorkshopCheckoutPage({ searchParams }: { searchPar
     const classDate = formatIstDate(batch.day1StartAt);
 
     return (
-        <V10Shell className={fontClass} variant="checkout" announcement={announcementLine(classDate)}>
+        // The black bar gives the same line as the landing page's bar (V10ScheduleBar).
+        <V10Shell className={fontClass} variant="checkout" announcement={<V10ScheduleBar batch={batch} />}>
             <CheckoutV10
                 courseId={course.id}
                 batch={{

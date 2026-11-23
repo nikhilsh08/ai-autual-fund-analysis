@@ -18,9 +18,8 @@ export const MMF_COPY = {
     // C2 — announcement bar. Landing page (owner, 23 Nov 2026): the whole
     // booking line, as on /v30 — both days with their dates, the start time,
     // the price and "Only 50 seats per batch", with no button. Its text is in
-    // src/landing/mmf-v10.html. The checkout page keeps "Live workshop ·
-    // Starts {class date}" (price and "50 seats per batch" were taken off the
-    // bar at the owner's request on 15 Nov 2026).
+    // src/landing/mmf-v10.html. The checkout page's bar gives the same line
+    // (owner, 23 Nov 2026): src/components/landing/V10ScheduleBar.tsx.
     // C3 — mobile sticky bar (replaces "{N} of 50 seats left")
     sticky: "2-day live workshop + 5 guides",
     // C4 — FAQ, device question

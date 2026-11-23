@@ -79,27 +79,54 @@
 .pageCheckout {
   background: #F6F2E9;
 }
+/* The black bar: the same line and the same look as the landing page's bar
+   (.abar in src/landing/mmf-v10.html). .barLong = wide screens, .barShort =
+   phones (short day names), .barSeat = the seats line, which gives way first. */
 .bar {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0 14px;
+  min-height: 40px;
   background: #151109;
-  padding: 8px 12px;
-  text-align: center;
+  padding: 6px 20px;
+  font-family: var(--mmf-archivo), sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: #fff;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
-.bar span {
-  font-family: var(--mmf-archivo), sans-serif;
-  font-size: clamp(11px, 3.3vw, 12px);
-  font-weight: 600;
-  line-height: 1.45;
-  letter-spacing: 0.02em;
-  color: #F4EFE5;
+.bar b {
+  font-weight: 700;
 }
-@media (min-width: 768px) {
-  .bar span {
+.barShort {
+  display: none;
+}
+@media (min-width: 641px) and (max-width: 860px) {
+  .barSeat {
+    display: none;
+  }
+}
+@media (max-width: 640px) {
+  .bar {
+    min-height: 34px;
+    padding: 6px 10px;
     font-size: 12.5px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    gap: 0 8px;
+  }
+  .barLong {
+    display: none;
+  }
+  .barShort {
+    display: inline;
+  }
+}
+@media (max-width: 480px) {
+  .barSeat {
+    display: none;
   }
 }
 .navInnerWide {
