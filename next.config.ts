@@ -28,10 +28,15 @@ const nextConfig: NextConfig = {
   },
   // The addresses the workshop pages are advertised on (/personalfinance,
   // /personalfinance1, /personalfinance2) show the /v10, /v20 and /v30 pages
-  // without changing the address in the browser. The list is in
-  // src/lib/landing/sources.ts.
+  // without changing the address in the browser. The pages under each one
+  // (/personalfinance/checkout, /personalfinance/thank-you, ...) are served
+  // the same way, so a buyer stays on the advertised address from the first
+  // click to the thank-you page. The list is in src/lib/landing/sources.ts.
   async rewrites() {
-    return LANDING_PAGES.map((page) => ({ source: LANDING_PUBLIC_PATH[page], destination: `/${page}` }));
+    return LANDING_PAGES.flatMap((page) => [
+      { source: LANDING_PUBLIC_PATH[page], destination: `/${page}` },
+      { source: `${LANDING_PUBLIC_PATH[page]}/:path*`, destination: `/${page}/:path*` },
+    ]);
   },
   // v20 static files, from the designer's _headers: images and the smooth-
   // scroll script are cached for a year (rename a file when it changes). The

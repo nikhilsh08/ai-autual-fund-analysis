@@ -39,14 +39,16 @@ const TOKENS = /\{(price|class date|day 2 date|booking close date)\}/;
 const mpfOf = (html: string) => JSON.parse(/window\.MPF = (\{.*?\});/.exec(html)![1]);
 
 describe("v20 landing renderer", () => {
-  it("fills every token from the batch and links the price card to /v20/checkout", () => {
+  it("fills every token from the batch and links the price card to /personalfinance1/checkout", () => {
     const html = renderV20Landing(landing, { batch, fallbackPriceRupees: null, paidSeats: 3 }, common);
 
     expect(html).not.toMatch(TOKENS);
     expect(html).toContain("₹2,999");
     expect(html).toContain("Saturday <b>21 Nov</b> and Sunday <b>22 Nov</b>");
     expect(html).toContain("Booking for this batch closes 20 Nov, 11:59 PM IST.");
-    expect(html).toContain('href="/v20/checkout" data-checkout="1"');
+    // The button keeps the buyer on the address the page is advertised on.
+    expect(html).toContain('href="/personalfinance1/checkout" data-checkout="1"');
+    expect(html).not.toContain('"/v20');
     expect(html).not.toContain('href="checkout.html"');
     expect(html).not.toContain('src="./');
     expect(html).toContain('src="/mpf/assets/portrait.webp"');
@@ -113,7 +115,7 @@ describe("v20 checkout renderer", () => {
     expect(html).toContain("onCoupon: function");
     expect(html).not.toMatch(/amount\s*:\s*total/i);
     expect(html).toContain('data-clarity-mask="true"');
-    expect(html).toContain('href="/v20#seat"');
+    expect(html).toContain('href="/personalfinance1#seat"');
     expect(html).toContain("'InitiateCheckout'");
   });
 

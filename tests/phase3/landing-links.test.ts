@@ -199,13 +199,14 @@ describe("each page shows its own course's batch", () => {
   it("sends a visitor back with a path, never the host's internal address", async () => {
     // Behind Render's proxy the address a route sees is https://localhost:10000/...
     const internal = (path: string) => new Request(`https://localhost:10000${path}`);
-    expect((await v20ThankYou(internal("/v20/thank-you"))).headers.get("location")).toBe("/v20");
-    expect((await v30ThankYou(internal("/v30/thank-you"))).headers.get("location")).toBe("/v30");
+    // ...and with the address the page is advertised on, not /v20 or /v30.
+    expect((await v20ThankYou(internal("/v20/thank-you"))).headers.get("location")).toBe("/personalfinance1");
+    expect((await v30ThankYou(internal("/v30/thank-you"))).headers.get("location")).toBe("/personalfinance2");
 
     batches = [];
     const res = await v30Checkout(internal("/v30/checkout"));
     expect(res.status).toBe(307);
-    expect(res.headers.get("location")).toBe("/v30#seat");
+    expect(res.headers.get("location")).toBe("/personalfinance2#seat");
   });
 
   it("admin Landing pages lists three pages with three different courses and batches", async () => {
@@ -222,6 +223,12 @@ describe("each page shows its own course's batch", () => {
       ["v10", "live", "A", 411, 0],
       ["v20", "live", "B", 2222, 0],
       ["v30", "live", "C", 3333, 0],
+    ]);
+    // The panel shows the addresses buyers see.
+    expect(data.pages.map((p: { url: string; paths: { checkout: string } }) => [new URL(p.url).pathname, p.paths.checkout])).toEqual([
+      ["/personalfinance", "/personalfinance/checkout"],
+      ["/personalfinance1", "/personalfinance1/checkout"],
+      ["/personalfinance2", "/personalfinance2/checkout"],
     ]);
   });
 

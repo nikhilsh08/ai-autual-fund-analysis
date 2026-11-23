@@ -280,7 +280,7 @@ function checkoutConfigScript(batch: V20Batch, common: V20Common, hooks: V20Chec
           var sid = d && d.paymentSession && d.paymentSession.payment_session_id;
           if (!r.ok || !d.success || !sid) throw payError(d && d.error);
           // Full-page redirect to Cashfree. It returns to /payment/callback,
-          // which verifies the payment and forwards to /v20/thank-you.
+          // which verifies the payment and forwards to the thank-you page.
           return loadCashfree().then(function (Cashfree) {
             return Cashfree({ mode: c.cashfreeMode }).checkout({ paymentSessionId: sid, redirectTarget: '_self' });
           }).then(function (res) { if (res && res.error) throw (res.error.message || GENERIC); });
