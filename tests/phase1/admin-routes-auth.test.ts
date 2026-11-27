@@ -5,8 +5,10 @@ import { fileURLToPath } from "node:url";
 
 const ADMIN_API = fileURLToPath(new URL("../../src/app/api/admin", import.meta.url));
 
-// Intentionally public: returns a constant body and is rate limited (N4).
-const PUBLIC_ALLOWLIST = ["is-admin/route.ts"];
+// Intentionally public:
+// - is-admin: returns a constant body and is rate limited (N4).
+// - logout: only clears the caller's own session cookie, returns no data.
+const PUBLIC_ALLOWLIST = ["is-admin/route.ts", "logout/route.ts"];
 
 function routeFiles(dir: string, out: string[] = []): string[] {
   for (const name of readdirSync(dir)) {

@@ -71,11 +71,23 @@ describe("v30 landing", () => {
     expect(html).not.toMatch(RELATIVE);
     expect(html).toContain("₹2,999");
     expect(html).toContain("21 Nov");
-    expect(html).toContain('href="/v30/checkout" data-checkout="1"');
+    // Booking and refund links keep the buyer on the address the page is advertised on.
+    expect(html).toContain('href="/personalfinance2/checkout" data-checkout="1"');
     expect(html).toContain("/mpf30/fonts/newsreader-roman.woff2");
     expect(html).toContain('"/mpf30/lenis.min.js"');
-    expect(html).toContain('href="/v30/refund-policy"');
+    expect(html).toContain('href="/personalfinance2/refund-policy"');
+    expect(html).not.toContain('"/v30');
+    // No seat limit: 50 is the page's own default, so it shows its fixed line
+    // and never counts down, and no limit is promised.
+    expect(jsonAfter(html, "MPF")).toEqual({ seatsLeft: 50, startTime: "10:00 AM IST", language: "English" });
+    expect(html).not.toContain("limited to 50 attendees");
+    expectScriptsParse(html);
+  });
+
+  it("with a seat limit set for the page, counts down from real bookings", () => {
+    const html = renderV30Landing(landing, { batch, fallbackPriceRupees: null, paidSeats: 37, seatLimit: 50 }, common);
     expect(jsonAfter(html, "MPF")).toEqual({ seatsLeft: 13, startTime: "10:00 AM IST", language: "English" });
+    expect(html).toContain("limited to 50 attendees");
     expectScriptsParse(html);
   });
 
@@ -86,7 +98,9 @@ describe("v30 landing", () => {
     expect(html).toContain("gtag/js?id=G-TEST");
     expect(html).toContain("clarity.ms/tag/");
     expect(html).toContain("'ViewContent'");
-    expect(html).toContain('<link rel="canonical" href="https://www.cashflowcrew.in/v30">');
+    // The address the page is advertised on, not the /v30 route behind it.
+    expect(html).toContain('<link rel="canonical" href="https://www.cashflowcrew.in/personalfinance2">');
+    expect(html).toContain('<meta property="og:url" content="https://www.cashflowcrew.in/personalfinance2">');
   });
 
   it("removes the checkout button when nothing is on sale", () => {
@@ -147,7 +161,7 @@ describe("v30 thank-you", () => {
     expect(html).toContain('gtag(\'event\',"purchase"');
     expect(html).toContain("eventID:");
     expect(html).toContain('<main data-clarity-mask="true">');
-    expect(html).toContain('href="/v30/checkout"');
+    expect(html).toContain('href="/personalfinance2/checkout"');
     expectScriptsParse(html);
   });
 
@@ -171,6 +185,6 @@ describe("v30 refund policy", () => {
     const html = renderV30RefundPolicy(refund, common);
     expect(html).not.toMatch(RELATIVE);
     expect(html).toContain("/mpf30/assets/logo-64.webp");
-    expect(html).toContain('href="/v30"');
+    expect(html).toContain('href="/personalfinance2"');
   });
 });

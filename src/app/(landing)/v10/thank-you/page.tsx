@@ -11,7 +11,7 @@ import V10Shell from "@/components/landing/V10Shell";
 import WorkshopThankYouV10, { OrderMeta, ThankYouCard } from "@/components/landing/WorkshopThankYouV10";
 import { formatIstDate, formatIstTime } from "@/lib/ist";
 import type { V20Batch } from "@/lib/landing/render-v20";
-import { MMF_V10_COURSE_SLUG } from "@/lib/landing/v10";
+import { MMF_V10_LANDING_PATH, MMF_V10_THANK_YOU_PATH } from "@/lib/landing/v10";
 import { previewBatchFor } from "@/lib/landing/v20-data";
 import { MMF_COPY } from "@/lib/mmf-copy";
 import s from "@/components/landing/ThankYouV10.module.css";
@@ -40,8 +40,9 @@ const playfair = Playfair_Display({
     display: "swap",
 });
 
-const LANDING = "/v10";
-const THANK_YOU = `${LANDING}/thank-you`;
+// The addresses the buyer sees (/personalfinance and /personalfinance/thank-you).
+const LANDING = MMF_V10_LANDING_PATH;
+const THANK_YOU = MMF_V10_THANK_YOU_PATH;
 const SUPPORT = "mailto:support@cashflowcrew.in";
 
 // Development-only preview. Every date, time and length comes from the
@@ -118,7 +119,7 @@ export default async function WorkshopThankYouPage({
 
     if (preview === "workshop" && process.env.NODE_ENV !== "production") {
         const previewId = "ORDER_PREVIEW_0000";
-        const { batch } = await previewBatchFor(MMF_V10_COURSE_SLUG);
+        const { batch } = await previewBatchFor("v10");
         if (!batch) redirect(`${LANDING}?preview=1`);
         return (
             <V10Shell className={fontClass}>

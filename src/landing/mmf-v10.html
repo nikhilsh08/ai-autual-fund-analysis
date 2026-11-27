@@ -311,8 +311,18 @@
   .bio-text{display:flex;flex-direction:column;gap:16px}
   .bio-text p{margin:0}
   .bio-text b{color:var(--ink)}
-  .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
-  .chip{display:inline-flex;align-items:center;min-height:40px;font-family:var(--fh);font-size:13.5px;font-weight:600;color:var(--g);background:#fff;border:1px solid var(--line2);border-radius:999px;padding:8px 16px}
+  .chips{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+  .chip{display:flex;align-items:center;justify-content:center;text-align:center;min-height:54px;font-family:var(--fh);font-size:13.5px;font-weight:600;line-height:1.3;color:var(--g);background:#fff;border:1px solid var(--line2);border-radius:14px;padding:10px 12px}
+  /* An odd number of chips: the last one fills the row, so the grid has no empty box */
+  .chip:last-child:nth-child(odd){grid-column:1/-1}
+  /* Phones: instructor heading, photo and closing line centred on the screen; the bio paragraphs stay left-aligned for reading */
+  @media(max-width:719px){
+    #instructor .shead{align-items:center;text-align:center;margin-left:auto;margin-right:auto}
+    #instructor .bio-photo{justify-self:center;max-width:240px}
+    #instructor .bio-text>.note{text-align:center}
+    #instructor .bridge{text-align:center}
+    #instructor .bridge::before{margin:0 auto 16px}
+  }
   @media(min-width:720px){.bio{grid-template-columns:240px 1fr}.bio-photo{max-width:none;position:sticky;top:96px}}
   @media(min-width:1024px){.bio{grid-template-columns:300px 1fr}}
 
@@ -724,7 +734,7 @@
         <p>Part of that job was explaining risk to colleagues who were not finance specialists, in language they could act on. In this workshop, I do the same for investors in India who want to make their own investment decisions.</p>
         <p>Many fund comparisons online rank funds by past returns alone. In this workshop, you learn <mark>the checks a risk analyst runs first</mark>: how far a fund can fall, what the fund costs, and whether the fund holds the same stocks as your other funds.</p>
         <p>I manage my own money with these checks. I built a research system, using AI to write the code, that calculates each figure from the portfolios fund houses publish every month, and I verify each figure before I use it.</p>
-        <div data-chips="1" class="chips"><span class="chip">Master's in Finance</span><span class="chip">Former risk analyst, Goldman Sachs</span><span class="chip">2× founder</span><span class="chip">600+ past attendees</span></div>
+        <div data-chips="1" class="chips"><span class="chip">Master's in Finance</span><span class="chip">2× founder</span><span class="chip">600+ past attendees</span></div>
         <p class="note" style="font-size:12.5px">Goldman Sachs is named only to describe my past employment. Goldman Sachs is not connected with this workshop and does not endorse it.</p>
       </div>
     </div>

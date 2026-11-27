@@ -12,7 +12,7 @@ export const batchCreateSchema = z.object({
   day1Date: ymd,
   startTimeIst: hm,
   priceRupees: z.number().positive(),
-  closeHoursBefore: z.number().min(0),
+  closeHoursBefore: z.number().int().min(0),
   durationMinutes: z.number().int().positive().optional(),
   language: optionalText,
   zohoWebinarKeyDay1: optionalText,

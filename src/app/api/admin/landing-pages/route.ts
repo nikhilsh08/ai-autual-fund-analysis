@@ -3,11 +3,12 @@ import { siteConfig } from "@/config/seo";
 import { verifyAdmin } from "@/lib/auth-admin";
 import { dataBasePrisma } from "@/lib/dbPrisma";
 import { getCurrentBatch } from "@/lib/batches/current";
-import { LANDING_SOURCES, type LandingSource } from "@/lib/landing/sources";
+import { getLandingCourse } from "@/lib/landing/course-link";
+import { requestSiteOrigin } from "@/lib/request-origin";
+import { LANDING_SEATS_PER_BATCH, LANDING_SOURCES, type LandingPageKey, type LandingSource } from "@/lib/landing/sources";
 
 export const dynamic = "force-dynamic";
 
-const SEATS_PER_BATCH = 50;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 // Browser events each page fires (server-side: Meta CAPI Purchase for all).
@@ -17,17 +18,21 @@ const EVENTS = {
     thankYou: ["PageView", "Purchase / purchase (eventID = order ID)"],
 };
 
-type Status = "live" | "no_batch_on_sale" | "course_missing" | "course_unpublished" | "not_sold_in_batches";
+type Status = "live" | "batch_full" | "no_batch_on_sale" | "course_missing" | "course_unpublished" | "not_sold_in_batches";
 
 // GET /api/admin/landing-pages — one row per workshop landing page (v10,
-// v20, v30): whether it is selling, the batch on sale, orders it brought in,
-// and which tracking tags are configured. Secrets are reported as set / not
+// v20, v30): the course linked to it (each page has its own), whether it is
+// selling, the batch on sale, orders it brought in, and which tracking tags
+// are configured. Secrets are reported as set / not
 // set only.
 export async function GET(req: Request) {
     const admin = await verifyAdmin(req);
     if (!admin) return NextResponse.json({ message: "Access denied" }, { status: 403 });
 
     const keys = Object.keys(LANDING_SOURCES) as LandingSource[];
+    // The admin panel calls this site's API, so the page links it shows open
+    // the pages on this same site (the live domain, or a test deployment).
+    const siteUrl = requestSiteOrigin(req) ?? siteConfig.url;
     const since30 = new Date(Date.now() - 30 * DAY_MS);
 
     const [allTime, last30] = await Promise.all([
@@ -45,22 +50,24 @@ export async function GET(req: Request) {
         }),
     ]);
 
-    const courseCache = new Map<string, Awaited<ReturnType<typeof loadCourse>>>();
-    async function courseFor(slug: string) {
-        if (!courseCache.has(slug)) courseCache.set(slug, await loadCourse(slug));
-        return courseCache.get(slug)!;
-    }
+    const loaded = new Map<LandingSource, Awaited<ReturnType<typeof loadCourse>>>();
+    for (const key of keys) loaded.set(key, await loadCourse(LANDING_SOURCES[key].page));
 
     const pages = [];
     for (const key of keys) {
         const page = LANDING_SOURCES[key];
-        const c = await courseFor(page.courseSlug);
+        const c = loaded.get(key) ?? null;
 
         let status: Status = "live";
         if (!c) status = "course_missing";
         else if (!c.course.isPublished) status = "course_unpublished";
         else if (!c.course.useBatches) status = "not_sold_in_batches";
         else if (!c.batch) status = "no_batch_on_sale";
+
+        // /v20 and /v30 stop at 50 paid seats per batch; /v10 has no limit (null).
+        const seatLimit = LANDING_SEATS_PER_BATCH[page.page];
+        const seatsLeft = c?.batch && seatLimit !== null ? Math.max(0, seatLimit - c.paidSeats) : null;
+        if (status === "live" && seatsLeft === 0) status = "batch_full";
 
         const rows = allTime.filter((r) => r.landingSource === key);
         const paid = rows.find((r) => r.status === "PAID");
@@ -69,12 +76,13 @@ export async function GET(req: Request) {
         pages.push({
             key,
             name: page.name,
-            url: `${siteConfig.url}${page.landing}`,
+            url: `${siteUrl}${page.landing}`,
             paths: { landing: page.landing, checkout: page.checkout, thankYou: page.thankYou },
             status,
-            course: c ? { id: c.course.id, title: c.course.title, slug: page.courseSlug } : null,
-            // Pages selling the same course share its batches and seats.
-            sharesCourseWith: keys.filter((k) => k !== key && LANDING_SOURCES[k].courseSlug === page.courseSlug),
+            page: page.page,
+            course: c ? { id: c.course.id, title: c.course.title, slug: c.course.slug } : null,
+            // Each page has its own course, so this is normally empty.
+            sharesCourseWith: c ? keys.filter((k) => k !== key && loaded.get(k)?.course.id === c.course.id) : [],
             batchOnSale: c?.batch
                 ? {
                       id: c.batch.id,
@@ -84,7 +92,8 @@ export async function GET(req: Request) {
                       bookingCloseAt: c.batch.bookingCloseAt,
                       priceRupees: c.batch.priceRupees,
                       paidSeats: c.paidSeats,
-                      seatsLeft: Math.max(0, SEATS_PER_BATCH - c.paidSeats),
+                      seatLimit,
+                      seatsLeft,
                   }
                 : null,
             orders: {
@@ -118,11 +127,8 @@ export async function GET(req: Request) {
     });
 }
 
-async function loadCourse(slug: string) {
-    const course = await dataBasePrisma.course.findUnique({
-        where: { slug },
-        select: { id: true, title: true, isPublished: true, useBatches: true },
-    });
+async function loadCourse(page: LandingPageKey) {
+    const course = await getLandingCourse(page);
     if (!course) return null;
     const batch = course.useBatches ? await getCurrentBatch(course.id) : null;
     const paidSeats = batch

@@ -40,7 +40,9 @@ describe("landing renderer (spec 5.2, 11)", () => {
     const html = renderLanding(template, batch, cfg);
 
     expect(html).not.toMatch(/\{(price|class date|booking close date)\}/);
-    expect(html).toContain('href="/v10/checkout" data-checkout="1"');
+    // The button keeps the buyer on the address the page is advertised on.
+    expect(html).toContain('href="/personalfinance/checkout" data-checkout="1"');
+    expect(html).not.toContain("/v10/checkout");
     expect(html).toContain("₹1,999");
     expect(html).toContain("Saturday, 21 November 2026");
     expect(html).toContain("Friday, 20 November 2026, 11:59 PM IST");

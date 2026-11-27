@@ -39,23 +39,37 @@ const TOKENS = /\{(price|class date|day 2 date|booking close date)\}/;
 const mpfOf = (html: string) => JSON.parse(/window\.MPF = (\{.*?\});/.exec(html)![1]);
 
 describe("v20 landing renderer", () => {
-  it("fills every token from the batch and links the price card to /v20/checkout", () => {
+  it("fills every token from the batch and links the price card to /personalfinance1/checkout", () => {
     const html = renderV20Landing(landing, { batch, fallbackPriceRupees: null, paidSeats: 3 }, common);
 
     expect(html).not.toMatch(TOKENS);
     expect(html).toContain("₹2,999");
     expect(html).toContain("Saturday <b>21 Nov</b> and Sunday <b>22 Nov</b>");
     expect(html).toContain("Booking for this batch closes 20 Nov, 11:59 PM IST.");
-    expect(html).toContain('href="/v20/checkout" data-checkout="1"');
+    // The button keeps the buyer on the address the page is advertised on.
+    expect(html).toContain('href="/personalfinance1/checkout" data-checkout="1"');
+    expect(html).not.toContain('"/v20');
     expect(html).not.toContain('href="checkout.html"');
     expect(html).not.toContain('src="./');
     expect(html).toContain('src="/mpf/assets/portrait.webp"');
     expect(html).toContain('src="/mpf/lenis.min.js"');
   });
 
-  it("sets window.MPF from the batch and real bookings, with Filling fast off", () => {
+  it("has no seat limit: the seat line never counts down and no limit is promised", () => {
     const html = renderV20Landing(landing, { batch, fallbackPriceRupees: null, paidSeats: 37 }, common);
+    // 50 is the page's own default: it shows its fixed line, not "13 of 50 seats left".
+    expect(mpfOf(html)).toEqual({ seatsLeft: 50, startTime: "10:00 AM IST", language: "English", fillingFast: false });
+    expect(html).not.toContain("limited to 50 attendees");
+    // Far past 50 bookings the page still does not count down.
+    expect(mpfOf(renderV20Landing(landing, { batch, fallbackPriceRupees: null, paidSeats: 400 }, common)).seatsLeft).toBe(50);
+    // The same with nothing on sale.
+    expect(renderV20Landing(landing, { batch: null, fallbackPriceRupees: 2499, paidSeats: 0 }, common)).not.toContain("limited to 50 attendees");
+  });
+
+  it("with a seat limit set for the page, counts down from real bookings", () => {
+    const html = renderV20Landing(landing, { batch, fallbackPriceRupees: null, paidSeats: 37, seatLimit: 50 }, common);
     expect(mpfOf(html)).toEqual({ seatsLeft: 13, startTime: "10:00 AM IST", language: "English", fillingFast: false });
+    expect(html).toContain("limited to 50 attendees");
   });
 
   it("adds Pixel, GTM, GA4, Clarity, ViewContent and AddToCart with the course ID", () => {
@@ -67,7 +81,9 @@ describe("v20 landing renderer", () => {
     expect(html).toContain("'ViewContent'");
     expect(html).toContain("'AddToCart'");
     expect(html).toContain('"contentIds":["course20"]');
-    expect(html).toContain('<link rel="canonical" href="https://www.cashflowcrew.in/v20">');
+    // The address the page is advertised on, not the /v20 route behind it.
+    expect(html).toContain('<link rel="canonical" href="https://www.cashflowcrew.in/personalfinance1">');
+    expect(html).toContain('<meta property="og:url" content="https://www.cashflowcrew.in/personalfinance1">');
     expect(html.indexOf("fbq('init'")).toBeLessThan(html.indexOf("</head>"));
   });
 
@@ -99,7 +115,7 @@ describe("v20 checkout renderer", () => {
     expect(html).toContain("onCoupon: function");
     expect(html).not.toMatch(/amount\s*:\s*total/i);
     expect(html).toContain('data-clarity-mask="true"');
-    expect(html).toContain('href="/v20#seat"');
+    expect(html).toContain('href="/personalfinance1#seat"');
     expect(html).toContain("'InitiateCheckout'");
   });
 

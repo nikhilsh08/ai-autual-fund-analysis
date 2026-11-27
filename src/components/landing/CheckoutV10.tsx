@@ -205,7 +205,7 @@ export default function CheckoutV10({ courseId, batch }: { courseId: string; bat
 
             const cashfree = await getCashfreeInstance();
             // Full-page redirect to Cashfree. It returns to /payment/callback, which
-            // verifies the payment and forwards to /v10/thank-you.
+            // verifies the payment and forwards to /personalfinance/thank-you.
             const result = await cashfree.checkout({ paymentSessionId: sessionId, redirectTarget: "_self" });
             if (result?.error) {
                 showFormError((result.error.message || GENERIC_PAY_ERROR) + SUPPORT_NOTE);

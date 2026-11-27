@@ -18,6 +18,7 @@ import { formatIstShortDate, formatIstShortDateTime } from "@/lib/ist";
 import { MMF_COPY } from "@/lib/mmf-copy";
 import {
   SCHEMA_DEFAULT_DURATION_MINUTES,
+  applySeatLimit,
   fillSessionLength,
   v20StartTime,
   type V20Batch,
@@ -32,6 +33,7 @@ import {
   MPF_V30_SOURCE,
   MPF_V30_STATIC,
 } from "@/lib/landing/v30";
+import { LANDING_PUBLIC_PATH } from "@/lib/landing/sources";
 import {
   escapeHtml,
   landingEventsScript,
@@ -122,8 +124,11 @@ export interface V30LandingData {
   batch: V30Batch | null;
   // Used for the price when nothing is on sale (batch settings, then course price).
   fallbackPriceRupees: number | null;
-  // Paid bookings for the batch on sale (shared with /v20: same batches).
+  // Paid bookings for the batch on sale.
   paidSeats: number;
+  // Paid bookings this page's batches may take (sources.ts); null or absent
+  // = no limit.
+  seatLimit?: number | null;
   // Session length when nothing is on sale (batch settings).
   fallbackDurationMinutes?: number | null;
 }
@@ -134,9 +139,10 @@ export function renderV30Landing(template: string, data: V30LandingData, common:
 
   const { batch } = data;
   const priceRupees = batch ? batch.priceRupees : data.fallbackPriceRupees;
-  const seatsLeft = batch ? Math.max(0, MPF_V30_SEATS_PER_BATCH - data.paidSeats) : MPF_V30_SEATS_PER_BATCH;
+  const seats = applySeatLimit(template, !!batch, data.seatLimit, data.paidSeats);
+  const seatsLeft = seats.seatsLeft;
 
-  let html = template.replace(
+  let html = seats.html.replace(
     MPF_MARKER,
     `window.MPF=${scriptJson({ seatsLeft, startTime: batch ? v20StartTime(batch) : "", language: batch?.language ?? "" })};`,
   );
@@ -151,9 +157,10 @@ export function renderV30Landing(template: string, data: V30LandingData, common:
   const minutes = batch?.durationMinutes ?? data.fallbackDurationMinutes ?? SCHEMA_DEFAULT_DURATION_MINUTES;
   html = fillSessionLength(rewritePaths(fillTokens(html, batch, priceRupees)), minutes);
 
-  const url = `${common.siteUrl}${MPF_V30_LANDING_PATH}`;
+  // Canonical and og:url name the address the page is advertised on.
+  const url = `${common.siteUrl}${LANDING_PUBLIC_PATH.v30}`;
   const head = [
-    canonical(common, MPF_V30_LANDING_PATH),
+    canonical(common, LANDING_PUBLIC_PATH.v30),
     `<meta property="og:title" content="Master Personal Finance with AI — 2-day live workshop">`,
     `<meta property="og:description" content="${fillSessionLength(escapeHtml(DESCRIPTION), minutes)}">`,
     `<meta property="og:url" content="${escapeHtml(url)}">`,
